@@ -67,3 +67,20 @@ export function getAllKContents(): KContent[] {
     ...kfestivalData,
   ] as KContent[]
 }
+
+// K-Content가 어떤 카테고리에 속하는지 확인
+export function getContentCategory(content: KContent): 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | null {
+  if (kpopData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
+    return 'kpop'
+  }
+  if (kbeautyData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
+    return 'kbeauty'
+  }
+  if (kfoodData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
+    return 'kfood'
+  }
+  if (kfestivalData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
+    return 'kfestival'
+  }
+  return null
+}

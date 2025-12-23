@@ -1,14 +1,11 @@
 "use client"
 
 import AuthButton from '@/components/AuthButton'
-import CategoryCarousel from '@/components/CategoryCarousel'
-import { getKContentsByCategory } from '@/lib/data'
+import POIGrid from '@/components/POIGrid'
+import { getAllPOIs } from '@/lib/data'
 
 export default function Home() {
-  const kpopContents = getKContentsByCategory('kpop')
-  const kbeautyContents = getKContentsByCategory('kbeauty')
-  const kfoodContents = getKContentsByCategory('kfood')
-  const kfestivalContents = getKContentsByCategory('kfestival')
+  const allPOIs = getAllPOIs()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
@@ -22,14 +19,11 @@ export default function Home() {
       <main className="w-full py-8">
         <div className="container mx-auto px-6 mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">K-Culture 탐색</h2>
-          <p className="text-purple-200">한국 문화 콘텐츠를 카테고리별로 탐색해보세요</p>
+          <p className="text-purple-200">장소를 검색하고 카테고리로 필터링해보세요</p>
         </div>
         
         <div className="w-full">
-          <CategoryCarousel title="K-Pop" items={kpopContents} />
-          <CategoryCarousel title="K-Beauty" items={kbeautyContents} />
-          <CategoryCarousel title="K-Food" items={kfoodContents} />
-          <CategoryCarousel title="K-Festival" items={kfestivalContents} />
+          <POIGrid pois={allPOIs} />
         </div>
       </main>
     </div>

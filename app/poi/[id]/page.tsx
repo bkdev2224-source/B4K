@@ -102,9 +102,13 @@ export default function POIDetailPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
+                        {/* spotName을 제목으로 */}
                         <h3 className="text-xl font-bold text-white mb-2">{content.spotName}</h3>
+                        {/* subName을 해시태그로 */}
                         {content.subName && (
-                          <p className="text-purple-300 text-sm mb-3">{content.subName}</p>
+                          <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 rounded-full text-purple-200 text-sm font-medium mb-3">
+                            #{content.subName}
+                          </span>
                         )}
                       </div>
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex-shrink-0">

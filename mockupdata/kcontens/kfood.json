@@ -1,7 +1,0 @@
-[
-    { "subName": "Gwangjang Market", "poiId": { "$oid": "poi_004" }, "spotName": "Mayak Gimbap", "description": "Addictive mini gimbap with mustard sauce.", "tags": ["StreetFood", "Local"], "signatureMenu": "Gimbap" },
-    { "subName": "Chicken & Beer", "poiId": { "$oid": "poi_020" }, "spotName": "Hangang Chimaek", "description": "Eating fried chicken by the river.", "tags": ["Delivery", "Culture"], "signatureMenu": "Chimaek" },
-    { "subName": "Bibimbap", "poiId": { "$oid": "poi_016" }, "spotName": "Insadong Traditional House", "description": "Healthy mixed rice in a Hanok.", "tags": ["Healthy", "Vegetarian"], "signatureMenu": "Bibimbap" },
-    { "subName": "Tteokbokki", "poiId": { "$oid": "poi_012" }, "spotName": "Hongdae Street Tteokbokki", "description": "Spicy rice cakes on the street.", "tags": ["Spicy", "Cheap"], "signatureMenu": "Tteokbokki" },
-    { "subName": "Samgyeopsal", "poiId": { "$oid": "poi_011" }, "spotName": "Seongsu BBQ Alley", "description": "Korean BBQ in a trendy industrial district.", "tags": ["BBQ", "Meat"], "signatureMenu": "Pork Belly" }
-]

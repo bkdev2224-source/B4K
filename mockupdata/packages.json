@@ -1,0 +1,138 @@
+[
+  {
+    "_id": { "$oid": "package_001" },
+    "name": "K-POP EXPERIENCE PREMIUM",
+    "duration": 15,
+    "concept": "K-POP 팬을 위한 완전 몰입형 K-POP 여행. 엔터 회사 사옥, 연습생·아이돌이 다니던 식당, K-POP 관련 거리·카페, 굿즈샵 등을 돌면서, 동시에 한국의 전통문화·야경·음식·자연까지 함께 경험하는 패키지.",
+    "cities": ["서울", "속초", "부산"],
+    "highlights": [
+      "HYBE 투어",
+      "BTS 관련 카페·스폿",
+      "COEX & 스타필드",
+      "KWANGYA (SM Town)",
+      "홍대 K-POP 스토어",
+      "속초 BTS In the Soop",
+      "부산 지민 아버지 카페"
+    ],
+    "includedServices": [
+      "왕복 항공권",
+      "인천공항 도착 맞이 서비스",
+      "공항 ↔ 호텔 픽업/샌딩",
+      "Exclusive Welcome Kit (T-money 교통카드 + 기본 여행용품 + K-POP 굿즈)",
+      "선택된 호텔 숙박",
+      "매일 조식",
+      "전 일정 현지 가이드 + 투어 어시스턴트",
+      "프로그램에 따른 전용 차량/내부 이동 수단",
+      "여행 기간 전체에 대한 풀 트래블 서포트"
+    ],
+    "itinerary": [
+      { "day": 1, "city": "서울", "activities": ["인천공항 도착", "호텔 체크인", "명동 가벼운 산책 및 저녁"] },
+      { "day": 2, "city": "서울", "activities": ["홍대(버스킹, K-POP 스토어)", "ATEEZ 연습생 시절 다니던 식당", "한강공원"] },
+      { "day": 3, "city": "서울", "activities": ["경복궁 + 한복 체험", "북촌한옥마을", "시청, 청계천", "인사동, 익선동"] },
+      { "day": 4, "city": "서울", "activities": ["싸이 동상", "스타필드·COEX", "SM Hands", "K-Star Road", "KWANGYA"] },
+      { "day": 5, "city": "서울", "activities": ["HYBE 투어", "BTS 관련 카페·스폿", "옛 빅히트 건물", "BTS가 연습생 시절 다니던 식당", "COEX 쇼핑"] },
+      { "day": 6, "city": "서울", "activities": ["DDP", "광장시장", "명동", "남산타워"] },
+      { "day": 7, "city": "서울", "activities": ["롯데월드(EXO 테마)", "롯데타워", "이태원"] },
+      { "day": 8, "city": "속초", "activities": ["BTS In the Soop 버스 정류장", "도깨비 촬영지", "해변 카페들"] },
+      { "day": 9, "city": "부산", "activities": ["KTX 또는 차량 이동", "해운대 해변"] },
+      { "day": 10, "city": "부산", "activities": ["감천문화마을", "지민 아버지 카페", "스카이 캡슐"] },
+      { "day": 11, "city": "부산", "activities": ["용궁사", "광안리 해변"] },
+      { "day": 12, "city": "서울", "activities": ["이태원 밤거리"] },
+      { "day": 13, "city": "서울", "activities": ["컴백 팝업", "테마 카페 방문 등 자유 일정"] },
+      { "day": 14, "city": "서울", "activities": ["엔터 회사 투어(옵션)", "비하인드 투어", "쇼핑"] },
+      { "day": 15, "city": "서울", "activities": ["인천공항 이동 후 출국"] }
+    ],
+    "category": "kpop",
+    "imageUrl": "https://picsum.photos/seed/package_001/800/400"
+  },
+  {
+    "_id": { "$oid": "package_002" },
+    "name": "K-DRAMA IMMERSION",
+    "duration": 15,
+    "concept": "K-드라마 팬을 위해 드라마 촬영지·명소·테마 카페를 중심으로, 역사·로맨스·현대물까지 다양한 분위기의 드라마 속 장소를 실제로 걸어보는 패키지.",
+    "cities": ["서울", "수원", "부산"],
+    "highlights": [
+      "여신강림(True Beauty) 스폿",
+      "이태원 클라쓰 촬영지",
+      "사극 촬영 세트장",
+      "DMZ 투어",
+      "남이섬",
+      "드라마 카페 투어"
+    ],
+    "includedServices": [
+      "왕복 항공권",
+      "인천공항 도착 맞이 서비스",
+      "공항 ↔ 호텔 픽업/샌딩",
+      "Exclusive Welcome Kit (T-money 교통카드 + 기본 여행용품 + K-DRAMA 굿즈)",
+      "선택된 호텔 숙박",
+      "매일 조식",
+      "전 일정 현지 가이드 + 투어 어시스턴트",
+      "프로그램에 따른 전용 차량/내부 이동 수단",
+      "여행 기간 전체에 대한 풀 트래블 서포트"
+    ],
+    "itinerary": [
+      { "day": 1, "city": "서울", "activities": ["인천 도착", "호텔 체크인", "명동 산책"] },
+      { "day": 2, "city": "서울", "activities": ["연세대학교", "여신강림 노래방", "홍대 거리 산책"] },
+      { "day": 3, "city": "서울", "activities": ["은평한옥마을 + 한옥 카페", "익선동, 인사동", "YN Animation", "한강"] },
+      { "day": 4, "city": "서울", "activities": ["시청, 궁 + 한복 체험", "북촌", "청계천"] },
+      { "day": 5, "city": "서울", "activities": ["해방촌", "남산 앞 다리", "단밤 포차", "이태원 밤거리"] },
+      { "day": 6, "city": "서울", "activities": ["세운상가 일대", "DDP", "낙산공원", "COEX", "강남"] },
+      { "day": 7, "city": "서울", "activities": ["롯데월드", "롯데타워", "롯데아쿠아리움"] },
+      { "day": 8, "city": "서울", "activities": ["남이섬 종일 투어"] },
+      { "day": 9, "city": "서울", "activities": ["장금이 공원 (사극 촬영 세트장)"] },
+      { "day": 10, "city": "서울", "activities": ["DMZ 투어 (가이드 동행 비무장지대 방문)"] },
+      { "day": 11, "city": "수원", "activities": ["중국식 정원(달의 연인 촬영지)", "화성행궁·팔달문", "장안문", "방화수류정", "러버 러너 촬영 카페"] },
+      { "day": 12, "city": "부산", "activities": ["호천마을(쌈, 마이웨이)", "해운대"] },
+      { "day": 13, "city": "부산", "activities": ["용궁사", "감천", "스카이 캡슐", "밤의 광안리"] },
+      { "day": 14, "city": "서울", "activities": ["쇼핑 중심 자유 일정"] },
+      { "day": 15, "city": "서울", "activities": ["인천공항 이동 후 출국"] }
+    ],
+    "category": "kdrama",
+    "imageUrl": "https://picsum.photos/seed/package_002/800/400"
+  },
+  {
+    "_id": { "$oid": "package_003" },
+    "name": "K-ALL ULTIMATE EXPERIENCE",
+    "duration": 11,
+    "concept": "K-POP, K-DRAMA, K-BEAUTY, K-FOOD를 한 번에 다 경험하는 올인원 패키지. 엔터 회사·드라마 촬영지·뷰티 쇼핑·스파·전통문화·먹거리까지 '요즘 한국'을 입체적으로 느낄 수 있도록 설계된 일정.",
+    "cities": ["서울", "수원"],
+    "highlights": [
+      "HYBE & SM HQ",
+      "KWANGYA",
+      "올리브영 프리미엄 매장",
+      "스킨케어 상담",
+      "찜질방 & 릴랙세이션",
+      "한국식 스킨케어 클리닉",
+      "남이섬",
+      "K-드라마 스폿"
+    ],
+    "includedServices": [
+      "왕복 항공권",
+      "인천공항 도착 맞이 서비스",
+      "공항 ↔ 호텔 픽업/샌딩",
+      "Exclusive Welcome Kit (T-money 교통카드 + 기본 여행용품 + K-POP/K-DRAMA 굿즈)",
+      "선택된 호텔 숙박",
+      "매일 조식",
+      "전 일정 현지 가이드 + 투어 어시스턴트",
+      "프로그램에 따른 전용 차량/내부 이동 수단",
+      "여행 기간 전체에 대한 풀 트래블 서포트",
+      "다양한 K-Experiences (뷰티 상담, 스파, 파트너 숍 방문 등)"
+    ],
+    "itinerary": [
+      { "day": 1, "city": "서울", "activities": ["도착", "명동 (길거리 음식, K-POP & K-뷰티 샵 탐방)"] },
+      { "day": 2, "city": "서울", "activities": ["HYBE", "아이돌 테마 카페(용산)", "SM HQ", "KWANGYA", "봉은사"] },
+      { "day": 3, "city": "서울", "activities": ["궁 + 한복 체험", "북촌", "익선동", "인사동", "청계천"] },
+      { "day": 4, "city": "서울", "activities": ["K-Star Road", "옛 HYBE 빌딩", "싸이 동상", "스타필드·COEX", "강남 일대"] },
+      { "day": 5, "city": "서울", "activities": ["올리브영 프리미엄 매장", "스킨케어 상담", "탬버린즈, 논픽션 등 뷰티 브랜드 매장"] },
+      { "day": 6, "city": "서울", "activities": ["찜질방 & 릴랙세이션", "한국식 스킨케어 클리닉"] },
+      { "day": 7, "city": "서울", "activities": ["남산타워", "한강"] },
+      { "day": 8, "city": "서울", "activities": ["광장시장", "DDP", "낙산공원", "밤에는 홍대(노래방 포함)"] },
+      { "day": 9, "city": "서울", "activities": ["해방촌", "다리", "단밤", "이태원 거리"] },
+      { "day": 10, "city": "서울", "activities": ["남이섬 데이투어"] },
+      { "day": 11, "city": "수원", "activities": ["중국식 정원", "팔달문", "수원 화성", "러버 러너 촬영 카페"] }
+    ],
+    "category": "all",
+    "imageUrl": "https://picsum.photos/seed/package_003/800/400"
+  }
+]
+

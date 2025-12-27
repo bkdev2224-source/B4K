@@ -1,7 +1,0 @@
-[
-    { "subName": "Sulwhasoo", "poiId": { "$oid": "poi_007" }, "spotName": "Bukchon Flagship Store", "description": "Luxury Hanok-style spa experience.", "tags": ["HighEnd", "Spa"], "mainTreatment": "Ginseng Facial" },
-    { "subName": "Olive Young", "poiId": { "$oid": "poi_005" }, "spotName": "Myeongdong Town", "description": "Biggest K-beauty store in Korea.", "tags": ["Skincare", "Makeup"], "mainTreatment": "Retail" },
-    { "subName": "AmorePacific", "poiId": { "$oid": "poi_021" }, "spotName": "Beauty Lounge", "description": "Experience all Amore brands in one place.", "tags": ["Museum", "Experience"], "mainTreatment": "Skin Diagnosis" },
-    { "subName": "Tamburins", "poiId": { "$oid": "poi_024" }, "spotName": "Haus Dosan", "description": "Trendy artistic fragrance store.", "tags": ["Perfume", "Jennie"], "mainTreatment": "Scent Test" },
-    { "subName": "3CE", "poiId": { "$oid": "poi_029" }, "spotName": "Cinema Store", "description": "Concept store with a vintage cinema theme.", "tags": ["Stylenanda", "Photogenic"], "mainTreatment": "Makeup" }
-]

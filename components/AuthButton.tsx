@@ -16,12 +16,12 @@ export default function AuthButton() {
           <img
             src={session.user.image}
             alt={session.user.name || "User"}
-            className="w-8 h-8 rounded-full"
+            className="w-8 h-8 rounded-full border-2 border-purple-400"
           />
         )}
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="px-4 py-2 bg-white text-black rounded-full hover:scale-105 transition-transform font-semibold text-sm"
+          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-400 hover:to-pink-400 hover:scale-105 transition-all font-semibold text-sm shadow-lg shadow-purple-500/30"
         >
           로그아웃
         </button>
@@ -32,7 +32,7 @@ export default function AuthButton() {
   return (
     <a
       href="/auth/signin"
-      className="px-6 py-2 bg-white text-black rounded-full hover:scale-105 transition-transform font-semibold text-sm"
+      className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-400 hover:to-pink-400 hover:scale-105 transition-all font-semibold text-sm shadow-lg shadow-purple-500/30"
     >
       로그인하기
     </a>

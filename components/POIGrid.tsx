@@ -28,10 +28,42 @@ export default function POIGrid({ pois }: POIGridProps) {
 
   // K-Contents 카테고리
   const kContentCategories = [
-    { key: 'kpop', label: 'K-Pop' },
-    { key: 'kbeauty', label: 'K-Beauty' },
-    { key: 'kfood', label: 'K-Food' },
-    { key: 'kfestival', label: 'K-Festival' },
+    { 
+      key: 'kpop', 
+      label: 'K-Pop',
+      icon: (
+        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+        </svg>
+      )
+    },
+    { 
+      key: 'kbeauty', 
+      label: 'K-Beauty',
+      icon: (
+        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+      )
+    },
+    { 
+      key: 'kfood', 
+      label: 'K-Food',
+      icon: (
+        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+        </svg>
+      )
+    },
+    { 
+      key: 'kfestival', 
+      label: 'K-Festival',
+      icon: (
+        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+        </svg>
+      )
+    },
   ]
 
   // 필터링된 POI
@@ -108,50 +140,31 @@ export default function POIGrid({ pois }: POIGridProps) {
       </div>
 
       {/* K-Contents 카테고리 필터 - 검색창 바로 아래 */}
-      <div className="mb-6 px-6">
-        <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto">
+      <div className="mb-8 px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {kContentCategories.map(category => {
             const isSelected = selectedKContents.includes(category.key)
             return (
               <button
                 key={category.key}
                 onClick={() => toggleKContent(category.key)}
-                className={`px-6 py-3 rounded-full text-base font-semibold transition-all ${
+                className={`relative aspect-square rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40 scale-105'
-                    : 'bg-purple-900/50 border-2 border-purple-500/40 text-purple-200 hover:border-purple-400/60 hover:bg-purple-900/70'
+                    ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-400 shadow-lg shadow-purple-500/30 scale-105'
+                    : 'bg-purple-900/40 border-2 border-purple-500/30 text-purple-200 hover:border-purple-400/50 hover:bg-purple-900/60'
                 }`}
               >
-                {category.label}
+                <div className={`mb-3 ${isSelected ? 'text-purple-300 drop-shadow-lg' : 'text-purple-400'}`}>
+                  {category.icon}
+                </div>
+                <span className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-purple-200'}`}>
+                  {category.label}
+                </span>
               </button>
             )
           })}
         </div>
       </div>
-
-      {/* 해시태그 필터 (5개만) */}
-      {allHashtags.length > 0 && (
-        <div className="mb-6 px-6">
-          <div className="flex flex-wrap gap-2 justify-center max-w-4xl mx-auto">
-            {allHashtags.map(hashtag => {
-              const isSelected = selectedHashtags.includes(hashtag)
-              return (
-                <button
-                  key={hashtag}
-                  onClick={() => toggleHashtag(hashtag)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
-                      : 'bg-purple-900/40 border border-purple-500/30 text-purple-200 hover:border-purple-400/50'
-                  }`}
-                >
-                  #{hashtag}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* POI 그리드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6">

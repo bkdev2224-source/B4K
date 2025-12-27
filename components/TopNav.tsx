@@ -1,42 +1,52 @@
 "use client"
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import AuthButton from './AuthButton'
 
 export default function TopNav() {
-  return (
-    <div className="bg-black bg-opacity-30 backdrop-blur-sm h-16 fixed top-0 left-64 right-0 z-40 flex items-center justify-between px-6">
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <button className="text-gray-400 hover:text-white">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button className="text-gray-400 hover:text-white">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-        <div className="relative flex-1">
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            type="text"
-            placeholder="어떤 콘텐츠를 감상하고 싶으세요?"
-            className="w-full bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
-          />
-        </div>
-      </div>
+  const pathname = usePathname()
+  
+  const tabs = [
+    { name: 'Package', href: '/package' },
+    { name: 'Maps', href: '/maps' },
+    { name: 'Contents', href: '/contents' },
+  ]
 
-      <div className="flex items-center gap-4">
-        <a href="#" className="text-white hover:underline text-sm">Premium 지원</a>
-        <a href="#" className="text-white hover:underline text-sm">다운로드하기</a>
-        <span className="text-gray-400">|</span>
-        <a href="#" className="text-white hover:underline text-sm">앱 설치하기</a>
-        <a href="#" className="text-white hover:underline text-sm">가입하기</a>
-        <AuthButton />
+  return (
+    <div className="bg-black bg-opacity-30 backdrop-blur-sm h-16 fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 border-b border-purple-500/20">
+      <Link
+        href="/"
+        className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-300 hover:to-pink-300 transition-colors cursor-pointer"
+      >
+        B-4K
+      </Link>
+
+      <div className="flex items-center gap-6">
+        <nav className="flex items-center gap-6">
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.href || 
+              (tab.href === '/' && pathname === '/') ||
+              (tab.href !== '/' && pathname?.startsWith(tab.href))
+            
+            return (
+              <Link
+                key={tab.name}
+                href={tab.href}
+                className={`text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'text-white border-b-2 border-purple-400 pb-1'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {tab.name}
+              </Link>
+            )
+          })}
+        </nav>
+        <div className="flex items-center gap-4">
+          <AuthButton />
+        </div>
       </div>
     </div>
   )

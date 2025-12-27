@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, useParams } from 'next/navigation'
-import AuthButton from '@/components/AuthButton'
+import TopNav from '@/components/TopNav'
 import { getPOIById, getKContentsByPOIId } from '@/lib/data'
 
 export default function POIDetailPage() {
@@ -15,13 +15,8 @@ export default function POIDetailPage() {
   if (!poi) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
-        <header className="sticky top-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-purple-500/20">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">B-4K</h1>
-            <AuthButton />
-          </div>
-        </header>
-        <main className="container mx-auto px-6 py-8 flex items-center justify-center min-h-screen">
+        <TopNav />
+        <main className="container mx-auto px-6 pt-24 pb-8 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white mb-4">장소를 찾을 수 없습니다</h1>
             <button
@@ -38,21 +33,8 @@ export default function POIDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
-      <header className="sticky top-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-purple-500/20">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <button
-            onClick={() => router.push('/')}
-            className="text-purple-300 hover:text-purple-200 transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            뒤로가기
-          </button>
-          <AuthButton />
-        </div>
-      </header>
-      <main className="min-h-screen">
+      <TopNav />
+      <main className="min-h-screen pt-16">
         {/* 배너 이미지 */}
         <div className="relative h-96">
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-purple-900/50 to-transparent z-10" />

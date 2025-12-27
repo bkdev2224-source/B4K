@@ -1,11 +1,11 @@
 "use client"
 
 import TopNav from '@/components/TopNav'
-import POIGrid from '@/components/POIGrid'
-import { getAllPOIs } from '@/lib/data'
+import PackageCarousel from '@/components/PackageCarousel'
+import { getAllPackages } from '@/lib/data'
 
-export default function Home() {
-  const allPOIs = getAllPOIs()
+export default function PackagePage() {
+  const allPackages = getAllPackages()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
@@ -13,10 +13,11 @@ export default function Home() {
 
       <main className="w-full pt-20 pb-8">        
         <div className="w-full">
-          {/* POI 그리드 */}
-          <POIGrid pois={allPOIs} />
+          {/* 패키지 추천 섹션 */}
+          <PackageCarousel packages={allPackages} />
         </div>
       </main>
     </div>
   )
 }
+

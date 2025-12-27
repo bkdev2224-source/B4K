@@ -1,11 +1,13 @@
 "use client"
 
 import AuthButton from '@/components/AuthButton'
+import PackageCarousel from '@/components/PackageCarousel'
 import POIGrid from '@/components/POIGrid'
-import { getAllPOIs } from '@/lib/data'
+import { getAllPOIs, getAllPackages } from '@/lib/data'
 
 export default function Home() {
   const allPOIs = getAllPOIs()
+  const allPackages = getAllPackages()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
@@ -16,13 +18,12 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="w-full py-8">
-        <div className="container mx-auto px-6 mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">K-Culture 탐색</h2>
-          <p className="text-purple-200">장소를 검색하고 카테고리로 필터링해보세요</p>
-        </div>
-        
+      <main className="w-full py-8">        
         <div className="w-full">
+          {/* 패키지 추천 섹션 */}
+          <PackageCarousel packages={allPackages} />
+          
+          {/* POI 그리드 */}
           <POIGrid pois={allPOIs} />
         </div>
       </main>

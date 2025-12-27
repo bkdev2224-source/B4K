@@ -1,5 +1,0 @@
-[
-    { "subName": "Fireworks", "poiId": { "$oid": "poi_020" }, "spotName": "Seoul Fireworks Festival", "description": "Grand international fireworks over Hangang.", "tags": ["NightView", "Autumn"], "eventPeriod": "October" },
-    { "subName": "Fashion Week", "poiId": { "$oid": "poi_009" }, "spotName": "DDP Fashion Week", "description": "See K-fashion trends and celebrities.", "tags": ["Fashion", "Stars"], "eventPeriod": "March / Sept" },
-    { "subName": "Lantern Festival", "poiId": { "$oid": "poi_013" }, "spotName": "Gyeongbokgung Night Tour", "description": "Traditional lanterns and palace night view.", "tags": ["NightView", "History"], "eventPeriod": "Seasonal" }
-  ]

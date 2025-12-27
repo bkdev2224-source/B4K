@@ -82,17 +82,17 @@ export default function POIGrid({ pois }: POIGridProps) {
   return (
     <div className="w-full">
       {/* 검색창 */}
-      <div className="mb-6 px-6">
-        <div className="relative max-w-2xl">
+      <div className="mb-4 px-6">
+        <div className="relative w-full max-w-4xl mx-auto">
           <input
             type="text"
-            placeholder="장소, 스팟, 해시태그로 검색..."
+            placeholder="FIND YOUR KOREA"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 pl-12 bg-purple-900/40 border border-purple-500/30 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-500/30 transition-all"
+            className="w-full px-6 py-4 pl-14 bg-purple-900/60 border-2 border-purple-500/40 rounded-2xl text-white text-lg placeholder-purple-300/60 focus:outline-none focus:border-purple-400/60 focus:ring-2 focus:ring-purple-500/40 transition-all shadow-lg"
           />
           <svg
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300"
+            className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-purple-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -107,19 +107,19 @@ export default function POIGrid({ pois }: POIGridProps) {
         </div>
       </div>
 
-      {/* K-Contents 카테고리 필터 */}
-      <div className="mb-4 px-6">
-        <div className="flex flex-wrap gap-2">
+      {/* K-Contents 카테고리 필터 - 검색창 바로 아래 */}
+      <div className="mb-6 px-6">
+        <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto">
           {kContentCategories.map(category => {
             const isSelected = selectedKContents.includes(category.key)
             return (
               <button
                 key={category.key}
                 onClick={() => toggleKContent(category.key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-6 py-3 rounded-full text-base font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
-                    : 'bg-purple-900/40 border border-purple-500/30 text-purple-200 hover:border-purple-400/50'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40 scale-105'
+                    : 'bg-purple-900/50 border-2 border-purple-500/40 text-purple-200 hover:border-purple-400/60 hover:bg-purple-900/70'
                 }`}
               >
                 {category.label}
@@ -130,26 +130,28 @@ export default function POIGrid({ pois }: POIGridProps) {
       </div>
 
       {/* 해시태그 필터 (5개만) */}
-      <div className="mb-6 px-6">
-        <div className="flex flex-wrap gap-2">
-          {allHashtags.map(hashtag => {
-            const isSelected = selectedHashtags.includes(hashtag)
-            return (
-              <button
-                key={hashtag}
-                onClick={() => toggleHashtag(hashtag)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
-                    : 'bg-purple-900/40 border border-purple-500/30 text-purple-200 hover:border-purple-400/50'
-                }`}
-              >
-                #{hashtag}
-              </button>
-            )
-          })}
+      {allHashtags.length > 0 && (
+        <div className="mb-6 px-6">
+          <div className="flex flex-wrap gap-2 justify-center max-w-4xl mx-auto">
+            {allHashtags.map(hashtag => {
+              const isSelected = selectedHashtags.includes(hashtag)
+              return (
+                <button
+                  key={hashtag}
+                  onClick={() => toggleHashtag(hashtag)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
+                      : 'bg-purple-900/40 border border-purple-500/30 text-purple-200 hover:border-purple-400/50'
+                  }`}
+                >
+                  #{hashtag}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* POI 그리드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6">

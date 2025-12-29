@@ -22,12 +22,13 @@ export default function Home() {
     setIsSearchFocused(true)
   }
 
-  const handleSearchBlur = () => {
-    // 검색어가 없을 때만 포커스 해제
-    if (!searchQuery) {
-      setIsSearchFocused(false)
-    }
-  }
+  // blur 이벤트 제거 - 명시적으로 홈 버튼이나 뒤로가기 버튼을 눌러야 홈으로 이동
+  // const handleSearchBlur = () => {
+  //   // 검색어가 없을 때만 포커스 해제
+  //   if (!searchQuery) {
+  //     setIsSearchFocused(false)
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
@@ -36,7 +37,10 @@ export default function Home() {
         searchQuery={searchQuery} 
         onSearchChange={setSearchQuery}
         onSearchFocus={handleSearchFocus}
-        onSearchBlur={handleSearchBlur}
+        onBackToHome={() => {
+          setIsSearchFocused(false)
+          setSearchQuery('')
+        }}
       />
 
       <main className={`pt-16 transition-all duration-300 ${
@@ -45,7 +49,16 @@ export default function Home() {
         {isSearchFocused || searchQuery ? (
           /* 검색 모드: POI 그리드 표시 */
           <div className="w-full pb-8">
-            <POIGrid pois={allPOIs} searchQuery={searchQuery} />
+            <POIGrid 
+              pois={allPOIs} 
+              searchQuery={searchQuery} 
+              isSearchFocused={isSearchFocused}
+              onSearchChange={setSearchQuery}
+              onBack={() => {
+                setIsSearchFocused(false)
+                setSearchQuery('')
+              }}
+            />
           </div>
         ) : (
           /* 일반 모드: 메인 페이지 콘텐츠 */

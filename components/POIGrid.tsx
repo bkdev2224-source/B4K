@@ -2,20 +2,97 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { POI, getAllKContents, getKContentsByPOIId, getContentCategory } from '@/lib/data'
 
 interface POIGridProps {
   pois: POI[]
   searchQuery?: string
+  isSearchFocused?: boolean
+  onSearchChange?: (query: string) => void
+  onBack?: () => void
 }
 
-export default function POIGrid({ pois, searchQuery: externalSearchQuery = '' }: POIGridProps) {
+export default function POIGrid({ pois, searchQuery: externalSearchQuery = '', isSearchFocused = false, onSearchChange, onBack }: POIGridProps) {
   const [internalSearchQuery, setInternalSearchQuery] = useState('')
   const searchQuery = externalSearchQuery || internalSearchQuery
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([])
   const [selectedKContents, setSelectedKContents] = useState<string[]>([])
+  const router = useRouter()
   
   const allKContents = getAllKContents()
+  
+  const handleBack = () => {
+    if (onBack) {
+      onBack()
+    } else {
+      // onBack이 없으면 브라우저 뒤로가기
+      router.back()
+    }
+  }
+  
+  // 카테고리 이름 매핑
+  const categoryMap: { [key: string]: string } = {
+    'k-pop': 'kpop',
+    'kpop': 'kpop',
+    'k-beauty': 'kbeauty',
+    'kbeauty': 'kbeauty',
+    'k-food': 'kfood',
+    'kfood': 'kfood',
+    'k-festival': 'kfestival',
+    'kfestival': 'kfestival',
+  }
+  
+  // 검색어에서 모든 카테고리 자동 감지 (다중 선택 지원)
+  const detectedCategories = useMemo(() => {
+    if (!searchQuery) return []
+    const lowerQuery = searchQuery.toLowerCase().trim()
+    const detected: string[] = []
+    for (const [key, value] of Object.entries(categoryMap)) {
+      if (lowerQuery.includes(key) && !detected.includes(value)) {
+        detected.push(value)
+      }
+    }
+    return detected
+  }, [searchQuery])
+  
+  // 검색어에서 카테고리 이름과 해시태그를 제거한 실제 검색어 추출
+  const actualSearchQuery = useMemo(() => {
+    if (!searchQuery) return ''
+    let cleaned = searchQuery
+    // 카테고리 이름 제거
+    for (const [key] of Object.entries(categoryMap)) {
+      const regex = new RegExp(`#?${key.replace('-', '[- ]?')}`, 'gi')
+      cleaned = cleaned.replace(regex, '')
+    }
+    // 해시태그 제거 (#로 시작하는 단어)
+    cleaned = cleaned.replace(/#\w+/g, '')
+    // 공백 정리
+    cleaned = cleaned.replace(/\s+/g, ' ').trim()
+    return cleaned
+  }, [searchQuery])
+  
+  // 검색어가 카테고리 이름이면 해당 카테고리 자동 선택
+  // 검색창이 포커스되어 있으면 필터 적용
+  // 다중 선택 가능하도록 수정
+  const effectiveSelectedKContents = useMemo(() => {
+    // 검색창이 포커스되지 않고 검색어도 없으면 필터 비활성화
+    if (!isSearchFocused && !searchQuery) {
+      return []
+    }
+    
+    // 선택된 카테고리 목록 생성 (다중 선택 지원)
+    let result = [...selectedKContents]
+    
+    // 검색어에서 감지된 모든 카테고리 추가 (중복 제거)
+    detectedCategories.forEach(category => {
+      if (!result.includes(category)) {
+        result.push(category)
+      }
+    })
+    
+    return result
+  }, [detectedCategories, selectedKContents, isSearchFocused, searchQuery])
   
   // 모든 해시태그 추출 (subName들) - 5개만
   const allHashtags = useMemo(() => {
@@ -71,13 +148,11 @@ export default function POIGrid({ pois, searchQuery: externalSearchQuery = '' }:
   // 필터링된 POI
   const filteredPois = useMemo(() => {
     return pois.filter(poi => {
-      // 검색어 필터
-      const matchesSearch = searchQuery === '' || 
-        poi.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        poi.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      // 검색어 필터 - subName 중심으로 검색 (실제 검색어가 있을 때만)
+      // 카테고리 이름이 포함된 경우는 카테고리 필터링으로 처리하므로 검색어 필터는 실제 검색어만 사용
+      const matchesSearch = actualSearchQuery === '' || 
         getKContentsByPOIId(poi._id.$oid).some(content => 
-          content.spotName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          content.subName.toLowerCase().includes(searchQuery.toLowerCase())
+          content.subName && content.subName.toLowerCase().includes(actualSearchQuery.toLowerCase())
         )
 
       // 해시태그 필터
@@ -86,16 +161,18 @@ export default function POIGrid({ pois, searchQuery: externalSearchQuery = '' }:
           selectedHashtags.includes(content.subName)
         )
 
-      // K-Contents 카테고리 필터
-      const matchesKContent = selectedKContents.length === 0 ||
+      // K-Contents 카테고리 필터 (다중 선택 지원)
+      // effectiveSelectedKContents가 비어있으면 모든 카테고리 표시
+      // 하나 이상 선택되어 있으면 선택된 카테고리 중 하나라도 포함된 POI만 표시
+      const matchesKContent = effectiveSelectedKContents.length === 0 ||
         getKContentsByPOIId(poi._id.$oid).some(content => {
           const category = getContentCategory(content)
-          return category && selectedKContents.includes(category)
+          return category && effectiveSelectedKContents.includes(category)
         })
 
       return matchesSearch && matchesHashtag && matchesKContent
     })
-  }, [pois, searchQuery, selectedHashtags, selectedKContents])
+  }, [pois, actualSearchQuery, selectedHashtags, effectiveSelectedKContents])
 
   const toggleHashtag = (hashtag: string) => {
     setSelectedHashtags(prev =>
@@ -106,24 +183,70 @@ export default function POIGrid({ pois, searchQuery: externalSearchQuery = '' }:
   }
 
   const toggleKContent = (category: string) => {
-    setSelectedKContents(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    )
+    const categoryLabels: { [key: string]: string } = {
+      'kpop': 'K-Pop',
+      'kbeauty': 'K-Beauty',
+      'kfood': 'K-Food',
+      'kfestival': 'K-Festival'
+    }
+    
+    const isCurrentlySelected = selectedKContents.includes(category)
+    const categoryTag = `#${categoryLabels[category]}`
+    
+    if (isCurrentlySelected) {
+      // 이미 선택된 경우 해제
+      setSelectedKContents(prev => prev.filter(c => c !== category))
+      // 검색창에서도 제거
+      if (onSearchChange) {
+        const updatedQuery = searchQuery
+          .replace(new RegExp(`\\s*${categoryTag}\\s*`, 'g'), ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+        onSearchChange(updatedQuery)
+      }
+    } else {
+      // 선택되지 않은 경우 추가
+      setSelectedKContents(prev => [...prev, category])
+      // 검색창에 추가
+      if (onSearchChange) {
+        const newQuery = searchQuery ? `${searchQuery} ${categoryTag}`.trim() : categoryTag
+        onSearchChange(newQuery)
+      }
+    }
   }
 
   return (
     <div className="w-full">
+      {/* 뒤로가기 버튼 - 검색 상태일 때만 표시 */}
+      {isSearchFocused && (
+        <div className="mb-4 px-6">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 px-4 py-2 text-purple-300 hover:text-white bg-purple-900/40 hover:bg-purple-900/60 border border-purple-500/30 hover:border-purple-400/50 rounded-lg transition-all"
+            aria-label="Go back"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm font-medium">뒤로가기</span>
+          </button>
+        </div>
+      )}
+      
       {/* K-Contents 카테고리 필터 */}
       <div className="mb-8 px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {kContentCategories.map(category => {
-            const isSelected = selectedKContents.includes(category.key)
+            const isSelected = effectiveSelectedKContents.includes(category.key)
             return (
               <button
                 key={category.key}
-                onClick={() => toggleKContent(category.key)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleKContent(category.key)
+                }}
+                type="button"
                 className={`relative aspect-square rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                   isSelected
                     ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-400 shadow-lg shadow-purple-500/30 scale-105'

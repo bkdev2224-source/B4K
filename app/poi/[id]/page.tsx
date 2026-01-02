@@ -21,7 +21,7 @@ export default function POIDetailPage() {
         <Sidebar />
         <TopNav />
         <main className={`pt-16 pb-8 flex items-center justify-center min-h-screen transition-all duration-300 ${
-          sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
+          sidebarOpen ? 'lg:ml-[12.75%] lg:w-[87.25%]' : 'lg:ml-[80px] lg:w-[calc(100%-80px)]'
         }`}>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white mb-4">장소를 찾을 수 없습니다</h1>

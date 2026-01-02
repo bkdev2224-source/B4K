@@ -16,7 +16,7 @@ export default function TopNav({ searchQuery = '', onSearchChange, onSearchFocus
   return (
     <>
       <div className={`bg-purple-900/40 backdrop-blur-sm h-16 fixed top-0 z-40 flex items-center gap-4 px-6 border-b border-purple-400/30 transition-all duration-300 ${
-        sidebarOpen ? 'lg:left-[17%] lg:right-0' : 'lg:left-20 lg:right-0'
+        sidebarOpen ? 'lg:left-[12.75%] lg:right-0' : 'lg:left-[80px] lg:right-0'
       }`}>
         {/* 즐겨찾기 버튼과 AuthButton - 맨 오른쪽 고정 */}
         <div className="flex items-center gap-3 ml-auto">

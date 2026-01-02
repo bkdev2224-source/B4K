@@ -41,7 +41,7 @@ export default function Sidebar() {
         />
       )}
       
-      <div className={`${sidebarOpen ? 'w-[17%]' : 'w-20'} bg-gradient-to-b from-purple-800/30 to-purple-900/30 backdrop-blur-sm border-r border-purple-400/30 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-gradient-to-b from-purple-800/30 to-purple-900/30 backdrop-blur-sm border-r border-purple-400/30 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
@@ -82,23 +82,40 @@ export default function Sidebar() {
         </nav>
 
         {/* 하단 버튼 - 항상 표시 */}
-        <div className="flex-shrink-0 p-4 border-t border-purple-400/30">
+        <div className="flex-shrink-0 px-4 pb-4 pt-2">
           <button
             onClick={toggleSidebar}
-            className={`w-full p-2 text-white hover:bg-purple-900/30 rounded-lg transition-colors flex items-center ${
-              sidebarOpen ? 'justify-start gap-2 px-4' : 'justify-center'
+            className={`w-full py-3 text-white rounded-lg flex items-center transition-all ${
+              sidebarOpen ? 'justify-end px-4' : 'justify-center'
             }`}
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             {sidebarOpen ? (
-              // 접기 버튼: <<< 아이콘 + "접기" 텍스트
+              // 접기 버튼: <<< 아이콘 (오른쪽 정렬)
               <>
-                <span className="text-lg font-bold">&lt;&lt;&lt;</span>
-                <span className="font-medium">접기</span>
+                <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+                <svg className="w-5 h-5 text-purple-300 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+                <svg className="w-5 h-5 text-purple-300 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
               </>
             ) : (
               // 펼치기 버튼: >>> 아이콘
-              <span className="text-lg font-bold">&gt;&gt;&gt;</span>
+              <>
+                <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-5 h-5 text-purple-300 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+                <svg className="w-5 h-5 text-purple-300 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </>
             )}
           </button>
         </div>

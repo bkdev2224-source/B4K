@@ -17,7 +17,7 @@ export default function MyPage() {
         <Sidebar />
         <TopNav />
         <main className={`pt-16 pb-8 px-6 transition-all duration-300 ${
-          sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
+          sidebarOpen ? 'lg:ml-[12.75%] lg:w-[87.25%]' : 'lg:ml-[80px] lg:w-[calc(100%-80px)]'
         }`}>
           <div className="container mx-auto">
             <p className="text-purple-300">로딩 중...</p>

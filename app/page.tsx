@@ -44,7 +44,7 @@ export default function Home() {
       />
 
       <main className={`pt-16 transition-all duration-300 ${
-        sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
+        sidebarOpen ? 'lg:ml-[12.75%] lg:w-[87.25%]' : 'lg:ml-[80px] lg:w-[calc(100%-80px)]'
       }`}>
         {isSearchFocused || searchQuery ? (
           /* 검색 모드: POI 그리드 표시 */

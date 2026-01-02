@@ -26,7 +26,8 @@ export default function TopNav({ searchQuery = '', onSearchChange, onSearchFocus
               // TODO: 즐겨찾기 페이지로 이동 또는 모달 열기
               console.log('즐겨찾기 클릭')
             }}
-            className="p-2 text-purple-600 hover:bg-purple-100 rounded-full transition-colors"
+            className="p-2 rounded-full transition-colors hover-primary"
+            style={{ color: '#62256e' }}
             aria-label="Favorites"
             title="즐겨찾기"
           >
@@ -57,10 +58,11 @@ export default function TopNav({ searchQuery = '', onSearchChange, onSearchFocus
             onFocus={() => {
               onSearchFocus?.()
             }}
-            className="w-full px-6 py-2 pl-12 bg-white border border-gray-200 rounded-full text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 shadow-sm hover:border-gray-300 transition-all"
+            className="w-full px-6 py-2 pl-12 rounded-full text-white text-sm placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-300/50 transition-all"
+            style={{ backgroundColor: '#62256e' }}
           />
             <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

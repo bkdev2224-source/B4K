@@ -41,26 +41,13 @@ export default function Sidebar() {
         />
       )}
       
-      <div className={`w-[17%] bg-gradient-to-b from-purple-800/30 to-purple-900/30 backdrop-blur-sm border-r border-purple-400/30 h-screen fixed left-0 top-0 overflow-y-auto z-40 transition-transform duration-300 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      <div className={`${sidebarOpen ? 'w-[17%]' : 'w-20'} bg-gradient-to-b from-purple-800/30 to-purple-900/30 backdrop-blur-sm border-r border-purple-400/30 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="p-6">
-          {/* 햄버거 버튼과 B-4K 홈 버튼 - 항상 렌더링하되 사이드바가 닫힐 때 투명하게 처리 */}
-          <div className={`mb-6 flex items-center gap-4 transition-opacity duration-300 ${
-            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}>
-            {/* 햄버거 버튼 */}
-            <button
-              onClick={toggleSidebar}
-              className="p-2 text-white hover:bg-purple-900/30 rounded-full transition-colors"
-              aria-label="Toggle sidebar"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            {/* B-4K 홈 버튼 */}
+        <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
+          {/* 상단 영역: B4K 홈 버튼 */}
+          <div className={`mb-6 flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'}`}>
+            {/* B4K 홈 버튼 */}
             <Link
               href="/"
               className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-300 hover:to-pink-300 transition-colors cursor-pointer"
@@ -68,29 +55,52 @@ export default function Sidebar() {
               B-4K
             </Link>
           </div>
+        </div>
 
-          <nav className="space-y-2">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || 
-                (item.href === '/' && pathname === '/') ||
-                (item.href !== '/' && pathname?.startsWith(item.href))
-              
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-white border-l-4 border-purple-400'
-                      : 'text-gray-400 hover:text-white hover:bg-purple-900/20'
-                  }`}
-                >
-                  {item.icon}
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              )
-            })}
-          </nav>
+        <nav className="flex-1 overflow-y-auto space-y-2 px-4">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || 
+              (item.href === '/' && pathname === '/') ||
+              (item.href !== '/' && pathname?.startsWith(item.href))
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
+                  isActive
+                    ? `bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-white ${sidebarOpen ? 'border-l-4 border-purple-400' : ''}`
+                    : 'text-gray-400 hover:text-white hover:bg-purple-900/20'
+                }`}
+                title={!sidebarOpen ? item.name : undefined}
+              >
+                {item.icon}
+                <span className={`font-medium transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{item.name}</span>
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* 하단 버튼 - 항상 표시 */}
+        <div className="flex-shrink-0 p-4 border-t border-purple-400/30">
+          <button
+            onClick={toggleSidebar}
+            className={`w-full p-2 text-white hover:bg-purple-900/30 rounded-lg transition-colors flex items-center ${
+              sidebarOpen ? 'justify-start gap-2 px-4' : 'justify-center'
+            }`}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            {sidebarOpen ? (
+              // 접기 버튼: <<< 아이콘 + "접기" 텍스트
+              <>
+                <span className="text-lg font-bold">&lt;&lt;&lt;</span>
+                <span className="font-medium">접기</span>
+              </>
+            ) : (
+              // 펼치기 버튼: >>> 아이콘
+              <span className="text-lg font-bold">&gt;&gt;&gt;</span>
+            )}
+          </button>
         </div>
       </div>
     </>

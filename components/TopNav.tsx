@@ -1,6 +1,5 @@
 "use client"
 
-import Link from 'next/link'
 import AuthButton from './AuthButton'
 import { useSidebar } from './SidebarContext'
 
@@ -12,45 +11,13 @@ interface TopNavProps {
 }
 
 export default function TopNav({ searchQuery = '', onSearchChange, onSearchFocus, onBackToHome }: TopNavProps) {
-  const { sidebarOpen, toggleSidebar } = useSidebar()
-  
-  const handleHomeClick = (e: React.MouseEvent) => {
-    if (onBackToHome) {
-      e.preventDefault()
-      onBackToHome()
-    }
-  }
+  const { sidebarOpen } = useSidebar()
 
   return (
     <>
       <div className={`bg-purple-900/40 backdrop-blur-sm h-16 fixed top-0 z-40 flex items-center gap-4 px-6 border-b border-purple-400/30 transition-all duration-300 ${
-        sidebarOpen ? 'left-[17%] right-0' : 'left-0 right-0'
+        sidebarOpen ? 'lg:left-[17%] lg:right-0' : 'lg:left-20 lg:right-0'
       }`}>
-        {/* 햄버거 버튼과 B-4K 홈 버튼 - 항상 표시 (사이드바가 열려있을 때는 투명하게 처리, 닫힐 때는 즉시 나타남) */}
-        <div className={`flex items-center gap-4 transition-opacity duration-200 ${
-          sidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}>
-          {/* 햄버거 버튼 - YouTube 스타일 (항상 세 개의 수평선) */}
-          <button
-            onClick={toggleSidebar}
-            className="p-2 text-white hover:bg-purple-900/30 rounded-full transition-colors"
-            aria-label="Toggle sidebar"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          {/* B-4K 홈 버튼 */}
-          <Link
-            href="/"
-            onClick={handleHomeClick}
-            className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-300 hover:to-pink-300 transition-colors cursor-pointer"
-          >
-            B-4K
-          </Link>
-        </div>
-
         {/* 즐겨찾기 버튼과 AuthButton - 맨 오른쪽 고정 */}
         <div className="flex items-center gap-3 ml-auto">
           {/* 즐겨찾기 버튼 */}

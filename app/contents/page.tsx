@@ -27,7 +27,7 @@ export default function ContentsPage() {
       />
 
       <main className={`pt-16 pb-8 transition-all duration-300 ${
-        sidebarOpen ? 'ml-[17%] w-[83%]' : 'ml-0 w-full'
+        sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
       }`}>
         {isSearchFocused || searchQuery ? (
           /* 검색 모드: POI 그리드 표시 */

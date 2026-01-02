@@ -21,7 +21,7 @@ export default function POIDetailPage() {
         <Sidebar />
         <TopNav />
         <main className={`pt-16 pb-8 flex items-center justify-center min-h-screen transition-all duration-300 ${
-          sidebarOpen ? 'ml-[17%] w-[83%]' : 'ml-0 w-full'
+          sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
         }`}>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white mb-4">장소를 찾을 수 없습니다</h1>
@@ -42,7 +42,7 @@ export default function POIDetailPage() {
       <Sidebar />
       <TopNav />
       <main className={`min-h-screen pt-16 transition-all duration-300 ${
-        sidebarOpen ? 'ml-[17%] w-[83%]' : 'ml-0 w-full'
+        sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
       }`}>
         {/* 배너 이미지 */}
         <div className="relative h-96">

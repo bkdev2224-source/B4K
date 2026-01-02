@@ -17,7 +17,7 @@ export default function MyPage() {
         <Sidebar />
         <TopNav />
         <main className={`pt-16 pb-8 px-6 transition-all duration-300 ${
-          sidebarOpen ? 'ml-[17%] w-[83%]' : 'ml-0 w-full'
+          sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
         }`}>
           <div className="container mx-auto">
             <p className="text-purple-300">로딩 중...</p>
@@ -38,7 +38,7 @@ export default function MyPage() {
       <TopNav />
 
       <main className={`pt-16 pb-8 px-6 transition-all duration-300 ${
-        sidebarOpen ? 'ml-[17%] w-[83%]' : 'ml-0 w-full'
+        sidebarOpen ? 'lg:ml-[17%] lg:w-[83%]' : 'lg:ml-20 lg:w-[calc(100%-5rem)]'
       }`}>
         <div className="container mx-auto max-w-4xl">
           <h1 className="text-3xl font-bold text-white mb-8">MyPage</h1>

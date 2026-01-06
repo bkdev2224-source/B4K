@@ -64,7 +64,7 @@ export default function PageLayout({
         topNavClasses={layout.topNavClasses}
       />
 
-      <main className={`pt-16 transition-all duration-300 ${layout.mainClasses} ${className}`}>
+      <main className={`pt-16 transition-all duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}>
         {search.isSearchMode ? (
           searchModeContent || defaultSearchContent
         ) : (

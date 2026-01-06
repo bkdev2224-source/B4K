@@ -46,20 +46,23 @@ export function useLayout(options: UseLayoutOptions = {}) {
     
     // For routes pages with 'routes' width
     if (isRoutesPage && sidePanelWidth === 'routes') {
-      return hasRoute ? 'routes' : 'none'
+      // Maps page exception: show route panel as an overlay (do NOT shrink map/main)
+      return 'none'
     }
     
-    // For fixed panels (default), only show if sidebar is open
+    // For fixed panels (default), only show on pages that actually have a panel
     if (sidePanelWidth === 'default') {
-      return sidebarOpen ? 'default' : 'none'
+      const supportsDefaultPanel =
+        pathname === '/' || pathname === '/contents' || pathname?.startsWith('/contents')
+      return sidebarOpen && supportsDefaultPanel ? 'default' : 'none'
     }
     
     return sidePanelWidth
-  }, [isSearchMode, showSidePanel, sidePanelWidth, isRoutesPage, hasRoute, sidebarOpen])
+  }, [isSearchMode, showSidePanel, sidePanelWidth, isRoutesPage, hasRoute, sidebarOpen, pathname])
 
   // Determine side panel type
   const sidePanelType = useMemo(() => {
-    if (isSearchMode || effectiveSidePanelWidth === 'none') return null
+    if (isSearchMode) return null
     
     // For routes pages
     if (isRoutesPage && sidePanelWidth === 'routes' && hasRoute) {
@@ -73,7 +76,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
     }
     
     return null
-  }, [isSearchMode, effectiveSidePanelWidth, isRoutesPage, sidePanelWidth, hasRoute, sidebarOpen, pathname])
+  }, [isSearchMode, isRoutesPage, sidePanelWidth, hasRoute, sidebarOpen, pathname])
 
   // Calculate main content classes
   const mainClasses = useMemo(() => {
@@ -91,8 +94,12 @@ export function useLayout(options: UseLayoutOptions = {}) {
     })
   }, [sidebarOpen, effectiveSidePanelWidth])
 
-  // Side panel visibility
-  const showSidePanelVisible = effectiveSidePanelWidth !== 'none' && sidePanelType !== null
+  // Side panel visibility (routes panel overlays on maps page even when effective width is 'none')
+  const showSidePanelVisible =
+    !!showSidePanel &&
+    !isSearchMode &&
+    sidePanelType !== null &&
+    (sidePanelType !== 'route' ? effectiveSidePanelWidth !== 'none' : true)
 
   // Get display route for side panel
   const displayRoute = selectedRoute || routeFromUrl || null

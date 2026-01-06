@@ -8,7 +8,7 @@ import TMap from '@/components/TMap'
 
 export default function MapsPage() {
   const allRoutes = getAllRoutes()
-  const { selectedRoute } = useRoute()
+  const { selectedRoute, setSelectedRoute } = useRoute()
 
   // Calculate map center: use selected route center if available, otherwise use first route or default
   const mapCenter = useMemo(() => {
@@ -32,11 +32,25 @@ export default function MapsPage() {
 
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="routes">
-      <div className="h-[calc(100vh-4rem)] w-full bg-gray-100 relative">
-        <TMap
-          center={mapCenter}
-          zoom={mapZoom}
-        />
+      {/* Map-only exception: map is a fixed background layer; sidebar/sidepanel overlay on top. */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <TMap center={mapCenter} zoom={mapZoom} />
+
+        {/* Map-only: Side panel overlay toggle button for testing */}
+        <button
+          type="button"
+          onClick={() => {
+            if (selectedRoute) {
+              setSelectedRoute(null)
+            } else {
+              setSelectedRoute(allRoutes[0] ?? null)
+            }
+          }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-5 py-3 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-lg hover:bg-white transition-colors text-sm font-semibold"
+          style={{ color: '#62256e' }}
+        >
+          사이드 패널 추가
+        </button>
       </div>
     </PageLayout>
   )

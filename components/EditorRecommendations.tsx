@@ -68,17 +68,16 @@ export default function EditorRecommendations() {
       <div className="px-6">
         {/* Title section - centered with border lines */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500 to-cyan-500"></div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 px-8">
+          <div className="flex items-center gap-4 mb-4 justify-start pl-2">
+            <div className="w-10 h-px bg-cyan-500"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
               B4K Recommended Experiences
             </h2>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-cyan-500 to-cyan-500"></div>
+            <div className="flex-1 h-px bg-gradient-to-r from-cyan-500 to-transparent"></div>
           </div>
-          <p className="text-gray-600 text-lg md:text-xl">Editor Recommended Travel</p>
-          <div className="flex justify-center mt-6">
-            <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors px-4 py-2 rounded-lg hover:bg-cyan-50">
-              View All →
+          <div className="flex justify-end mt-2 pr-2">
+            <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+              Show All
             </button>
           </div>
         </div>

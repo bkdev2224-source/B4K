@@ -224,8 +224,113 @@ export default function TopNav({
   return (
     <>
       <div className={`h-16 fixed top-0 z-40 flex items-center gap-4 px-6 transition-all duration-300 ${navClasses}`}>
-        {/* Favorites button and AuthButton - fixed to the right */}
-        <div className="flex items-center gap-3 ml-auto">
+        {/* Search, Favorites, Auth - aligned to the right */}
+        <div className="flex items-center gap-3 ml-auto" ref={searchRef}>
+          {/* Search box */}
+          <div className="relative w-[360px]">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="FIND YOUR KOREA"
+              value={searchQuery}
+              onChange={(e) => {
+                const newValue = e.target.value
+                onSearchChange?.(newValue)
+                setSelectedIndex(-1)
+                // 검색어를 입력할 때 포커스 유지 (드롭다운 표시)
+                if (!isFocused) {
+                  setIsFocused(true)
+                }
+                // 검색어를 지워도 SearchContext는 유지 (사이드 패널 유지)
+              }}
+              onFocus={handleFocus}
+              className="w-full px-6 py-2 pl-12 rounded-full text-white text-sm placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-300/50 transition-all"
+              style={{ backgroundColor: '#62256e' }}
+            />
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+
+            {/* 검색어 드롭다운 패널 */}
+            {isFocused && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                {/* 관련 검색어 */}
+                {searchQuery.trim() && relatedSearches.length > 0 && (
+                  <div className="p-4 border-b border-gray-100">
+                    <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                      Related Searches
+                    </div>
+                    <div className="space-y-1">
+                      {relatedSearches.map((result, index) => {
+                        const globalIndex = index
+                        const isSelected = selectedIndex === globalIndex
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleSearchClick(result)}
+                            className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                              isSelected 
+                                ? 'bg-purple-100 text-purple-700' 
+                                : 'text-gray-700 hover:bg-purple-50'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                              {result.name}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 추천 검색어 */}
+                <div className="p-4">
+                  <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                    Recommended Searches
+                  </div>
+                  <div className="space-y-1">
+                    {recommendedResults.map((result, index) => {
+                      const globalIndex = relatedSearches.length + index
+                      const isSelected = selectedIndex === globalIndex
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleSearchClick(result)}
+                          className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                            isSelected 
+                              ? 'bg-purple-100 text-purple-700' 
+                              : 'text-gray-700 hover:bg-purple-50'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            {result.name}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Favorites button */}
           <button
             onClick={() => {
@@ -248,113 +353,6 @@ export default function TopNav({
           </button>
           
           <AuthButton />
-        </div>
-      </div>
-      
-      {/* Search box - fixed to center of screen (not affected by sidebar) - always visible */}
-      <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 w-full max-w-[470px] pointer-events-none" ref={searchRef}>
-        <div className="relative pointer-events-auto">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="FIND YOUR KOREA"
-            value={searchQuery}
-            onChange={(e) => {
-              const newValue = e.target.value
-              onSearchChange?.(newValue)
-              setSelectedIndex(-1)
-              // 검색어를 입력할 때 포커스 유지 (드롭다운 표시)
-              if (!isFocused) {
-                setIsFocused(true)
-              }
-              // 검색어를 지워도 SearchContext는 유지 (사이드 패널 유지)
-            }}
-            onFocus={handleFocus}
-            className="w-full px-6 py-2 pl-12 rounded-full text-white text-sm placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-300/50 transition-all"
-            style={{ backgroundColor: '#62256e' }}
-          />
-          <svg
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          
-          {/* 검색어 드롭다운 패널 */}
-          {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-              {/* 관련 검색어 */}
-              {searchQuery.trim() && relatedSearches.length > 0 && (
-                <div className="p-4 border-b border-gray-100">
-                  <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                    Related Searches
-                  </div>
-                  <div className="space-y-1">
-                    {relatedSearches.map((result, index) => {
-                      const globalIndex = index
-                      const isSelected = selectedIndex === globalIndex
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => handleSearchClick(result)}
-                          className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                            isSelected 
-                              ? 'bg-purple-100 text-purple-700' 
-                              : 'text-gray-700 hover:bg-purple-50'
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            {result.name}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {/* 추천 검색어 */}
-              <div className="p-4">
-                <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                  Recommended Searches
-                </div>
-                <div className="space-y-1">
-                  {recommendedResults.map((result, index) => {
-                    const globalIndex = relatedSearches.length + index
-                    const isSelected = selectedIndex === globalIndex
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleSearchClick(result)}
-                        className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                          isSelected 
-                            ? 'bg-purple-100 text-purple-700' 
-                            : 'text-gray-700 hover:bg-purple-50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          {result.name}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>

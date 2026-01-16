@@ -66,19 +66,18 @@ export default function SeoulExploration() {
   return (
     <section id="seoul-exploration" className="w-full py-16 bg-white">
       <div className="px-6">
-        {/* Title section - centered with border lines */}
+        {/* Title section - left aligned */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-pink-500 to-pink-500"></div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 px-8">
+          <div className="flex items-center gap-4 mb-4 justify-start pl-2">
+            <div className="w-10 h-px bg-pink-500"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
               Explore Seoul
             </h2>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-pink-500 to-pink-500"></div>
+            <div className="flex-1 h-px bg-gradient-to-r from-pink-500 to-transparent"></div>
           </div>
-          <p className="text-gray-600 text-lg md:text-xl">Discover the diverse areas of Seoul</p>
-          <div className="flex justify-center mt-6">
-            <button className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors px-4 py-2 rounded-lg hover:bg-pink-50">
-              View All →
+          <div className="flex justify-end mt-2 pr-2">
+            <button className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors">
+              Show All
             </button>
           </div>
         </div>

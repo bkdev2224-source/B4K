@@ -35,10 +35,10 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   // Contents categories
   const contentCategories: SidePanelItem[] = [
-    { id: 'kpop', name: 'K-Pop', href: '/contents?category=kpop' },
-    { id: 'kbeauty', name: 'K-Beauty', href: '/contents?category=kbeauty' },
-    { id: 'kfood', name: 'K-Food', href: '/contents?category=kfood' },
-    { id: 'kfestival', name: 'K-Festival', href: '/contents?category=kfestival' },
+    { id: 'kpop', name: 'Kpop', href: '/contents#kpop' },
+    { id: 'kbeauty', name: 'Kbeauty', href: '/contents#kbeauty' },
+    { id: 'kfood', name: 'Kfood', href: '/contents#kfood' },
+    { id: 'kfestival', name: 'Kfestival', href: '/contents#kfestival' },
   ]
 
   // Render route details

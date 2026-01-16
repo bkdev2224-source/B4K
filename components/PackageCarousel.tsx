@@ -46,9 +46,6 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
         <h2 className="text-2xl font-bold text-white hover:text-purple-300 cursor-pointer transition-colors">
           Recommended Packages
         </h2>
-        <button className="text-sm text-purple-300 hover:text-purple-200 font-medium transition-colors">
-          Show All
-        </button>
       </div>
 
       <div className="relative">

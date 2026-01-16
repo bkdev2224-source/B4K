@@ -73,19 +73,18 @@ export default function SeasonalRecommendations() {
   return (
     <section id="seasonal-recommendations" className="w-full py-16 bg-white">
       <div className="px-6">
-        {/* Title section - centered with border lines */}
+        {/* Title section */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-emerald-500 to-emerald-500"></div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 px-8">
+          <div className="flex items-center gap-4 mb-4 justify-start pl-2">
+            <div className="w-10 h-px bg-emerald-500"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
               Seasonal Travel Recommendations
             </h2>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-emerald-500 to-emerald-500"></div>
+            <div className="flex-1 h-px bg-gradient-to-r from-emerald-500 to-transparent"></div>
           </div>
-          <p className="text-gray-600 text-lg md:text-xl">Discover Seoul's charm for each season</p>
-          <div className="flex justify-center mt-6">
-            <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors px-4 py-2 rounded-lg hover:bg-emerald-50">
-              View All →
+          <div className="flex justify-end mt-2 pr-2">
+            <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+              Show All
             </button>
           </div>
         </div>

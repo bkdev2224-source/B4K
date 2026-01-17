@@ -15,15 +15,15 @@ import { getAllPOIs, getPOIById, getKContentsBySubName } from '@/lib/data'
 export default function MapsPage() {
   const allRoutes = getAllRoutes()
   const { selectedRoute, setSelectedRoute } = useRoute()
-  const { searchResult, showRoute: contextShowRoute } = useSearchResult()
+  const { searchResult, showMapRoute: contextShowMapRoute } = useSearchResult()
   const { cartItems } = useCart()
   const { sidebarOpen } = useSidebar()
   const layout = useLayout({ showSidePanel: true, sidePanelWidth: 'routes' })
   const allPOIs = getAllPOIs()
 
-  // Automatically show route when cart has 2+ POIs and no search result
+  // Automatically show map route when cart has 2+ POIs and no search result
   const poiCartItems = cartItems.filter(item => item.type === 'poi')
-  const showRoute = !searchResult && poiCartItems.length >= 2 ? true : contextShowRoute
+  const showMapRoute = !searchResult && poiCartItems.length >= 2 ? true : contextShowMapRoute
 
   // Calculate cart container position to center it in map area
   // If side panel exists, align from side panel's right edge
@@ -160,7 +160,7 @@ export default function MapsPage() {
     <PageLayout showSidePanel={true} sidePanelWidth="routes">
       {/* Map-only exception: map is a fixed background layer; sidebar/sidepanel overlay on top. */}
       <div className="fixed inset-0 z-0 overflow-hidden">
-        <TMap center={mapCenter} zoom={mapZoom} pois={displayPOIs} cartOrderMap={cartOrderMap} hasSearchResult={!!searchResult} showRoute={showRoute} />
+        <TMap center={mapCenter} zoom={mapZoom} pois={displayPOIs} cartOrderMap={cartOrderMap} hasSearchResult={!!searchResult} showMapRoute={showMapRoute} />
 
         {/* Bottom POI List - always show when cart has items (even when search result is shown) */}
         {/* Cart should only appear in map area, centered horizontally */}

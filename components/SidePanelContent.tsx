@@ -22,7 +22,7 @@ interface SidePanelContentProps {
 
 export function SidePanelContent({ type, route, routeId }: SidePanelContentProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'reviews' | 'photos' | 'info'>('home')
-  const { searchResult, setSearchResult, showRoute, setShowRoute } = useSearchResult()
+  const { searchResult, setSearchResult, showMapRoute, setShowMapRoute } = useSearchResult()
   const { cartItems, addToCart, removeFromCart, isInCart } = useCart()
 
   // Home page section list

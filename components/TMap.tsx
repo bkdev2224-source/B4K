@@ -10,7 +10,7 @@ interface TMapProps {
   pois?: POI[]
   cartOrderMap?: Map<string, number> // POI ID -> cart order number
   hasSearchResult?: boolean // Whether there's an active search result
-  showRoute?: boolean // Whether to show route lines connecting cart items
+  showMapRoute?: boolean // Whether to show map route lines connecting cart items
 }
 
 declare global {
@@ -42,7 +42,7 @@ declare global {
   }
 }
 
-export default function TMap({ center, zoom = 16, pois = [], cartOrderMap = new Map(), hasSearchResult = false, showRoute = false }: TMapProps) {
+export default function TMap({ center, zoom = 16, pois = [], cartOrderMap = new Map(), hasSearchResult = false, showMapRoute = false }: TMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<any[]>([])
@@ -450,10 +450,10 @@ export default function TMap({ center, zoom = 16, pois = [], cartOrderMap = new 
     }
   }, [zoom, isReady])
 
-  // Draw route line connecting cart items in order
+  // Draw map route line connecting cart items in order
   useEffect(() => {
-    if (!isReady || !mapInstanceRef.current || !window.Tmapv3 || !showRoute || hasSearchResult) {
-      // Clear polyline if route should not be shown
+    if (!isReady || !mapInstanceRef.current || !window.Tmapv3 || !showMapRoute || hasSearchResult) {
+      // Clear polyline if map route should not be shown
       if (polylineRef.current) {
         try {
           polylineRef.current.setMap(null)
@@ -529,7 +529,7 @@ export default function TMap({ center, zoom = 16, pois = [], cartOrderMap = new 
         })
       }
     } catch (error) {
-      console.error('Error drawing route:', error)
+      console.error('Error drawing map route:', error)
     }
 
     return () => {
@@ -542,7 +542,7 @@ export default function TMap({ center, zoom = 16, pois = [], cartOrderMap = new 
         polylineRef.current = null
       }
     }
-  }, [isReady, showRoute, hasSearchResult, pois, cartOrderMap])
+  }, [isReady, showMapRoute, hasSearchResult, pois, cartOrderMap])
 
   // Don't render until mounted (prevents hydration mismatch)
   if (!isMounted || (!isReady && !loadError)) {

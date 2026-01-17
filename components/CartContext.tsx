@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 export interface CartItem {
   id: string
@@ -20,8 +20,51 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+const CART_STORAGE_KEY = 'b4k_cart_items'
+
+// Load cart items from localStorage
+function loadCartFromStorage(): CartItem[] {
+  if (typeof window === 'undefined') return []
+  
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored) as CartItem[]
+    }
+  } catch (error) {
+    console.error('Failed to load cart from localStorage:', error)
+  }
+  return []
+}
+
+// Save cart items to localStorage
+function saveCartToStorage(items: CartItem[]) {
+  if (typeof window === 'undefined') return
+  
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+  } catch (error) {
+    console.error('Failed to save cart to localStorage:', error)
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const loadedItems = loadCartFromStorage()
+    setCartItems(loadedItems)
+    setIsInitialized(true)
+  }, [])
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (isInitialized) {
+      saveCartToStorage(cartItems)
+    }
+  }, [cartItems, isInitialized])
 
   const addToCart = (item: CartItem) => {
     setCartItems((prev) => {

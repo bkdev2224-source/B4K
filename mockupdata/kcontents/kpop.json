@@ -1,5 +1,5 @@
 [
-  { "subName": "PSY", "poiId": { "$oid": "poi_001" }, "spotName": "Gangnam Style Statue", "description": "The giant hands statue from Gangnam Style music video. A must-visit photo spot for K-pop fans.", "tags": ["PhotoZone", "GangnamStyle"], "popularity": 5 },
+  { "subName": "PSY", "poiId": { "$oid": "poi_101" }, "spotName": "Gangnam Style Statue", "description": "The giant hands statue from Gangnam Style music video. A must-visit photo spot for K-pop fans.", "tags": ["PhotoZone", "GangnamStyle"], "popularity": 5 },
   { "subName": "aespa", "poiId": { "$oid": "poi_010" }, "spotName": "Kwangya@Seoul", "description": "SM Ent. flagship and virtual experience center featuring aespa's metaverse concept.", "tags": ["Merch", "Experience"], "popularity": 4 },
   { "subName": "BTS", "poiId": { "$oid": "poi_003" }, "spotName": "HYBE Insight Exhibition", "description": "Official museum for BTS and HYBE artists. Interactive exhibits and exclusive content.", "tags": ["Army", "Exhibition"], "popularity": 5 },
   { "subName": "NCT", "poiId": { "$oid": "poi_010" }, "spotName": "NCT Dream Concept Zone", "description": "Seasonal NCT-themed interactive space with exclusive merchandise and photo opportunities.", "tags": ["NCTzen", "Interactive"], "popularity": 4 },
@@ -27,5 +27,9 @@
   { "subName": "TREASURE", "poiId": { "$oid": "poi_054" }, "spotName": "World Cup Stadium Concert Venue", "description": "Venue where TREASURE and other K-pop groups hold large-scale concerts.", "tags": ["TREASURE MAKER", "Concert"], "popularity": 5 },
   { "subName": "Dreamcatcher", "poiId": { "$oid": "poi_054" }, "spotName": "K-Pop Concert Hall", "description": "Concert hall hosting Dreamcatcher and various idol group performances.", "tags": ["InSomnia", "Concert"], "popularity": 4 },
   { "subName": "STAYC", "poiId": { "$oid": "poi_071" }, "spotName": "Lotte World STAYC Theme Ride", "description": "Special STAYC-themed ride and photo zones within Lotte World Adventure.", "tags": ["SWITH", "Theme Park"], "popularity": 4 },
-  { "subName": "(G)I-DLE", "poiId": { "$oid": "poi_055" }, "spotName": "Hongdae (G)I-DLE Busking Spot", "description": "Popular busking location where (G)I-DLE and other idols perform street shows.", "tags": ["NEVERLAND", "Busking"], "popularity": 5 }
+  { "subName": "(G)I-DLE", "poiId": { "$oid": "poi_055" }, "spotName": "Hongdae (G)I-DLE Busking Spot", "description": "Popular busking location where (G)I-DLE and other idols perform street shows.", "tags": ["NEVERLAND", "Busking"], "popularity": 5 },
+  { "subName": "BTS", "poiId": { "$oid": "poi_102" }, "spotName": "BTS Cafe (Yongsan)", "description": "Fan-favorite cafe near HYBE with BTS-themed drinks and merchandise.", "tags": ["Army", "Cafe"], "popularity": 4 },
+  { "subName": "BTS", "poiId": { "$oid": "poi_103" }, "spotName": "Old HYBE Building", "description": "Historic HYBE building where BTS and other artists worked during early years.", "tags": ["Army", "History"], "popularity": 4 },
+  { "subName": "BTS", "poiId": { "$oid": "poi_104" }, "spotName": "BTS In the Soop Bus Stop", "description": "Iconic bus stop featured in BTS content, a must-visit fan photo spot in Sokcho.", "tags": ["Army", "PhotoZone"], "popularity": 5 },
+  { "subName": "BTS", "poiId": { "$oid": "poi_107" }, "spotName": "Jimin's Father Cafe", "description": "Popular cafe associated with BTS member Jimin in Busan.", "tags": ["Army", "Cafe"], "popularity": 4 }
 ]

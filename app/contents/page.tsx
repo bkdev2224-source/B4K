@@ -1,5 +1,3 @@
-"use client"
-
 import Link from 'next/link'
 import PageLayout from '@/components/PageLayout'
 import { getKContentsByCategory, getPOIById, KContent } from '@/lib/data'
@@ -90,8 +88,7 @@ const categorySections = [
   }
 ]
 
-function ContentCard({ content, accent }: { content: KContent; accent: AccentKey }) {
-  const contentPoi = getPOIById(content.poiId.$oid)
+function ContentCard({ content, accent, poi }: { content: KContent; accent: AccentKey; poi?: { name: string } }) {
   const accentStyle = accentClasses[accent]
 
   return (
@@ -120,9 +117,9 @@ function ContentCard({ content, accent }: { content: KContent; accent: AccentKey
           <p className="text-gray-600 text-sm line-clamp-2 mb-3">
             {content.description}
           </p>
-          {contentPoi && (
+          {poi && (
             <p className={`${accentStyle.text} text-xs mb-3`}>
-              📍 {contentPoi.name}
+              📍 {poi.name}
             </p>
           )}
           {content.tags && content.tags.length > 0 && (
@@ -143,12 +140,12 @@ function ContentCard({ content, accent }: { content: KContent; accent: AccentKey
   )
 }
 
-export default function ContentsPage() {
+export default async function ContentsPage() {
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="default">
-      {categorySections.map((section) => {
+      {await Promise.all(categorySections.map(async (section) => {
         const accentStyle = accentClasses[section.accent]
-        const contents = getKContentsByCategory(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival')
+        const contents = await getKContentsByCategory(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival')
         const previewItems = contents.slice(0, 6)
 
         return (
@@ -173,14 +170,22 @@ export default function ContentsPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {previewItems.map((content, index) => (
-                  <ContentCard key={`${section.id}-${index}`} content={content} accent={section.accent} />
-                ))}
+                {await Promise.all(previewItems.map(async (content, index) => {
+                  const poi = await getPOIById(content.poiId.$oid)
+                  return (
+                    <ContentCard 
+                      key={`${section.id}-${index}`} 
+                      content={content} 
+                      accent={section.accent}
+                      poi={poi}
+                    />
+                  )
+                }))}
               </div>
             </div>
           </section>
         )
-      })}
+      }))}
     </PageLayout>
   )
 }

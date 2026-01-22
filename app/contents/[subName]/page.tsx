@@ -2,7 +2,8 @@
 
 import { useRouter, useParams } from 'next/navigation'
 import PageLayout from '@/components/PageLayout'
-import { getKContentsBySubName, getPOIById, getContentCategory, KContent } from '@/lib/data'
+import { getPOIById, getContentCategory, KContent } from '@/lib/data'
+import { useKContentsBySubName } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/SearchContext'
 import Link from 'next/link'
 
@@ -12,7 +13,7 @@ export default function ContentDetailPage() {
   const { setSearchResult } = useSearchResult()
   const subName = params?.subName as string || ''
   
-  const contents = getKContentsBySubName(subName)
+  const { contents } = useKContentsBySubName(subName)
   
   if (contents.length === 0) {
     return (

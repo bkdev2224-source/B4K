@@ -2,7 +2,8 @@
 
 import { useRouter, useParams } from 'next/navigation'
 import PageLayout from '@/components/PageLayout'
-import { getPOIById, getKContentsByPOIId } from '@/lib/data'
+import { getPOIById } from '@/lib/data'
+import { useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/SearchContext'
 import { useCart } from '@/components/CartContext'
 import { useState } from 'react'
@@ -15,7 +16,7 @@ export default function POIDetailPage() {
   const id = params?.id as string || ''
   
   const poi = getPOIById(id)
-  const kContents = poi ? getKContentsByPOIId(id) : []
+  const { contents: kContents } = useKContentsByPOIId(id)
   const cartItemId = poi ? `poi-${poi._id.$oid}` : ''
   const inCart = cartItemId ? isInCart(cartItemId) : false
 

@@ -16,6 +16,8 @@ Next.js와 TypeScript를 사용한 웹 애플리케이션 프로젝트입니다.
 - **NextAuth.js**: ^4.24.13 (인증)
 - **MongoDB**: ^5.9.0 (데이터베이스)
 - **@next-auth/mongodb-adapter**: ^1.1.3 (NextAuth MongoDB 어댑터)
+- **Cloudinary**: 이미지 관리 및 최적화
+- **next-cloudinary**: Next.js용 Cloudinary 통합
 
 ### 개발 도구
 - **ESLint**: ^8
@@ -109,6 +111,14 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 # MongoDB 설정
 MONGODB_URI=mongodb://localhost:27017/B4K_TEST
+
+# Cloudinary 설정
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Next.js Public Cloudinary 설정 (클라이언트에서 사용)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 ```
 
 > ⚠️ `.env.local` 파일은 Git에 커밋되지 않습니다. (`.gitignore`에 포함됨)
@@ -532,6 +542,453 @@ mongodb://localhost:27017/B4K_TEST
 2. **연결 풀**: 개발 환경에서 연결이 재사용되므로 서버 재시작 시 연결이 초기화됩니다
 3. **에러 처리**: MongoDB 연결 실패 시 적절한 에러 처리를 구현하세요
 4. **인덱스**: NextAuth가 자동으로 필요한 인덱스를 생성하지만, 추가 쿼리가 많다면 커스텀 인덱스를 고려하세요
+
+---
+
+## 🖼️ Cloudinary 이미지 관리
+
+### 개요
+
+이 프로젝트는 Cloudinary를 사용하여 이미지 업로드, 최적화, 변환을 관리합니다.
+
+### 주요 기능
+
+- ✅ 이미지 업로드 (서버/클라이언트)
+- ✅ 자동 이미지 최적화 (WebP 변환, 크기 조정 등)
+- ✅ 이미지 삭제
+- ✅ 동적 이미지 변환 URL 생성
+- ✅ Next.js Image 컴포넌트와 통합
+
+### Cloudinary 설정
+
+1. [Cloudinary 대시보드](https://cloudinary.com/)에서 계정 생성
+2. 대시보드에서 다음 정보 확인:
+   - Cloud Name
+   - API Key
+   - API Secret
+3. `.env.local` 파일에 설정 추가 (위 환경 설정 섹션 참고)
+
+### 사용 방법
+
+#### 1. 서버 사이드 이미지 업로드
+
+```typescript
+import { uploadImage } from '@/lib/cloudinary'
+
+// Base64 또는 파일 버퍼로 업로드
+const result = await uploadImage(fileBuffer, {
+  folder: 'b4k/products',
+  transformation: [
+    { width: 800, height: 600, crop: 'fill' }
+  ]
+})
+
+console.log(result.secure_url) // 업로드된 이미지 URL
+console.log(result.public_id)  // Cloudinary public ID
+```
+
+#### 2. 클라이언트 사이드 이미지 업로드
+
+```tsx
+"use client"
+
+import { uploadImageClient } from '@/lib/utils/cloudinary'
+import { useState } from 'react'
+
+export default function ImageUpload() {
+  const [uploading, setUploading] = useState(false)
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const result = await uploadImageClient(file, 'b4k/uploads')
+      console.log('Uploaded:', result.url)
+    } catch (error) {
+      console.error('Upload failed:', error)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleUpload}
+      disabled={uploading}
+    />
+  )
+}
+```
+
+#### 3. CloudinaryImage 컴포넌트 사용
+
+```tsx
+import CloudinaryImage from '@/components/CloudinaryImage'
+
+export default function MyComponent() {
+  return (
+    <CloudinaryImage
+      src="/image/maincarousel/1.jpg"
+      alt="Main carousel image"
+      width={1200}
+      height={600}
+      cloudinaryPublicId="b4k/maincarousel/1"
+      transformation={{
+        width: 1200,
+        height: 600,
+        quality: 'auto',
+        format: 'webp',
+        crop: 'fill'
+      }}
+    />
+  )
+}
+```
+
+#### 4. 이미지 URL 생성
+
+```typescript
+import { getCloudinaryUrl } from '@/lib/cloudinary'
+
+// 서버 사이드
+const optimizedUrl = getCloudinaryUrl('b4k/products/image1', {
+  width: 800,
+  height: 600,
+  quality: 'auto',
+  format: 'webp',
+  crop: 'fill'
+})
+```
+
+```typescript
+import { getCloudinaryImageUrl } from '@/lib/utils/cloudinary'
+
+// 클라이언트 사이드
+const optimizedUrl = getCloudinaryImageUrl('b4k/products/image1', {
+  width: 800,
+  height: 600,
+  quality: 'auto',
+  format: 'webp'
+})
+```
+
+#### 5. 이미지 삭제
+
+```typescript
+import { deleteImage } from '@/lib/cloudinary'
+
+await deleteImage('b4k/products/image1')
+```
+
+### API 라우트
+
+#### 이미지 업로드 API (`/api/upload`)
+
+**POST** `/api/upload`
+
+**요청:**
+- `file`: File (FormData)
+- `folder`: string (선택사항)
+
+**응답:**
+```json
+{
+  "success": true,
+  "url": "https://res.cloudinary.com/...",
+  "publicId": "b4k/folder/image"
+}
+```
+
+**사용 예시:**
+```typescript
+const formData = new FormData()
+formData.append('file', file)
+formData.append('folder', 'b4k/uploads')
+
+const response = await fetch('/api/upload', {
+  method: 'POST',
+  body: formData
+})
+
+const data = await response.json()
+```
+
+### 이미지 변환 옵션
+
+Cloudinary는 다양한 이미지 변환 옵션을 제공합니다:
+
+- **크기 조정**: `width`, `height`
+- **자르기**: `crop` (`fill`, `fit`, `scale`, `thumb`)
+- **품질**: `quality` (`auto` 또는 1-100)
+- **포맷**: `format` (`auto`, `webp`, `jpg`, `png`)
+- **중력**: `gravity` (이미지 중앙 정렬 등)
+
+### 관련 파일
+
+- **`lib/cloudinary.ts`**: 서버 사이드 Cloudinary 설정 및 유틸리티
+- **`lib/utils/cloudinary.ts`**: 클라이언트 사이드 Cloudinary 유틸리티
+- **`components/CloudinaryImage.tsx`**: 최적화된 이미지 컴포넌트
+- **`app/api/upload/route.ts`**: 이미지 업로드 API 라우트
+- **`next.config.js`**: Cloudinary 도메인 허용 설정
+
+### 주의사항
+
+1. **환경 변수 보안**: API Secret은 절대 클라이언트에 노출되지 않도록 주의하세요
+2. **파일 크기 제한**: Cloudinary 무료 플랜은 10MB 제한이 있습니다
+3. **폴더 구조**: 일관된 폴더 구조를 사용하여 이미지를 관리하세요
+4. **이미지 최적화**: `quality: 'auto'`와 `format: 'auto'`를 사용하여 자동 최적화를 활용하세요
+
+---
+
+## 🔗 MongoDB와 Cloudinary 연동
+
+### 개요
+
+이 프로젝트는 MongoDB와 Cloudinary를 연동하여 이미지와 데이터를 함께 관리합니다.
+
+### 주요 기능
+
+- ✅ MongoDB에 이미지 URL 및 Cloudinary Public ID 저장
+- ✅ 이미지 업로드와 동시에 MongoDB 업데이트
+- ✅ POI, KContent, Package에 이미지 연동
+- ✅ 여러 이미지 업로드 지원
+
+### 데이터베이스 구조
+
+#### POI 컬렉션
+
+```typescript
+{
+  _id: ObjectId,
+  name: string,
+  address: string,
+  location: { type: string, coordinates: number[] },
+  categoryTags: string[],
+  openingHours: string,
+  entryFee: string,
+  needsReservation: boolean,
+  imageUrl?: string,              // Cloudinary 이미지 URL
+  cloudinaryPublicId?: string,    // Cloudinary public ID
+  createdAt?: Date,
+  updatedAt?: Date
+}
+```
+
+#### KContent 컬렉션
+
+```typescript
+{
+  _id: ObjectId,
+  subName: string,
+  poiId: ObjectId,
+  spotName: string,
+  description: string,
+  tags: string[],
+  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival',
+  imageUrl?: string,              // 단일 이미지 URL
+  cloudinaryPublicId?: string,    // 단일 이미지 public ID
+  images?: string[],              // 여러 이미지 URL 배열
+  cloudinaryPublicIds?: string[], // 여러 이미지 public ID 배열
+  createdAt?: Date,
+  updatedAt?: Date
+}
+```
+
+#### Package 컬렉션
+
+```typescript
+{
+  _id: ObjectId,
+  name: string,
+  duration: number,
+  concept: string,
+  cities: string[],
+  highlights: string[],
+  includedServices: string[],
+  itinerary: Array<{ day: number, city: string, activities: string[] }>,
+  category: 'kpop' | 'kdrama' | 'all',
+  imageUrl: string,              // 메인 이미지 URL
+  cloudinaryPublicId?: string,    // 메인 이미지 public ID
+  images?: string[],              // 추가 이미지 URL 배열
+  cloudinaryPublicIds?: string[], // 추가 이미지 public ID 배열
+  createdAt?: Date,
+  updatedAt?: Date
+}
+```
+
+### 사용 방법
+
+#### 1. MongoDB 데이터베이스 함수 사용
+
+```typescript
+import { getAllPOIs, getPOIById, createPOI, updatePOIImage } from '@/lib/db/pois'
+import { getAllKContents, createKContent, updateKContentImage } from '@/lib/db/kcontents'
+import { getAllPackages, createPackage, updatePackageImage } from '@/lib/db/packages'
+
+// POI 조회
+const pois = await getAllPOIs()
+const poi = await getPOIById('poi_id_here')
+
+// KContent 조회
+const contents = await getAllKContents()
+const contentsByCategory = await getKContentsByCategory('kpop')
+
+// Package 조회
+const packages = await getAllPackages()
+const package = await getPackageById('package_id_here')
+```
+
+#### 2. 이미지 업로드와 MongoDB 저장 (API 사용)
+
+```typescript
+// 클라이언트에서
+const formData = new FormData()
+formData.append('file', file)
+formData.append('entityType', 'poi')  // 'poi' | 'kcontent' | 'package'
+formData.append('entityId', 'entity_id_here')
+formData.append('folder', 'b4k/pois')  // 선택사항
+
+const response = await fetch('/api/upload-and-save', {
+  method: 'POST',
+  body: formData
+})
+
+const data = await response.json()
+// { success: true, url: "...", publicId: "...", entity: {...} }
+```
+
+#### 3. 유틸리티 함수 사용
+
+```typescript
+import { 
+  uploadAndSavePOIImage,
+  uploadAndSaveKContentImage,
+  uploadAndSavePackageImage 
+} from '@/lib/utils/mongodb-cloudinary'
+
+// POI 이미지 업로드 및 저장
+const result = await uploadAndSavePOIImage(file, poiId, 'b4k/pois')
+
+// KContent 이미지 업로드 및 저장 (여러 이미지)
+const result = await uploadAndSaveKContentImage(
+  file, 
+  contentId, 
+  'b4k/kcontents',
+  true  // isMultiple
+)
+
+// Package 이미지 업로드 및 저장
+const result = await uploadAndSavePackageImage(file, packageId)
+```
+
+#### 4. 여러 이미지 업로드
+
+```typescript
+import { uploadAndSaveMultipleImages } from '@/lib/utils/mongodb-cloudinary'
+
+const files = [file1, file2, file3]
+const results = await uploadAndSaveMultipleImages(
+  files,
+  'kcontent',  // entityType
+  contentId,
+  'b4k/kcontents'
+)
+```
+
+### API 엔드포인트
+
+#### 이미지 업로드 및 저장 (`/api/upload-and-save`)
+
+**POST** `/api/upload-and-save`
+
+**요청 (FormData):**
+- `file`: File (필수)
+- `entityType`: 'poi' | 'kcontent' | 'package' (필수)
+- `entityId`: string (필수)
+- `folder`: string (선택)
+- `isMultiple`: boolean (선택, 여러 이미지 업로드 여부)
+
+**응답:**
+```json
+{
+  "success": true,
+  "url": "https://res.cloudinary.com/...",
+  "publicId": "b4k/pois/image",
+  "entity": { /* 업데이트된 엔티티 데이터 */ }
+}
+```
+
+### 데이터베이스 함수
+
+#### POI 함수 (`lib/db/pois.ts`)
+
+- `getAllPOIs()`: 모든 POI 조회
+- `getPOIById(poiId)`: ID로 POI 조회
+- `createPOI(poiData)`: POI 생성
+- `updatePOI(poiId, updateData)`: POI 업데이트
+- `updatePOIImage(poiId, imageUrl, cloudinaryPublicId)`: POI 이미지 업데이트
+- `deletePOI(poiId)`: POI 삭제
+- `getPOIsByCategory(category)`: 카테고리로 POI 검색
+
+#### KContent 함수 (`lib/db/kcontents.ts`)
+
+- `getAllKContents()`: 모든 KContent 조회
+- `getKContentById(contentId)`: ID로 KContent 조회
+- `getKContentsByPOIId(poiId)`: POI ID로 KContent 조회
+- `getKContentsByCategory(category)`: 카테고리로 KContent 조회
+- `getKContentsBySubName(subName)`: subName으로 KContent 조회
+- `createKContent(contentData)`: KContent 생성
+- `updateKContent(contentId, updateData)`: KContent 업데이트
+- `updateKContentImage(contentId, imageUrl, cloudinaryPublicId)`: KContent 이미지 업데이트
+- `addKContentImages(contentId, imageUrls, cloudinaryPublicIds)`: KContent에 여러 이미지 추가
+- `deleteKContent(contentId)`: KContent 삭제
+
+#### Package 함수 (`lib/db/packages.ts`)
+
+- `getAllPackages()`: 모든 패키지 조회
+- `getPackageById(packageId)`: ID로 패키지 조회
+- `getPackagesByCategory(category)`: 카테고리로 패키지 조회
+- `createPackage(packageData)`: 패키지 생성
+- `updatePackage(packageId, updateData)`: 패키지 업데이트
+- `updatePackageImage(packageId, imageUrl, cloudinaryPublicId)`: 패키지 이미지 업데이트
+- `addPackageImages(packageId, imageUrls, cloudinaryPublicIds)`: 패키지에 여러 이미지 추가
+- `deletePackage(packageId)`: 패키지 삭제
+
+### 환경 변수
+
+`.env.local` 파일에 다음 변수가 필요합니다:
+
+```env
+# MongoDB 설정
+MONGODB_URI=mongodb://localhost:27017/B4K_TEST
+MONGODB_DB_NAME=B4K_TEST  # 선택사항, 기본값: B4K_TEST
+
+# Cloudinary 설정
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+```
+
+### 관련 파일
+
+- **`lib/db/pois.ts`**: POI 데이터베이스 함수
+- **`lib/db/kcontents.ts`**: KContent 데이터베이스 함수
+- **`lib/db/packages.ts`**: Package 데이터베이스 함수
+- **`lib/utils/mongodb-cloudinary.ts`**: MongoDB와 Cloudinary 연동 유틸리티
+- **`app/api/upload-and-save/route.ts`**: 이미지 업로드 및 MongoDB 저장 API
+- **`lib/cloudinary.ts`**: Cloudinary 설정 및 함수
+
+### 주의사항
+
+1. **데이터베이스 이름**: `MONGODB_DB_NAME` 환경 변수를 설정하지 않으면 기본값 `B4K_TEST`가 사용됩니다
+2. **ObjectId 변환**: MongoDB의 ObjectId는 문자열로 자동 변환됩니다
+3. **이미지 삭제**: MongoDB에서 데이터를 삭제할 때 Cloudinary에서도 이미지를 삭제하는 것을 고려하세요
+4. **에러 처리**: 모든 데이터베이스 함수는 에러를 적절히 처리하지만, API에서는 추가적인 에러 처리가 필요할 수 있습니다
 
 ---
 

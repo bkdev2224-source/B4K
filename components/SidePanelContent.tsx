@@ -5,7 +5,8 @@ import { useState } from 'react'
 import { Route } from '@/lib/routes'
 import { useSearchResult } from './SearchContext'
 import { useCart } from './CartContext'
-import { getPOIById, getKContentsBySubName, getKContentsByPOIId, getContentCategory } from '@/lib/data'
+import { getPOIById, getContentCategory } from '@/lib/data'
+import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 
 interface SidePanelItem {
   id: string
@@ -348,10 +349,17 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     const poi = searchResult.type === 'poi' && searchResult.poiId 
       ? getPOIById(searchResult.poiId) 
       : null
+    const { contents: contentsBySubName } = useKContentsBySubName(
+      searchResult.type === 'content' && searchResult.subName ? searchResult.subName : ''
+    )
+    const { contents: contentsByPOIId } = useKContentsByPOIId(
+      searchResult.type === 'poi' && searchResult.poiId ? searchResult.poiId : ''
+    )
+    
     const contents = searchResult.type === 'content' && searchResult.subName
-      ? getKContentsBySubName(searchResult.subName)
+      ? contentsBySubName
       : searchResult.type === 'poi' && searchResult.poiId
-      ? getKContentsByPOIId(searchResult.poiId)
+      ? contentsByPOIId
       : []
     
     // Check if cart has items

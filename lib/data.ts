@@ -1,8 +1,4 @@
 import poisData from '@/mockupdata/pois.json'
-import kpopData from '@/mockupdata/kcontents/kpop.json'
-import kbeautyData from '@/mockupdata/kcontents/kbeauty.json'
-import kfoodData from '@/mockupdata/kcontents/kfood.json'
-import kfestivalData from '@/mockupdata/kcontents/kfestival.json'
 import packagesData from '@/mockupdata/packages.json'
 
 export interface POI {
@@ -33,55 +29,73 @@ export function getAllPOIs(): POI[] {
   return poisData as POI[]
 }
 
-export function getKContentsByPOIId(poiId: string): KContent[] {
-  const allKContents = [
-    ...kpopData,
-    ...kbeautyData,
-    ...kfoodData,
-    ...kfestivalData,
-  ] as KContent[]
+// MongoDB에서 KContents 가져오기 (서버 컴포넌트용)
+export async function getKContentsByPOIId(poiId: string): Promise<KContent[]> {
+  const { getKContentsByPOIId: getByPOIId } = await import('@/lib/db/kcontents')
+  const contents = await getByPOIId(poiId)
   
-  return allKContents.filter(
-    (content) => content.poiId.$oid === poiId
-  )
+  // MongoDB 형식을 기존 JSON 형식으로 변환
+  return contents.map(content => ({
+    subName: content.subName,
+    poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+    spotName: content.spotName,
+    description: content.description,
+    tags: content.tags,
+    popularity: content.popularity,
+    category: content.category,
+  })) as KContent[]
 }
 
 export function getPOIById(poiId: string): POI | undefined {
   return (poisData as POI[]).find((poi) => poi._id.$oid === poiId)
 }
 
-export function getKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'): KContent[] {
-  const categoryMap = {
-    kpop: kpopData,
-    kbeauty: kbeautyData,
-    kfood: kfoodData,
-    kfestival: kfestivalData,
-  }
-  return categoryMap[category] as KContent[]
+// MongoDB에서 KContents 가져오기 (서버 컴포넌트용)
+export async function getKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'): Promise<KContent[]> {
+  const { getKContentsByCategory: getByCategory } = await import('@/lib/db/kcontents')
+  const contents = await getByCategory(category)
+  
+  // MongoDB 형식을 기존 JSON 형식으로 변환
+  return contents.map(content => ({
+    subName: content.subName,
+    poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+    spotName: content.spotName,
+    description: content.description,
+    tags: content.tags,
+    popularity: content.popularity,
+    category: content.category,
+  })) as KContent[]
 }
 
-export function getAllKContents(): KContent[] {
-  return [
-    ...kpopData,
-    ...kbeautyData,
-    ...kfoodData,
-    ...kfestivalData,
-  ] as KContent[]
+// MongoDB에서 모든 KContents 가져오기 (서버 컴포넌트용)
+export async function getAllKContents(): Promise<KContent[]> {
+  const { getAllKContents: getAll } = await import('@/lib/db/kcontents')
+  const contents = await getAll()
+  
+  // MongoDB 형식을 기존 JSON 형식으로 변환
+  return contents.map(content => ({
+    subName: content.subName,
+    poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+    spotName: content.spotName,
+    description: content.description,
+    tags: content.tags,
+    popularity: content.popularity,
+    category: content.category,
+  })) as KContent[]
+}
+
+// 클라이언트 컴포넌트용 동기 함수 (API 호출)
+export function getAllKContentsSync(): KContent[] {
+  // 클라이언트에서는 빈 배열 반환 (실제로는 API를 통해 가져와야 함)
+  // 이 함수는 호환성을 위해 유지하되, 실제 사용은 API를 통해 해야 함
+  return []
 }
 
 // K-Content가 어떤 카테고리에 속하는지 확인
 export function getContentCategory(content: KContent): 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | null {
-  if (kpopData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
-    return 'kpop'
-  }
-  if (kbeautyData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
-    return 'kbeauty'
-  }
-  if (kfoodData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
-    return 'kfood'
-  }
-  if (kfestivalData.some(c => c.spotName === content.spotName && c.poiId.$oid === content.poiId.$oid)) {
-    return 'kfestival'
+  // content 객체에 category 필드가 있으면 사용
+  if ('category' in content && content.category) {
+    return content.category as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
   }
   return null
 }
@@ -111,14 +125,25 @@ export function getPackageById(packageId: string): TravelPackage | undefined {
   return (packagesData as TravelPackage[]).find((pkg) => pkg._id.$oid === packageId)
 }
 
-// subName으로 KContents 찾기
-export function getKContentsBySubName(subName: string): KContent[] {
-  const allKContents = getAllKContents()
-  return allKContents.filter(content => content.subName === subName)
+// subName으로 KContents 찾기 (서버 컴포넌트용)
+export async function getKContentsBySubName(subName: string): Promise<KContent[]> {
+  const { getKContentsBySubName: getBySubName } = await import('@/lib/db/kcontents')
+  const contents = await getBySubName(subName)
+  
+  // MongoDB 형식을 기존 JSON 형식으로 변환
+  return contents.map(content => ({
+    subName: content.subName,
+    poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+    spotName: content.spotName,
+    description: content.description,
+    tags: content.tags,
+    popularity: content.popularity,
+    category: content.category,
+  })) as KContent[]
 }
 
-// subName이 존재하는지 확인
-export function hasSubName(subName: string): boolean {
-  const allKContents = getAllKContents()
-  return allKContents.some(content => content.subName === subName)
+// subName이 존재하는지 확인 (서버 컴포넌트용)
+export async function hasSubName(subName: string): Promise<boolean> {
+  const contents = await getKContentsBySubName(subName)
+  return contents.length > 0
 }

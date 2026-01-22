@@ -7,7 +7,8 @@ import { useSidebar } from './SidebarContext'
 import { usePathname } from 'next/navigation'
 import { useRoute } from './RouteContext'
 import { useSearchResult } from './SearchContext'
-import { getAllPOIs, getAllKContents } from '@/lib/data'
+import { getAllPOIs } from '@/lib/data'
+import { useKContents } from '@/lib/hooks/useKContents'
 
 interface TopNavProps {
   searchQuery?: string
@@ -77,11 +78,12 @@ export default function TopNav({
   const navClasses = topNavClasses || defaultClasses
 
   // 관련 검색어 계산 (POI 이름, 주소, 태그, subName 포함)
+  const { contents: allKContents } = useKContents()
+  
   const relatedSearches = useMemo(() => {
     if (!searchQuery.trim()) return []
     
     const allPOIs = getAllPOIs()
-    const allKContents = getAllKContents()
     const query = searchQuery.toLowerCase()
     const results: SearchResult[] = []
     const addedNames = new Set<string>()
@@ -107,12 +109,11 @@ export default function TopNav({
     })
     
     return results.slice(0, 5) // 최대 5개
-  }, [searchQuery])
+  }, [searchQuery, allKContents])
 
   // 추천 검색어 결과 (POI ID 또는 subName 포함)
   const recommendedResults = useMemo(() => {
     const allPOIs = getAllPOIs()
-    const allKContents = getAllKContents()
     const results: SearchResult[] = []
     
     RECOMMENDED_SEARCHES.forEach(recommended => {
@@ -130,7 +131,7 @@ export default function TopNav({
     })
     
     return results
-  }, [])
+  }, [allKContents])
 
   // 모든 검색 결과 (관련 검색어 + 추천 검색어)
   const allSearchResults = useMemo(() => {

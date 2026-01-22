@@ -1,16 +1,18 @@
 import { MongoClient } from "mongodb"
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("Please add your Mongo URI to .env.local")
-}
-
-const uri: string = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
 
-if (process.env.NODE_ENV === "development") {
+if (!uri) {
+  // Vercel/CI 빌드 단계에서 env가 비어있으면 import 시점 throw로 빌드가 깨질 수 있어
+  // 실제로 DB를 사용할 때(await)만 에러가 나도록 rejected Promise로 둡니다.
+  clientPromise = Promise.reject(
+    new Error("MONGODB_URI is not set. Configure it in Vercel Environment Variables.")
+  )
+} else if (process.env.NODE_ENV === "development") {
   // 개발 환경에서는 전역 변수에 저장하여 핫 리로드 시 재사용
-  let globalWithMongo = global as typeof globalThis & {
+  const globalWithMongo = global as typeof globalThis & {
     _mongoClientPromise?: Promise<MongoClient>
   }
 

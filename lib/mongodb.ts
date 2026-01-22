@@ -1,6 +1,7 @@
 import { MongoClient } from "mongodb"
+import { env, getMongoUriOptional } from "@/lib/env"
 
-const uri = process.env.MONGODB_URI
+const uri = getMongoUriOptional()
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
 
@@ -10,7 +11,7 @@ if (!uri) {
   clientPromise = Promise.reject(
     new Error("MONGODB_URI is not set. Configure it in Vercel Environment Variables.")
   )
-} else if (process.env.NODE_ENV === "development") {
+} else if (env("NODE_ENV") === "development") {
   // 개발 환경에서는 전역 변수에 저장하여 핫 리로드 시 재사용
   const globalWithMongo = global as typeof globalThis & {
     _mongoClientPromise?: Promise<MongoClient>

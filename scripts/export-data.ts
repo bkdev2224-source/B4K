@@ -9,16 +9,13 @@ import dotenv from 'dotenv'
 import { resolve } from 'path'
 import { MongoClient, ObjectId } from 'mongodb'
 import { writeFileSync } from 'fs'
+import { getMongoDbName, getMongoUriRequired } from '../lib/env'
 
 // .env.local 파일 로드
 dotenv.config({ path: resolve(process.cwd(), '.env.local') })
 
-const DB_NAME = process.env.MONGODB_DB_NAME || 'B4K_DEV'
-const MONGODB_URI = process.env.MONGODB_URI
-
-if (!MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local')
-}
+const DB_NAME = getMongoDbName()
+const MONGODB_URI = getMongoUriRequired()
 
 // ObjectId를 { $oid } 형태로 변환하는 헬퍼 (기본)
 function convertObjectIdToString(obj: any): any {

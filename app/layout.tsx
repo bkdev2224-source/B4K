@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/components/SidebarContext'
 import { RouteProvider } from '@/components/RouteContext'
 import { SearchProvider } from '@/components/SearchContext'
 import { CartProvider } from '@/components/CartContext'
+import { getTmapApiKey } from '@/lib/env'
 
 export const metadata: Metadata = {
   title: 'B4K',
@@ -22,11 +23,10 @@ export default function RootLayout({
   // If the script is loaded asynchronously (e.g., injected after hydration),
   // browsers can throw: "Failed to execute 'write' on 'Document'..."
   // So we load it as a normal <script> in <head> during initial HTML parse.
-  const tmapAppKey =
-    process.env.NEXT_PUBLIC_TMAP_API_KEY || process.env.TMAP_API_KEY || ''
+  const tmapAppKey = getTmapApiKey()
   const tmapVectorSdkSrc = tmapAppKey
     ? `https://apis.openapi.sk.com/tmap/vectorjs?version=1&appKey=${tmapAppKey}`
-    : ''
+    : undefined
 
   return (
     <html lang="ko">

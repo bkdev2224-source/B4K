@@ -1,5 +1,6 @@
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { getMongoDbName } from '@/lib/env'
 
 export interface TravelPackage {
   _id: ObjectId | string
@@ -21,7 +22,6 @@ export interface TravelPackage {
   updatedAt?: Date
 }
 
-const DB_NAME = process.env.MONGODB_DB_NAME || 'B4K_DEV'
 const COLLECTION_NAME = 'packages'
 
 /**
@@ -30,7 +30,7 @@ const COLLECTION_NAME = 'packages'
 export async function getAllPackages(): Promise<TravelPackage[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const packages = await db.collection<TravelPackage>(COLLECTION_NAME).find({}).toArray()
     return packages.map(pkg => ({
       ...pkg,
@@ -48,7 +48,7 @@ export async function getAllPackages(): Promise<TravelPackage[]> {
 export async function getPackageById(packageId: string): Promise<TravelPackage | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const pkg = await db.collection<TravelPackage>(COLLECTION_NAME).findOne({
       _id: new ObjectId(packageId),
     })
@@ -73,7 +73,7 @@ export async function getPackagesByCategory(
 ): Promise<TravelPackage[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const packages = await db.collection<TravelPackage>(COLLECTION_NAME).find({
       category,
     }).toArray()
@@ -96,7 +96,7 @@ export async function createPackage(
 ): Promise<TravelPackage> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const now = new Date()
     
     const result = await db.collection<TravelPackage>(COLLECTION_NAME).insertOne({
@@ -128,7 +128,7 @@ export async function updatePackage(
 ): Promise<TravelPackage | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<TravelPackage>(COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(packageId) },
@@ -160,7 +160,7 @@ export async function updatePackage(
 export async function deletePackage(packageId: string): Promise<boolean> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<TravelPackage>(COLLECTION_NAME).deleteOne({
       _id: new ObjectId(packageId),

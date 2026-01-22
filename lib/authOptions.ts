@@ -1,20 +1,23 @@
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
+import { env, ensureNextAuthUrl } from "@/lib/env"
 
-// Vercel Preview/Production 환경에서는 배포 도메인이 매번 바뀔 수 있으므로
-// 현재 배포 도메인(VERCEL_URL)로 NEXTAUTH_URL을 강제 맞춰 500(호스트 불일치) 이슈를 피합니다.
-if (process.env.VERCEL_URL) {
-  const inferred = `https://${process.env.VERCEL_URL}`
-  process.env.NEXTAUTH_URL = inferred
-}
+// NextAuth v4 reads NEXTAUTH_URL from process.env.
+// On Vercel Preview/Production, infer it from VERCEL_URL when not explicitly set.
+ensureNextAuthUrl()
+
+const googleClientId = env("GOOGLE_CLIENT_ID")
+const googleClientSecret = env("GOOGLE_CLIENT_SECRET")
+const nextAuthSecret = env("NEXTAUTH_SECRET")
+const nodeEnv = env("NODE_ENV")
 
 export const authOptions: NextAuthOptions = {
   providers:
-    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    googleClientId && googleClientSecret
       ? [
           GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
           }),
         ]
       : [],
@@ -62,8 +65,8 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
+  secret: nextAuthSecret,
+  debug: nodeEnv === "development",
   logger: {
     error(code, metadata) {
       console.error("[next-auth][error]", code, metadata)
@@ -72,7 +75,7 @@ export const authOptions: NextAuthOptions = {
       console.warn("[next-auth][warn]", code)
     },
     debug(code, metadata) {
-      if (process.env.NODE_ENV === "development") {
+      if (nodeEnv === "development") {
         console.log("[next-auth][debug]", code, metadata)
       }
     },

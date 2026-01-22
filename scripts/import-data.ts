@@ -21,13 +21,10 @@ import kpopData from '../mockupdata/save/kcontents/kpop.json'
 import kbeautyData from '../mockupdata/save/kcontents/kbeauty.json'
 import kfoodData from '../mockupdata/save/kcontents/kfood.json'
 import kfestivalData from '../mockupdata/save/kcontents/kfestival.json'
+import { getMongoDbName, getMongoUriRequired } from '../lib/env'
 
-const DB_NAME = process.env.MONGODB_DB_NAME || 'B4K_DEV'
-const MONGODB_URI = process.env.MONGODB_URI
-
-if (!MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local')
-}
+const DB_NAME = getMongoDbName()
+const MONGODB_URI = getMongoUriRequired()
 
 function getOidString(id: any): string {
   if (!id) return ''

@@ -1,5 +1,6 @@
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { getMongoDbName } from '@/lib/env'
 
 export interface POI {
   _id: ObjectId | string
@@ -17,7 +18,6 @@ export interface POI {
   updatedAt?: Date
 }
 
-const DB_NAME = process.env.MONGODB_DB_NAME || 'B4K_TEST'
 const COLLECTION_NAME = 'pois'
 
 function buildIdQuery(id: string) {
@@ -34,7 +34,7 @@ function buildIdQuery(id: string) {
 export async function getAllPOIs(): Promise<POI[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const pois = await db.collection<POI>(COLLECTION_NAME).find({}).toArray()
     return pois.map(poi => ({
       ...poi,
@@ -52,7 +52,7 @@ export async function getAllPOIs(): Promise<POI[]> {
 export async function getPOIById(poiId: string): Promise<POI | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const poi = await db.collection<POI>(COLLECTION_NAME).findOne(buildIdQuery(poiId) as any)
     
     if (!poi) return null
@@ -73,7 +73,7 @@ export async function getPOIById(poiId: string): Promise<POI | null> {
 export async function createPOI(poiData: Omit<POI, '_id' | 'createdAt' | 'updatedAt'>): Promise<POI> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const now = new Date()
     
     const result = await db.collection<POI>(COLLECTION_NAME).insertOne({
@@ -105,7 +105,7 @@ export async function updatePOI(
 ): Promise<POI | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<POI>(COLLECTION_NAME).findOneAndUpdate(
       buildIdQuery(poiId) as any,
@@ -137,7 +137,7 @@ export async function updatePOI(
 export async function deletePOI(poiId: string): Promise<boolean> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<POI>(COLLECTION_NAME).deleteOne({
       ...(buildIdQuery(poiId) as any),
@@ -156,7 +156,7 @@ export async function deletePOI(poiId: string): Promise<boolean> {
 export async function getPOIsByCategory(category: string): Promise<POI[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const pois = await db.collection<POI>(COLLECTION_NAME).find({
       categoryTags: category,
     }).toArray()

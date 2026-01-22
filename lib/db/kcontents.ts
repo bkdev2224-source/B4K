@@ -1,5 +1,6 @@
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { getMongoDbName } from '@/lib/env'
 
 export interface KContent {
   _id: ObjectId | string
@@ -15,7 +16,6 @@ export interface KContent {
   updatedAt?: Date
 }
 
-const DB_NAME = process.env.MONGODB_DB_NAME || 'B4K_DEV'
 const COLLECTION_NAME = 'kcontents'
 
 /**
@@ -24,7 +24,7 @@ const COLLECTION_NAME = 'kcontents'
 export async function getAllKContents(): Promise<KContent[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const contents = await db.collection<KContent>(COLLECTION_NAME).find({}).toArray()
     return contents.map(content => ({
       ...content,
@@ -43,7 +43,7 @@ export async function getAllKContents(): Promise<KContent[]> {
 export async function getKContentById(contentId: string): Promise<KContent | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const content = await db.collection<KContent>(COLLECTION_NAME).findOne({
       _id: new ObjectId(contentId),
     })
@@ -67,7 +67,7 @@ export async function getKContentById(contentId: string): Promise<KContent | nul
 export async function getKContentsByPOIId(poiId: string): Promise<KContent[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     // poiId는 문자열(poi_001 등) 또는 ObjectId(24hex) 둘 다 지원
     const query =
       ObjectId.isValid(poiId)
@@ -94,7 +94,7 @@ export async function getKContentsByCategory(
 ): Promise<KContent[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const contents = await db.collection<KContent>(COLLECTION_NAME).find({
       category,
     }).toArray()
@@ -116,7 +116,7 @@ export async function getKContentsByCategory(
 export async function getKContentsBySubName(subName: string): Promise<KContent[]> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const contents = await db.collection<KContent>(COLLECTION_NAME).find({
       subName,
     }).toArray()
@@ -140,7 +140,7 @@ export async function createKContent(
 ): Promise<KContent> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     const now = new Date()
     const poiId = contentData.poiId
  
@@ -175,7 +175,7 @@ export async function updateKContent(
 ): Promise<KContent | null> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<KContent>(COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(contentId) },
@@ -208,7 +208,7 @@ export async function updateKContent(
 export async function deleteKContent(contentId: string): Promise<boolean> {
   try {
     const client = await clientPromise
-    const db = client.db(DB_NAME)
+    const db = client.db(getMongoDbName())
     
     const result = await db.collection<KContent>(COLLECTION_NAME).deleteOne({
       _id: new ObjectId(contentId),

@@ -4,8 +4,8 @@ import { ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import SidePanel from './SidePanel'
 import TopNav from './TopNav'
-import { useSearch } from './hooks/useSearch'
-import { useLayout } from './hooks/useLayout'
+import { useSearch } from '@/lib/hooks/useSearch'
+import { useLayout } from '@/lib/hooks/useLayout'
 
 interface PageLayoutProps {
   children: ReactNode

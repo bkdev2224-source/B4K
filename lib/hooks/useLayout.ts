@@ -1,9 +1,9 @@
 "use client"
 
 import { useMemo } from 'react'
-import { useSidebar } from '../SidebarContext'
-import { useRoute } from '../RouteContext'
-import { useSearchResult } from '../SearchContext'
+import { useSidebar } from '@/components/SidebarContext'
+import { useRoute } from '@/components/RouteContext'
+import { useSearchResult } from '@/components/SearchContext'
 import { usePathname, useParams } from 'next/navigation'
 import { 
   getMainContentClasses, 
@@ -12,7 +12,7 @@ import {
   getSidePanelWidthClass,
   type SidePanelWidth 
 } from '@/lib/utils/layout'
-import { getRouteById } from '@/lib/routes'
+import { getRouteById } from '@/lib/services/routes'
 
 interface UseLayoutOptions {
   isSearchMode?: boolean

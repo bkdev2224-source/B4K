@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Route } from '@/lib/routes'
+import { Route } from '@/lib/services/routes'
 
 interface RouteContextType {
   selectedRoute: Route | null

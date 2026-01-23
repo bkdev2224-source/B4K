@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import PageLayout from '@/components/PageLayout'
-import { getPOIById } from '@/lib/data'
+import { getPOIById } from '@/lib/data/mock'
 import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
 

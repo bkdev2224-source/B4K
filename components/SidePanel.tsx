@@ -1,7 +1,7 @@
 "use client"
 
 import { SidePanelContent } from './SidePanelContent'
-import { Route } from '@/lib/routes'
+import { Route } from '@/lib/services/routes'
 import { getSidePanelLeft, getSidePanelWidthClass } from '@/lib/utils/layout'
 
 interface SidePanelProps {

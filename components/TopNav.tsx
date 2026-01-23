@@ -7,7 +7,7 @@ import { useSidebar } from './SidebarContext'
 import { usePathname } from 'next/navigation'
 import { useRoute } from './RouteContext'
 import { useSearchResult } from './SearchContext'
-import { getAllPOIs } from '@/lib/data'
+import { getAllPOIs } from '@/lib/data/mock'
 import { useKContents } from '@/lib/hooks/useKContents'
 
 interface TopNavProps {

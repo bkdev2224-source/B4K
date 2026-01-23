@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb"
-import { env, getMongoUriOptional } from "@/lib/env"
+import { env, getMongoUriOptional } from "@/lib/config/env"
 
 const uri = getMongoUriOptional()
 let client: MongoClient

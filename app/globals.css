@@ -19,13 +19,91 @@ body {
 }
 
 :root {
+  /* Design Tokens - Colors */
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 26, 26, 46;
   --background-end-rgb: 26, 26, 46;
+  
+  /* Primary Colors */
   --primary-color: #62256e;
+  --primary-50: #f5f3f7;
+  --primary-100: #e9e3ed;
+  --primary-200: #d3c7db;
+  --primary-300: #b8a3c4;
+  --primary-400: #9d7fad;
+  --primary-500: #62256e;
+  --primary-600: #4d1d57;
+  --primary-700: #3a1641;
+  --primary-800: #2a0f2f;
+  --primary-900: #1a091d;
+  
+  /* Purple Colors */
   --purple-glow: #a855f7;
   --purple-bright: #c084fc;
   --purple-dark: #6b21a8;
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7e22ce;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+  
+  /* Pink Colors */
+  --pink-50: #fdf2f8;
+  --pink-100: #fce7f3;
+  --pink-200: #fbcfe8;
+  --pink-300: #f9a8d4;
+  --pink-400: #f472b6;
+  --pink-500: #ec4899;
+  --pink-600: #db2777;
+  --pink-700: #be185d;
+  --pink-800: #9f1239;
+  --pink-900: #831843;
+  
+  /* Background Colors */
+  --background-light: #ffffff;
+  --background-dark: #1a1a2e;
+  --background-overlay: rgba(0, 0, 0, 0.5);
+  --background-gradient-start: #0a0a0f;
+  
+  /* Text Colors */
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-light: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  
+  /* Semantic Colors */
+  --semantic-hover: rgba(98, 37, 110, 0.1);
+  --semantic-active: rgba(98, 37, 110, 0.15);
+  --semantic-border: #e5e7eb;
+  --semantic-border-hover: #d1d5db;
+  
+  /* Status Colors */
+  --status-success: #10b981;
+  --status-error: #ef4444;
+  --status-warning: #f59e0b;
+  --status-info: #3b82f6;
+  
+  /* Spacing */
+  --spacing-sidebar-collapsed: 80px;
+  --spacing-sidebar-expanded: 12.75%;
+  --spacing-panel-default: 16rem;
+  --spacing-panel-routes: 24rem;
+  --spacing-topnav-height: 4rem;
+  
+  /* Shadows */
+  --shadow-purple-sm: 0 0 10px rgba(168, 85, 247, 0.2);
+  --shadow-purple-md: 0 0 20px rgba(168, 85, 247, 0.3);
+  --shadow-purple-lg: 0 0 30px rgba(168, 85, 247, 0.4);
+  
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

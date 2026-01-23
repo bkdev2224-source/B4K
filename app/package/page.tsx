@@ -2,7 +2,7 @@
 
 import PageLayout from '@/components/PageLayout'
 import PackageCarousel from '@/components/PackageCarousel'
-import { getAllPackages } from '@/lib/data'
+import { getAllPackages } from '@/lib/data/mock'
 
 export default function PackagePage() {
   const allPackages = getAllPackages()

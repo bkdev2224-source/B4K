@@ -2,15 +2,15 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react'
 import PageLayout from '@/components/PageLayout'
-import { getAllRoutes } from '@/lib/routes'
+import { getAllRoutes } from '@/lib/services/routes'
 import { useRoute } from '@/components/RouteContext'
 import { useSearchResult } from '@/components/SearchContext'
 import { useCart } from '@/components/CartContext'
 import { useSidebar } from '@/components/SidebarContext'
-import { useLayout } from '@/components/hooks/useLayout'
+import { useLayout } from '@/lib/hooks/useLayout'
 import { LAYOUT_CONSTANTS } from '@/lib/utils/layout'
 import TMap from '@/components/TMap'
-import { getAllPOIs, getPOIById } from '@/lib/data'
+import { getAllPOIs, getPOIById } from '@/lib/data/mock'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
 
 export default function MapsPage() {

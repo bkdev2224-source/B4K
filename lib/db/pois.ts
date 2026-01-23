@@ -2,8 +2,8 @@
  * POI (Point of Interest) database operations
  */
 
-import clientPromise from '@/lib/mongodb'
-import { getMongoDbName } from '@/lib/env'
+import clientPromise from '@/lib/config/mongodb'
+import { getMongoDbName } from '@/lib/config/env'
 import type { POI, CreateInput, UpdateInput } from '@/types'
 import { buildIdQuery, convertPOI, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
 

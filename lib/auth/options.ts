@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import { env, ensureNextAuthUrl } from "@/lib/env"
+import { env, ensureNextAuthUrl } from "@/lib/config/env"
 
 // NextAuth v4 reads NEXTAUTH_URL from process.env.
 // On Vercel Preview/Production, infer it from VERCEL_URL when not explicitly set.

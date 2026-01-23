@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/PageLayout'
-import { getPOIById } from '@/lib/data'
+import { getPOIById } from '@/lib/data/mock'
 import { useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/SearchContext'
 import { useCart } from '@/components/CartContext'

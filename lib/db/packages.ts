@@ -2,9 +2,9 @@
  * Travel Package database operations
  */
 
-import clientPromise from '@/lib/mongodb'
+import clientPromise from '@/lib/config/mongodb'
 import { ObjectId } from 'mongodb'
-import { getMongoDbName } from '@/lib/env'
+import { getMongoDbName } from '@/lib/config/env'
 import type { TravelPackage, PackageCategory, CreateInput, UpdateInput } from '@/types'
 import { convertIdToString, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
 

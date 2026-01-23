@@ -6,7 +6,7 @@ import { SidebarProvider } from '@/components/SidebarContext'
 import { RouteProvider } from '@/components/RouteContext'
 import { SearchProvider } from '@/components/SearchContext'
 import { CartProvider } from '@/components/CartContext'
-import { getTmapApiKey } from '@/lib/env'
+import { getTmapApiKey } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'B4K',

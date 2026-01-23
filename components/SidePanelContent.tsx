@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Route } from '@/lib/routes'
+import { Route } from '@/lib/services/routes'
 import { useSearchResult } from './SearchContext'
 import { useCart } from './CartContext'
-import { getPOIById, getContentCategory } from '@/lib/data'
+import { getPOIById, getContentCategory } from '@/lib/data/mock'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 
 interface SidePanelItem {

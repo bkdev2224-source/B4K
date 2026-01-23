@@ -2,7 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation'
 import PageLayout from '@/components/PageLayout'
-import { getRouteById } from '@/lib/routes'
+import { getRouteById } from '@/lib/services/routes'
 
 export default function RouteDetailPage() {
   const router = useRouter()

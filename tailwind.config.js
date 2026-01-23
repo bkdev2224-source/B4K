@@ -1,3 +1,5 @@
+const { designTokens } = require('./lib/config/design-tokens/tokens.js')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -31,8 +33,51 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#62256e',
+        // Primary brand color
+        primary: {
+          DEFAULT: designTokens.colors.primary.DEFAULT,
+          ...designTokens.colors.primary,
+        },
+        // Purple palette
+        purple: {
+          ...designTokens.colors.purple,
+          glow: designTokens.colors.purple.glow,
+          bright: designTokens.colors.purple.bright,
+          dark: designTokens.colors.purple.dark,
+        },
+        // Pink palette
+        pink: designTokens.colors.pink,
+        // Gray/Neutral palette
+        gray: designTokens.colors.gray,
+        // Background colors
+        background: designTokens.colors.background,
+        // Text colors
+        text: designTokens.colors.text,
+        // Status colors
+        status: designTokens.colors.status,
+        // Semantic colors
+        semantic: designTokens.colors.semantic,
       },
+      spacing: {
+        ...designTokens.spacing,
+        sidebar: designTokens.spacing.sidebar,
+        topNav: designTokens.spacing.topNav,
+        panel: designTokens.spacing.panel,
+      },
+      fontFamily: designTokens.typography.fontFamily,
+      fontSize: designTokens.typography.fontSize,
+      fontWeight: designTokens.typography.fontWeight,
+      lineHeight: designTokens.typography.lineHeight,
+      borderRadius: designTokens.borderRadius,
+      boxShadow: {
+        ...designTokens.shadows,
+        'purple-sm': designTokens.shadows.purple.sm,
+        'purple-md': designTokens.shadows.purple.md,
+        'purple-lg': designTokens.shadows.purple.lg,
+      },
+      zIndex: designTokens.zIndex,
+      transitionDuration: designTokens.transitions.duration,
+      transitionTimingFunction: designTokens.transitions.easing,
     },
   },
   plugins: [],

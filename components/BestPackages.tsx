@@ -1,7 +1,7 @@
 "use client"
 
 import PackageCarousel from './PackageCarousel'
-import { getAllPackages } from '@/lib/data'
+import { getAllPackages } from '@/lib/data/mock'
 
 export default function BestPackages() {
   const allPackages = getAllPackages()

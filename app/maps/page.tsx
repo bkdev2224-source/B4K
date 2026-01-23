@@ -163,7 +163,7 @@ export default function MapsPage() {
       })
       .filter((item): item is { poi: NonNullable<ReturnType<typeof getPOIById>>; order: number; cartItemId: string } => item !== null)
       .sort((a, b) => a.order - b.order)
-  }, [cartItems, cartOrderMap, allPOIs])
+  }, [cartItems, cartOrderMap])
 
   // Cart scroll functionality
   const cartScrollRef = useRef<HTMLDivElement>(null)

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import PageLayout from '@/components/PageLayout'
-import { getPOIById, KContent } from '@/lib/data'
+import { getPOIById } from '@/lib/data'
+import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
 
 type AccentKey = 'purple' | 'pink' | 'amber' | 'emerald'
@@ -149,7 +150,7 @@ export default async function ContentsPage() {
         const dbContents = await getKContentsByCategoryDB(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival')
         const contents = dbContents.map((content) => ({
           subName: content.subName,
-          poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+          poiId: { $oid: content.poiId },
           spotName: content.spotName,
           description: content.description,
           tags: content.tags,

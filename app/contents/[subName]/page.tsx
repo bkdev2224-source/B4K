@@ -2,7 +2,8 @@
 
 import { useRouter, useParams } from 'next/navigation'
 import PageLayout from '@/components/PageLayout'
-import { getPOIById, getContentCategory, KContent } from '@/lib/data'
+import { getPOIById, getContentCategory } from '@/lib/data'
+import type { KContentJson } from '@/types'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/SearchContext'
 import Link from 'next/link'

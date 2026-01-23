@@ -1,36 +1,24 @@
+/**
+ * KContent database operations
+ */
+
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 import { getMongoDbName } from '@/lib/env'
-
-export interface KContent {
-  _id: ObjectId | string
-  subName: string
-  poiId: ObjectId | string
-  spotName: string
-  description: string
-  tags: string[]
-  popularity?: number
-  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
-  images?: string[] // 여러 이미지 URL 배열
-  createdAt?: Date
-  updatedAt?: Date
-}
+import type { KContent, KContentCategory, CreateInput, UpdateInput } from '@/types'
+import { convertKContent, convertKContents, createTimestamps, updateTimestamp } from './utils'
 
 const COLLECTION_NAME = 'kcontents'
 
 /**
- * 모든 KContent 조회
+ * Get all KContents
  */
-export async function getAllKContents(): Promise<KContent[]> {
+export async function getAllKContents(): Promise<Array<KContent & { _id: string; poiId: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     const contents = await db.collection<KContent>(COLLECTION_NAME).find({}).toArray()
-    return contents.map(content => ({
-      ...content,
-      _id: content._id.toString(),
-      poiId: content.poiId instanceof ObjectId ? content.poiId.toString() : content.poiId,
-    }))
+    return convertKContents(contents)
   } catch (error) {
     console.error('Error fetching KContents:', error)
     throw error
@@ -38,9 +26,11 @@ export async function getAllKContents(): Promise<KContent[]> {
 }
 
 /**
- * ID로 KContent 조회
+ * Get KContent by ID
  */
-export async function getKContentById(contentId: string): Promise<KContent | null> {
+export async function getKContentById(
+  contentId: string
+): Promise<(KContent & { _id: string; poiId: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -50,11 +40,7 @@ export async function getKContentById(contentId: string): Promise<KContent | nul
     
     if (!content) return null
     
-    return {
-      ...content,
-      _id: content._id.toString(),
-      poiId: content.poiId instanceof ObjectId ? content.poiId.toString() : content.poiId,
-    }
+    return convertKContent(content)
   } catch (error) {
     console.error('Error fetching KContent by ID:', error)
     return null
@@ -62,24 +48,23 @@ export async function getKContentById(contentId: string): Promise<KContent | nul
 }
 
 /**
- * POI ID로 KContent 조회
+ * Get KContents by POI ID (supports both string IDs and ObjectIds)
  */
-export async function getKContentsByPOIId(poiId: string): Promise<KContent[]> {
+export async function getKContentsByPOIId(
+  poiId: string
+): Promise<Array<KContent & { _id: string; poiId: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
-    // poiId는 문자열(poi_001 등) 또는 ObjectId(24hex) 둘 다 지원
-    const query =
-      ObjectId.isValid(poiId)
-        ? { $or: [{ poiId }, { poiId: new ObjectId(poiId) }] }
-        : { poiId }
+    
+    // Support both string IDs (poi_001) and ObjectIds (24hex)
+    const query = ObjectId.isValid(poiId)
+      ? { $or: [{ poiId }, { poiId: new ObjectId(poiId) }] }
+      : { poiId }
+    
     const contents = await db.collection<KContent>(COLLECTION_NAME).find(query as any).toArray()
     
-    return contents.map(content => ({
-      ...content,
-      _id: content._id.toString(),
-      poiId: content.poiId instanceof ObjectId ? content.poiId.toString() : content.poiId,
-    }))
+    return convertKContents(contents)
   } catch (error) {
     console.error('Error fetching KContents by POI ID:', error)
     return []
@@ -87,11 +72,11 @@ export async function getKContentsByPOIId(poiId: string): Promise<KContent[]> {
 }
 
 /**
- * 카테고리로 KContent 조회
+ * Get KContents by category
  */
 export async function getKContentsByCategory(
-  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
-): Promise<KContent[]> {
+  category: KContentCategory
+): Promise<Array<KContent & { _id: string; poiId: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -99,11 +84,7 @@ export async function getKContentsByCategory(
       category,
     }).toArray()
     
-    return contents.map(content => ({
-      ...content,
-      _id: content._id.toString(),
-      poiId: content.poiId instanceof ObjectId ? content.poiId.toString() : content.poiId,
-    }))
+    return convertKContents(contents)
   } catch (error) {
     console.error('Error fetching KContents by category:', error)
     return []
@@ -111,9 +92,11 @@ export async function getKContentsByCategory(
 }
 
 /**
- * subName으로 KContent 조회
+ * Get KContents by subName
  */
-export async function getKContentsBySubName(subName: string): Promise<KContent[]> {
+export async function getKContentsBySubName(
+  subName: string
+): Promise<Array<KContent & { _id: string; poiId: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -121,11 +104,7 @@ export async function getKContentsBySubName(subName: string): Promise<KContent[]
       subName,
     }).toArray()
     
-    return contents.map(content => ({
-      ...content,
-      _id: content._id.toString(),
-      poiId: content.poiId instanceof ObjectId ? content.poiId.toString() : content.poiId,
-    }))
+    return convertKContents(contents)
   } catch (error) {
     console.error('Error fetching KContents by subName:', error)
     return []
@@ -133,33 +112,29 @@ export async function getKContentsBySubName(subName: string): Promise<KContent[]
 }
 
 /**
- * KContent 생성
+ * Create a new KContent
  */
 export async function createKContent(
-  contentData: Omit<KContent, '_id' | 'createdAt' | 'updatedAt'>
-): Promise<KContent> {
+  contentData: CreateInput<KContent>
+): Promise<KContent & { _id: string; poiId: string }> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
-    const now = new Date()
-    const poiId = contentData.poiId
- 
+    
     const result = await db.collection<KContent>(COLLECTION_NAME).insertOne({
       ...contentData,
-      poiId,
-      createdAt: now,
-      updatedAt: now,
+      ...createTimestamps(),
     } as any)
     
     const content = await db.collection<KContent>(COLLECTION_NAME).findOne({
       _id: result.insertedId,
     })
     
-    return {
-      ...content!,
-      _id: content!._id.toString(),
-      poiId: content!.poiId instanceof ObjectId ? content!.poiId.toString() : content!.poiId,
+    if (!content) {
+      throw new Error('Failed to retrieve created KContent')
     }
+    
+    return convertKContent(content)
   } catch (error) {
     console.error('Error creating KContent:', error)
     throw error
@@ -167,12 +142,12 @@ export async function createKContent(
 }
 
 /**
- * KContent 업데이트
+ * Update an existing KContent
  */
 export async function updateKContent(
   contentId: string,
-  updateData: Partial<Omit<KContent, '_id' | 'createdAt'>>
-): Promise<KContent | null> {
+  updateData: UpdateInput<KContent>
+): Promise<(KContent & { _id: string; poiId: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -182,7 +157,7 @@ export async function updateKContent(
       {
         $set: {
           ...updateData,
-          updatedAt: new Date(),
+          ...updateTimestamp(),
         },
       },
       { returnDocument: 'after' }
@@ -191,11 +166,7 @@ export async function updateKContent(
     const updated = result?.value
     if (!updated) return null
 
-    return {
-      ...updated,
-      _id: updated._id.toString(),
-      poiId: updated.poiId instanceof ObjectId ? updated.poiId.toString() : updated.poiId,
-    }
+    return convertKContent(updated)
   } catch (error) {
     console.error('Error updating KContent:', error)
     return null
@@ -203,7 +174,7 @@ export async function updateKContent(
 }
 
 /**
- * KContent 삭제
+ * Delete a KContent
  */
 export async function deleteKContent(contentId: string): Promise<boolean> {
   try {
@@ -220,4 +191,3 @@ export async function deleteKContent(contentId: string): Promise<boolean> {
     return false
   }
 }
-

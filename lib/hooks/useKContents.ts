@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { KContent } from '@/lib/data'
+import type { KContentJson } from '@/types'
 
-async function fetchKContents(url: string): Promise<KContent[]> {
+async function fetchKContents(url: string): Promise<KContentJson[]> {
   const res = await fetch(url)
   if (!res.ok) {
     // API가 500이면 보통 { error: "..." } 형태가 오므로 텍스트로 남김
@@ -16,14 +16,14 @@ async function fetchKContents(url: string): Promise<KContent[]> {
     // { error: ... } 같은 형태가 오면 여기로 들어옴 → UI 크래시 방지
     throw new Error('Invalid kcontents response (expected array).')
   }
-  return data as KContent[]
+  return data as KContentJson[]
 }
 
 /**
  * 클라이언트 컴포넌트에서 KContents를 가져오는 훅
  */
 export function useKContents() {
-  const [contents, setContents] = useState<KContent[]>([])
+  const [contents, setContents] = useState<KContentJson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,7 +54,7 @@ export function useKContents() {
 }
 
 export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival') {
-  const [contents, setContents] = useState<KContent[]>([])
+  const [contents, setContents] = useState<KContentJson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -85,7 +85,7 @@ export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 
 }
 
 export function useKContentsByPOIId(poiId: string) {
-  const [contents, setContents] = useState<KContent[]>([])
+  const [contents, setContents] = useState<KContentJson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -121,7 +121,7 @@ export function useKContentsByPOIId(poiId: string) {
 }
 
 export function useKContentsBySubName(subName: string) {
-  const [contents, setContents] = useState<KContent[]>([])
+  const [contents, setContents] = useState<KContentJson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

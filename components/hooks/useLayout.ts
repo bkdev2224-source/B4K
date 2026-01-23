@@ -48,7 +48,6 @@ export function useLayout(options: UseLayoutOptions = {}) {
       return 'routes'
     }
     
-    
     // For routes pages with 'routes' width
     if (isRoutesPage && sidePanelWidth === 'routes') {
       // Maps page exception: show route panel as an overlay (do NOT shrink map/main)
@@ -63,7 +62,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
     }
     
     return sidePanelWidth
-  }, [showSidePanel, sidePanelWidth, isRoutesPage, hasRoute, sidebarOpen, pathname, searchResult])
+  }, [showSidePanel, sidePanelWidth, isRoutesPage, pathname, searchResult])
 
   // Determine side panel type
   const sidePanelType = useMemo((): 'home' | 'contents' | 'route' | 'search' | null => {
@@ -71,7 +70,6 @@ export function useLayout(options: UseLayoutOptions = {}) {
     if (isRoutesPage && searchResult) {
       return 'search'
     }
-    
     
     // For routes pages
     if (isRoutesPage && sidePanelWidth === 'routes' && hasRoute) {
@@ -85,7 +83,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
     }
     
     return null
-  }, [isRoutesPage, sidePanelWidth, hasRoute, sidebarOpen, pathname, searchResult])
+  }, [isRoutesPage, sidePanelWidth, hasRoute, pathname, searchResult])
 
   // Calculate main content classes
   const mainClasses = useMemo(() => {

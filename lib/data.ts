@@ -1,68 +1,48 @@
+/**
+ * Mock data access functions (for static JSON files)
+ * 
+ * Note: These functions work with static JSON files from mockupdata.
+ * For MongoDB operations, use functions from lib/db/
+ */
+
 import poisData from '@/mockupdata/pois.json'
 import packagesData from '@/mockupdata/packages.json'
+import type { POIJson, TravelPackageJson, KContentJson, KContentCategory } from '@/types'
 
-export interface POI {
-  _id: { $oid: string }
-  name: string
-  address: string
-  location: {
-    type: string
-    coordinates: number[]
-  }
-  categoryTags: string[]
-  openingHours: string
-  entryFee: string
-  needsReservation: boolean
+/**
+ * Get all POIs from static JSON data
+ */
+export function getAllPOIs(): POIJson[] {
+  return poisData as POIJson[]
 }
 
-export interface KContent {
-  subName: string
-  poiId: { $oid: string }
-  spotName: string
-  description: string
-  tags: string[]
-  popularity?: number
-  [key: string]: any
+/**
+ * Get POI by ID from static JSON data
+ */
+export function getPOIById(poiId: string): POIJson | undefined {
+  return (poisData as POIJson[]).find((poi) => poi._id.$oid === poiId)
 }
 
-export function getAllPOIs(): POI[] {
-  return poisData as POI[]
-}
-
-export function getPOIById(poiId: string): POI | undefined {
-  return (poisData as POI[]).find((poi) => poi._id.$oid === poiId)
-}
-
-// K-Content가 어떤 카테고리에 속하는지 확인
-export function getContentCategory(content: KContent): 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | null {
-  // content 객체에 category 필드가 있으면 사용
+/**
+ * Get content category from KContent object
+ */
+export function getContentCategory(content: KContentJson): KContentCategory | null {
   if ('category' in content && content.category) {
-    return content.category as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+    return content.category as KContentCategory
   }
   return null
 }
 
-export interface TravelPackage {
-  _id: { $oid: string }
-  name: string
-  duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
-  itinerary: Array<{
-    day: number
-    city: string
-    activities: string[]
-  }>
-  category: 'kpop' | 'kdrama' | 'all'
-  imageUrl: string
+/**
+ * Get all packages from static JSON data
+ */
+export function getAllPackages(): TravelPackageJson[] {
+  return packagesData as TravelPackageJson[]
 }
 
-export function getAllPackages(): TravelPackage[] {
-  return packagesData as TravelPackage[]
-}
-
-export function getPackageById(packageId: string): TravelPackage | undefined {
-  return (packagesData as TravelPackage[]).find((pkg) => pkg._id.$oid === packageId)
+/**
+ * Get package by ID from static JSON data
+ */
+export function getPackageById(packageId: string): TravelPackageJson | undefined {
+  return (packagesData as TravelPackageJson[]).find((pkg) => pkg._id.$oid === packageId)
 }

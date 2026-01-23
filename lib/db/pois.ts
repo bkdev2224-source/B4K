@@ -1,45 +1,23 @@
-import clientPromise from '@/lib/mongodb'
-import { ObjectId } from 'mongodb'
-import { getMongoDbName } from '@/lib/env'
+/**
+ * POI (Point of Interest) database operations
+ */
 
-export interface POI {
-  _id: ObjectId | string
-  name: string
-  address: string
-  location: {
-    type: string
-    coordinates: number[]
-  }
-  categoryTags: string[]
-  openingHours: string
-  entryFee: string
-  needsReservation: boolean
-  createdAt?: Date
-  updatedAt?: Date
-}
+import clientPromise from '@/lib/mongodb'
+import { getMongoDbName } from '@/lib/env'
+import type { POI, CreateInput, UpdateInput } from '@/types'
+import { buildIdQuery, convertPOI, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
 
 const COLLECTION_NAME = 'pois'
 
-function buildIdQuery(id: string) {
-  // 지원: 문자열 _id (poi_001 등) + ObjectId _id(24hex)
-  if (ObjectId.isValid(id)) {
-    return { $or: [{ _id: id }, { _id: new ObjectId(id) }] }
-  }
-  return { _id: id }
-}
-
 /**
- * 모든 POI 조회
+ * Get all POIs
  */
-export async function getAllPOIs(): Promise<POI[]> {
+export async function getAllPOIs(): Promise<Array<POI & { _id: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     const pois = await db.collection<POI>(COLLECTION_NAME).find({}).toArray()
-    return pois.map(poi => ({
-      ...poi,
-      _id: poi._id.toString(),
-    }))
+    return convertIdsToString(pois)
   } catch (error) {
     console.error('Error fetching POIs:', error)
     throw error
@@ -47,9 +25,9 @@ export async function getAllPOIs(): Promise<POI[]> {
 }
 
 /**
- * ID로 POI 조회
+ * Get POI by ID (supports both string IDs and ObjectIds)
  */
-export async function getPOIById(poiId: string): Promise<POI | null> {
+export async function getPOIById(poiId: string): Promise<(POI & { _id: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -57,10 +35,7 @@ export async function getPOIById(poiId: string): Promise<POI | null> {
     
     if (!poi) return null
     
-    return {
-      ...poi,
-      _id: poi._id.toString(),
-    }
+    return convertPOI(poi)
   } catch (error) {
     console.error('Error fetching POI by ID:', error)
     return null
@@ -68,28 +43,27 @@ export async function getPOIById(poiId: string): Promise<POI | null> {
 }
 
 /**
- * POI 생성
+ * Create a new POI
  */
-export async function createPOI(poiData: Omit<POI, '_id' | 'createdAt' | 'updatedAt'>): Promise<POI> {
+export async function createPOI(poiData: CreateInput<POI>): Promise<POI & { _id: string }> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
-    const now = new Date()
     
     const result = await db.collection<POI>(COLLECTION_NAME).insertOne({
       ...poiData,
-      createdAt: now,
-      updatedAt: now,
+      ...createTimestamps(),
     } as any)
     
     const poi = await db.collection<POI>(COLLECTION_NAME).findOne({
       _id: result.insertedId,
     })
     
-    return {
-      ...poi!,
-      _id: poi!._id.toString(),
+    if (!poi) {
+      throw new Error('Failed to retrieve created POI')
     }
+    
+    return convertPOI(poi)
   } catch (error) {
     console.error('Error creating POI:', error)
     throw error
@@ -97,12 +71,12 @@ export async function createPOI(poiData: Omit<POI, '_id' | 'createdAt' | 'update
 }
 
 /**
- * POI 업데이트
+ * Update an existing POI
  */
 export async function updatePOI(
   poiId: string,
-  updateData: Partial<Omit<POI, '_id' | 'createdAt'>>
-): Promise<POI | null> {
+  updateData: UpdateInput<POI>
+): Promise<(POI & { _id: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -112,7 +86,7 @@ export async function updatePOI(
       {
         $set: {
           ...updateData,
-          updatedAt: new Date(),
+          ...updateTimestamp(),
         },
       },
       { returnDocument: 'after' }
@@ -121,10 +95,7 @@ export async function updatePOI(
     const updated = result?.value
     if (!updated) return null
 
-    return {
-      ...updated,
-      _id: updated._id.toString(),
-    }
+    return convertPOI(updated)
   } catch (error) {
     console.error('Error updating POI:', error)
     return null
@@ -132,16 +103,16 @@ export async function updatePOI(
 }
 
 /**
- * POI 삭제
+ * Delete a POI
  */
 export async function deletePOI(poiId: string): Promise<boolean> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     
-    const result = await db.collection<POI>(COLLECTION_NAME).deleteOne({
-      ...(buildIdQuery(poiId) as any),
-    })
+    const result = await db.collection<POI>(COLLECTION_NAME).deleteOne(
+      buildIdQuery(poiId) as any
+    )
     
     return result.deletedCount > 0
   } catch (error) {
@@ -151,9 +122,9 @@ export async function deletePOI(poiId: string): Promise<boolean> {
 }
 
 /**
- * 카테고리 태그로 POI 검색
+ * Get POIs by category tag
  */
-export async function getPOIsByCategory(category: string): Promise<POI[]> {
+export async function getPOIsByCategory(category: string): Promise<Array<POI & { _id: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -161,13 +132,9 @@ export async function getPOIsByCategory(category: string): Promise<POI[]> {
       categoryTags: category,
     }).toArray()
     
-    return pois.map(poi => ({
-      ...poi,
-      _id: poi._id.toString(),
-    }))
+    return convertIdsToString(pois)
   } catch (error) {
     console.error('Error fetching POIs by category:', error)
     return []
   }
 }
-

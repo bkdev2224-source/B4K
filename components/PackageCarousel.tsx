@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { TravelPackage } from '@/lib/data'
+import type { TravelPackageJson as TravelPackage } from '@/types'
 
 interface PackageCarouselProps {
   packages: TravelPackage[]

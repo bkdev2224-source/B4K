@@ -32,9 +32,10 @@ export async function GET(request: NextRequest) {
     }
 
     // MongoDB 형식을 기존 JSON 형식으로 변환
+    // Note: contents already have poiId as string from db functions
     const formattedContents = contents.map(content => ({
       subName: content.subName,
-      poiId: { $oid: typeof content.poiId === 'string' ? content.poiId : content.poiId.toString() },
+      poiId: { $oid: content.poiId },
       spotName: content.spotName,
       description: content.description,
       tags: content.tags,

@@ -1,41 +1,24 @@
+/**
+ * Travel Package database operations
+ */
+
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 import { getMongoDbName } from '@/lib/env'
-
-export interface TravelPackage {
-  _id: ObjectId | string
-  name: string
-  duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
-  itinerary: Array<{
-    day: number
-    city: string
-    activities: string[]
-  }>
-  category: 'kpop' | 'kdrama' | 'all'
-  imageUrl: string
-  images?: string[] // 여러 이미지 URL 배열
-  createdAt?: Date
-  updatedAt?: Date
-}
+import type { TravelPackage, PackageCategory, CreateInput, UpdateInput } from '@/types'
+import { convertIdToString, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
 
 const COLLECTION_NAME = 'packages'
 
 /**
- * 모든 패키지 조회
+ * Get all packages
  */
-export async function getAllPackages(): Promise<TravelPackage[]> {
+export async function getAllPackages(): Promise<Array<TravelPackage & { _id: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     const packages = await db.collection<TravelPackage>(COLLECTION_NAME).find({}).toArray()
-    return packages.map(pkg => ({
-      ...pkg,
-      _id: pkg._id.toString(),
-    }))
+    return convertIdsToString(packages)
   } catch (error) {
     console.error('Error fetching packages:', error)
     throw error
@@ -43,9 +26,11 @@ export async function getAllPackages(): Promise<TravelPackage[]> {
 }
 
 /**
- * ID로 패키지 조회
+ * Get package by ID
  */
-export async function getPackageById(packageId: string): Promise<TravelPackage | null> {
+export async function getPackageById(
+  packageId: string
+): Promise<(TravelPackage & { _id: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -55,10 +40,7 @@ export async function getPackageById(packageId: string): Promise<TravelPackage |
     
     if (!pkg) return null
     
-    return {
-      ...pkg,
-      _id: pkg._id.toString(),
-    }
+    return convertIdToString(pkg)
   } catch (error) {
     console.error('Error fetching package by ID:', error)
     return null
@@ -66,11 +48,11 @@ export async function getPackageById(packageId: string): Promise<TravelPackage |
 }
 
 /**
- * 카테고리로 패키지 조회
+ * Get packages by category
  */
 export async function getPackagesByCategory(
-  category: 'kpop' | 'kdrama' | 'all'
-): Promise<TravelPackage[]> {
+  category: PackageCategory
+): Promise<Array<TravelPackage & { _id: string }>> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -78,10 +60,7 @@ export async function getPackagesByCategory(
       category,
     }).toArray()
     
-    return packages.map(pkg => ({
-      ...pkg,
-      _id: pkg._id.toString(),
-    }))
+    return convertIdsToString(packages)
   } catch (error) {
     console.error('Error fetching packages by category:', error)
     return []
@@ -89,30 +68,29 @@ export async function getPackagesByCategory(
 }
 
 /**
- * 패키지 생성
+ * Create a new package
  */
 export async function createPackage(
-  packageData: Omit<TravelPackage, '_id' | 'createdAt' | 'updatedAt'>
-): Promise<TravelPackage> {
+  packageData: CreateInput<TravelPackage>
+): Promise<TravelPackage & { _id: string }> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
-    const now = new Date()
     
     const result = await db.collection<TravelPackage>(COLLECTION_NAME).insertOne({
       ...packageData,
-      createdAt: now,
-      updatedAt: now,
+      ...createTimestamps(),
     } as any)
     
     const pkg = await db.collection<TravelPackage>(COLLECTION_NAME).findOne({
       _id: result.insertedId,
     })
     
-    return {
-      ...pkg!,
-      _id: pkg!._id.toString(),
+    if (!pkg) {
+      throw new Error('Failed to retrieve created package')
     }
+    
+    return convertIdToString(pkg)
   } catch (error) {
     console.error('Error creating package:', error)
     throw error
@@ -120,12 +98,12 @@ export async function createPackage(
 }
 
 /**
- * 패키지 업데이트
+ * Update an existing package
  */
 export async function updatePackage(
   packageId: string,
-  updateData: Partial<Omit<TravelPackage, '_id' | 'createdAt'>>
-): Promise<TravelPackage | null> {
+  updateData: UpdateInput<TravelPackage>
+): Promise<(TravelPackage & { _id: string }) | null> {
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
@@ -135,7 +113,7 @@ export async function updatePackage(
       {
         $set: {
           ...updateData,
-          updatedAt: new Date(),
+          ...updateTimestamp(),
         },
       },
       { returnDocument: 'after' }
@@ -144,10 +122,7 @@ export async function updatePackage(
     const updated = result?.value
     if (!updated) return null
 
-    return {
-      ...updated,
-      _id: updated._id.toString(),
-    }
+    return convertIdToString(updated)
   } catch (error) {
     console.error('Error updating package:', error)
     return null
@@ -155,7 +130,7 @@ export async function updatePackage(
 }
 
 /**
- * 패키지 삭제
+ * Delete a package
  */
 export async function deletePackage(packageId: string): Promise<boolean> {
   try {
@@ -172,4 +147,3 @@ export async function deletePackage(packageId: string): Promise<boolean> {
     return false
   }
 }
-

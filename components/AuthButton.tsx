@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { useSession, signOut } from "next-auth/react"
 import Link from 'next/link'
 
@@ -39,10 +40,11 @@ export default function AuthButton() {
           className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-purple-400 hover:border-purple-300 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-black"
         >
           {session.user?.image ? (
-            <img
+            <Image
               src={session.user.image}
               alt={session.user.name || "User"}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">

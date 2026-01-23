@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
-import { POI } from '@/lib/data'
+import type { POIJson as POI } from '@/types'
 import { useSearchResult } from './SearchContext'
 
 interface TMapProps {

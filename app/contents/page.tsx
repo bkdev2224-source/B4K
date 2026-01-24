@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import PageLayout from '@/components/PageLayout'
 import { getPOIById } from '@/lib/data/mock'
 import type { KContentJson as KContent } from '@/types'
@@ -100,10 +101,12 @@ function ContentCard({ content, accent, poi }: { content: KContent; accent: Acce
     >
       <div className={`relative overflow-hidden rounded-xl bg-white border border-gray-200 ${accentStyle.borderHover} transition-all duration-300 hover:shadow-lg ${accentStyle.shadow} hover:scale-[1.02] h-full`}>
         <div className="relative h-48 overflow-hidden">
-          <img
+          <Image
             src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/800/600`}
             alt={content.spotName}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute top-4 left-4 flex items-center gap-2">
             <span className={`px-3 py-1 ${accentStyle.badge} rounded-full text-white text-xs font-semibold`}>

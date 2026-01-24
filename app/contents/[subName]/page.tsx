@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import PageLayout from '@/components/PageLayout'
 import { getPOIById, getContentCategory } from '@/lib/data/mock'
 import type { KContentJson } from '@/types'
@@ -85,10 +86,13 @@ export default function ContentDetailPage() {
     <PageLayout showSidePanel={false}>
       {/* Banner image */}
       <div className="relative h-96">
-        <img
+        <Image
           src={`https://picsum.photos/seed/${subName}/1920/600`}
           alt={subName}
-          className="w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
         />
         <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/60 to-transparent">
           <div className="container mx-auto">
@@ -172,11 +176,13 @@ export default function ContentDetailPage() {
                               </span>
                             )}
                           </div>
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                            <img
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <Image
                               src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/100/100`}
                               alt={content.spotName}
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="48px"
+                              className="object-cover"
                             />
                           </div>
                         </div>

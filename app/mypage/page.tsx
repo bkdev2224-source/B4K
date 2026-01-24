@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from 'next/image'
 import PageLayout from '@/components/PageLayout'
 
 export default function MyPage() {
@@ -31,10 +32,12 @@ export default function MyPage() {
           <div className="bg-purple-900/40 border border-purple-500/30 rounded-xl p-6">
             <div className="flex items-center gap-4 mb-6">
               {session.user?.image ? (
-                <img
+                <Image
                   src={session.user.image}
                   alt={session.user.name || "User"}
-                  className="w-20 h-20 rounded-full border-2 border-purple-400"
+                  width={80}
+                  height={80}
+                  className="rounded-full border-2 border-purple-400"
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold border-2 border-purple-400">

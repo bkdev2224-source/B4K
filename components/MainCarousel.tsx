@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 const images = [
   {
@@ -72,10 +73,13 @@ export default function MainCarousel() {
             className="min-w-full h-full relative"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-purple-900/30 to-transparent z-10" />
-            <img
+            <Image
               src={image.url}
               alt={image.title}
-              className="w-full h-full object-cover"
+              fill
+              sizes="100vw"
+              className="object-cover"
+              priority={image.id === 1}
             />
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 lg:p-16 z-20">
               <div className="container mx-auto max-w-7xl">

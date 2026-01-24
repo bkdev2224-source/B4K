@@ -5,9 +5,10 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 export interface CartItem {
   id: string
   name: string
-  type: 'poi' | 'content'
+  type: 'poi' | 'content' | 'package'
   poiId?: string
   subName?: string
+  packageId?: string
 }
 
 interface CartContextType {

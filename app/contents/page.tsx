@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPOIById } from '@/lib/data/mock'
 import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
+import { getPOIById } from '@/lib/db/pois'
 import { getContentTypeLabel, getLogoSrcBySubName } from '@/lib/utils/logo'
 
 const categorySections = [
@@ -42,7 +42,7 @@ function LogoContentCard({
   category,
 }: {
   content: KContent
-  poi?: { name: string }
+  poi?: { name: string } | null
   category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
 }) {
   const logoSrc = getLogoSrcBySubName(content.subName)

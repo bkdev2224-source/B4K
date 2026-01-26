@@ -8,8 +8,8 @@ import AuthButton from '@/components/auth/AuthButton'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useRoute } from '@/components/providers/RouteContext'
 import { useSearchResult } from '@/components/providers/SearchContext'
-import { getAllPOIs } from '@/lib/data/mock'
 import { useKContents } from '@/lib/hooks/useKContents'
+import { usePOIs } from '@/lib/hooks/usePOIs'
 
 interface TopNavProps {
   searchQuery?: string
@@ -80,11 +80,11 @@ export default function TopNav({
 
   // 관련 검색어 계산 (POI 이름, 주소, 태그, subName 포함)
   const { contents: allKContents } = useKContents()
+  const { pois: allPOIs } = usePOIs()
   
   const relatedSearches = useMemo(() => {
     if (!searchQuery.trim()) return []
     
-    const allPOIs = getAllPOIs()
     const query = searchQuery.toLowerCase()
     const results: SearchResult[] = []
     const addedNames = new Set<string>()
@@ -114,7 +114,6 @@ export default function TopNav({
 
   // 추천 검색어 결과 (POI ID 또는 subName 포함)
   const recommendedResults = useMemo(() => {
-    const allPOIs = getAllPOIs()
     const results: SearchResult[] = []
     
     RECOMMENDED_SEARCHES.forEach(recommended => {
@@ -168,7 +167,7 @@ export default function TopNav({
       if (result.type === 'poi' && result.poiId) {
         router.push(`/poi/${result.poiId}`)
       } else if (result.type === 'content' && result.subName) {
-        router.push(`/contents/${encodeURIComponent(result.subName)}`)
+        router.push(`/contents/${result.subName}`)
       }
     }
     onSearchChange?.(result.name)

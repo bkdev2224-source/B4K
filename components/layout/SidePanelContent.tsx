@@ -5,8 +5,9 @@ import { useState } from 'react'
 import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
-import { getPOIById, getContentCategory } from '@/lib/data/mock'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
+import { usePOIs } from '@/lib/hooks/usePOIs'
+import { useMemo } from 'react'
 
 interface SidePanelItem {
   id: string
@@ -25,6 +26,8 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const [activeTab, setActiveTab] = useState<'home' | 'reviews' | 'photos' | 'info'>('home')
   const { searchResult, setSearchResult, showMapRoute, setShowMapRoute } = useSearchResult()
   const { cartItems, addToCart, removeFromCart, isInCart } = useCart()
+  const { pois } = usePOIs()
+  const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
 
   // Hooks must be called unconditionally (rules-of-hooks)
   const searchSubName =
@@ -354,9 +357,10 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   // Render search result
   if (type === 'search' && searchResult) {
-    const poi = searchResult.type === 'poi' && searchResult.poiId 
-      ? getPOIById(searchResult.poiId) 
-      : null
+    const poi =
+      searchResult.type === 'poi' && searchResult.poiId
+        ? poiById.get(searchResult.poiId) ?? null
+        : null
     
     const contents = searchResult.type === 'content' && searchResult.subName
       ? contentsBySubName
@@ -491,7 +495,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
               <div className="space-y-2">
                 {contents.map((content, idx) => {
-                  const contentPoi = getPOIById(content.poiId.$oid)
+                  const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <button
                       key={idx}
@@ -527,7 +531,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
               </div>
 
               <Link
-                href={`/contents/${encodeURIComponent(searchResult.subName || '')}`}
+                href={`/contents/${searchResult.subName || ''}`}
                 className="block w-full py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-center"
               >
                 View All Spots &gt;

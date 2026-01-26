@@ -3,12 +3,13 @@
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPOIById, getContentCategory } from '@/lib/data/mock'
 import type { KContentJson } from '@/types'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import Link from 'next/link'
 import { LoadingScreen } from '@/lib/utils/loading'
+import { useMemo } from 'react'
+import { usePOIs, usePOIById } from '@/lib/hooks/usePOIs'
 
 export default function ContentDetailPage() {
   const router = useRouter()
@@ -19,6 +20,15 @@ export default function ContentDetailPage() {
   const subName = decodeURIComponent(rawSubName)
   
   const { contents, loading, error } = useKContentsBySubName(subName)
+  const firstContent = contents[0]
+  const poiId = firstContent?.poiId?.$oid ?? ''
+  const category = (firstContent as any)?.category as string | undefined
+
+  // POI lookup (전체 POI 목록 기반)
+  const { pois } = usePOIs()
+  const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
+  // Banner/상단 표시에 쓸 POI (단건 조회)
+  const { poi } = usePOIById(poiId)
   
   // 로딩 중인데 contents가 비어있으면 "Not Found"가 잠깐 보이는 문제가 있어
   // loading 상태를 먼저 처리한다.
@@ -75,10 +85,7 @@ export default function ContentDetailPage() {
     )
   }
 
-  // 첫 번째 content의 정보 사용
-  const firstContent = contents[0]
-  const poi = getPOIById(firstContent.poiId.$oid)
-  const category = getContentCategory(firstContent)
+  // 첫 번째 content의 정보 사용 (이미 위에서 firstContent로 뽑아둠)
 
   const handleMapClick = () => {
     // SearchContext에 Content 검색 결과 저장
@@ -139,10 +146,10 @@ export default function ContentDetailPage() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  {category && (
+                  {category && category in categoryIcons && (
                     <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
-                      {categoryIcons[category]}
-                      <span className="text-sm font-medium">{categoryLabels[category]}</span>
+                      {categoryIcons[category as keyof typeof categoryIcons]}
+                      <span className="text-sm font-medium">{categoryLabels[category as keyof typeof categoryLabels]}</span>
                     </div>
                   )}
                 </div>
@@ -199,7 +206,7 @@ export default function ContentDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {contents.map((content, index) => {
-                  const contentPoi = getPOIById(content.poiId.$oid)
+                  const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <Link
                       key={index}

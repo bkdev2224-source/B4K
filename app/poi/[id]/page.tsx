@@ -3,11 +3,12 @@
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPOIById } from '@/lib/data/mock'
 import { useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
 import { useState } from 'react'
+import { usePOIById } from '@/lib/hooks/usePOIs'
+import { LoadingScreen } from '@/lib/utils/loading'
 
 export default function POIDetailPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function POIDetailPage() {
   const { addToCart, removeFromCart, isInCart } = useCart()
   const id = params?.id as string || ''
   
-  const poi = getPOIById(id)
+  const { poi, loading: poiLoading, error: poiError } = usePOIById(id)
   const { contents: kContents } = useKContentsByPOIId(id)
   const cartItemId = poi ? `poi-${poi._id.$oid}` : ''
   const inCart = cartItemId ? isInCart(cartItemId) : false
@@ -47,6 +48,33 @@ export default function POIDetailPage() {
         })
       }
     }
+  }
+
+  if (poiLoading) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <LoadingScreen label="Loading..." />
+      </PageLayout>
+    )
+  }
+
+  if (poiError) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{poiError}</p>
+            <button
+              onClick={() => router.push('/')}
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              Return to Home
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    )
   }
 
   if (!poi) {

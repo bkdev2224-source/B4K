@@ -3,8 +3,9 @@
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPackageById } from '@/lib/data/mock'
 import { useCart } from '@/components/providers/CartContext'
+import { usePackageById } from '@/lib/hooks/usePackages'
+import { LoadingScreen } from '@/lib/utils/loading'
 
 export default function PackageDetailPage() {
   const router = useRouter()
@@ -12,7 +13,7 @@ export default function PackageDetailPage() {
   const { addToCart, removeFromCart, isInCart } = useCart()
   const id = params?.id as string || ''
   
-  const pkg = getPackageById(id)
+  const { pkg, loading, error } = usePackageById(id)
   const cartItemId = pkg ? `package-${pkg._id.$oid}` : ''
   const inCart = cartItemId ? isInCart(cartItemId) : false
 
@@ -29,6 +30,33 @@ export default function PackageDetailPage() {
         })
       }
     }
+  }
+
+  if (loading) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <LoadingScreen label="Loading..." />
+      </PageLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{error}</p>
+            <button
+              onClick={() => router.push('/package')}
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              Return to Packages
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    )
   }
 
   if (!pkg) {

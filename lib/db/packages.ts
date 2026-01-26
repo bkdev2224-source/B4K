@@ -3,10 +3,9 @@
  */
 
 import clientPromise from '@/lib/config/mongodb'
-import { ObjectId } from 'mongodb'
 import { getMongoDbName } from '@/lib/config/env'
 import type { TravelPackage, PackageCategory, CreateInput, UpdateInput } from '@/types'
-import { convertIdToString, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
+import { buildIdQuery, convertIdToString, convertIdsToString, createTimestamps, updateTimestamp } from './utils'
 
 const COLLECTION_NAME = 'packages'
 
@@ -34,9 +33,11 @@ export async function getPackageById(
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
-    const pkg = await db.collection<TravelPackage>(COLLECTION_NAME).findOne({
-      _id: new ObjectId(packageId),
-    })
+
+    // Support both string IDs (package_001) and ObjectIds (24hex)
+    const pkg = await db.collection<TravelPackage>(COLLECTION_NAME).findOne(
+      buildIdQuery(packageId) as any
+    )
     
     if (!pkg) return null
     
@@ -108,7 +109,7 @@ export async function updatePackage(
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     const result = await db.collection<TravelPackage>(COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(packageId) },
+      buildIdQuery(packageId) as any,
       {
         $set: {
           ...updateData,
@@ -117,11 +118,10 @@ export async function updatePackage(
       },
       { returnDocument: 'after' }
     )
-    const updated = result.value
 
-    if (!updated) return null
+    if (!result?.value) return null
 
-    return convertIdToString(updated)
+    return convertIdToString(result.value)
   } catch (error) {
     console.error('Error updating package:', error)
     return null
@@ -136,9 +136,9 @@ export async function deletePackage(packageId: string): Promise<boolean> {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
     
-    const result = await db.collection<TravelPackage>(COLLECTION_NAME).deleteOne({
-      _id: new ObjectId(packageId),
-    })
+    const result = await db.collection<TravelPackage>(COLLECTION_NAME).deleteOne(
+      buildIdQuery(packageId) as any
+    )
     
     return result.deletedCount > 0
   } catch (error) {

@@ -1,10 +1,11 @@
 "use client"
 
 import PackageCarousel from '@/components/features/package/PackageCarousel'
-import { getAllPackages } from '@/lib/data/mock'
+import { usePackages } from '@/lib/hooks/usePackages'
+import { Loading } from '@/lib/utils/loading'
 
 export default function BestPackages() {
-  const allPackages = getAllPackages()
+  const { packages, loading } = usePackages()
 
   return (
     <section id="best-packages" className="w-full py-16 bg-gray-50 dark:bg-gray-900">
@@ -25,7 +26,7 @@ export default function BestPackages() {
           </div>
         </div>
 
-        <PackageCarousel packages={allPackages} />
+        {loading ? <Loading /> : <PackageCarousel packages={packages} />}
       </div>
     </section>
   )

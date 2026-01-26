@@ -28,7 +28,7 @@ export default function SidePanel({
 
   return (
     <div 
-      className={`${panelWidth} bg-white border-r border-gray-200 h-screen fixed z-30 transition-all duration-300 lg:block hidden ${
+      className={`${panelWidth} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed z-30 transition-all duration-300 lg:block hidden ${
         type === 'route' || type === 'search' ? 'overflow-y-auto' : ''
       }`}
       style={{ left: panelLeft }}

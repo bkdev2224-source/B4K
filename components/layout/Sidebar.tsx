@@ -40,7 +40,7 @@ export default function Sidebar() {
         />
       )}
       
-      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-white border-r border-gray-200 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
@@ -49,8 +49,7 @@ export default function Sidebar() {
             {/* B4K Home button */}
             <Link
               href="/"
-              className="text-xl font-bold transition-colors cursor-pointer"
-              style={{ color: '#62256e' }}
+              className="text-xl font-bold transition-colors cursor-pointer text-gray-900 dark:text-gray-100"
             >
               B4K
             </Link>
@@ -69,20 +68,16 @@ export default function Sidebar() {
                 href={item.href}
                 className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
                   isActive
-                    ? `${sidebarOpen ? 'border-l-4' : ''}` 
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? `${sidebarOpen ? 'border-l-4' : ''} bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100` 
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
-                style={isActive ? { 
-                  backgroundColor: 'rgba(98, 37, 110, 0.1)', 
-                  color: '#62256e',
-                  borderLeftColor: sidebarOpen ? '#62256e' : 'transparent'
-                } : {}}
+                style={isActive && sidebarOpen ? { borderLeftColor: 'currentColor' } : {}}
                 title={!sidebarOpen ? item.name : undefined}
               >
-                <span className={`${isActive ? '' : 'text-gray-600'} [&>svg]:stroke-current relative flex-shrink-0`} style={isActive ? { color: '#62256e' } : {}}>
+                <span className={`${isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'} [&>svg]:stroke-current relative flex-shrink-0`}>
                   {item.icon}
                   {item.badgeCount !== undefined && item.badgeCount > 0 && (
-                    <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 translate-x-1/2 -translate-y-1/2">
+                    <span className="absolute top-0 right-0 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 translate-x-1/2 -translate-y-1/2">
                       {item.badgeCount > 9 ? '9+' : item.badgeCount}
                     </span>
                   )}
@@ -97,35 +92,34 @@ export default function Sidebar() {
         <div className="flex-shrink-0 px-4 pb-4 pt-2">
           <button
             onClick={toggleSidebar}
-            className={`w-full py-3 rounded-lg flex items-center transition-all ${
+            className={`w-full py-3 rounded-lg flex items-center transition-all text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${
               sidebarOpen ? 'justify-end px-4' : 'justify-center'
             }`}
-            style={{ color: '#62256e' }}
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             {sidebarOpen ? (
               // Collapse button: <<< icon (right aligned)
               <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#62256e' }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </>
             ) : (
               // Expand button: >>> icon
               <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#62256e' }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
               </>

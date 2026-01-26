@@ -72,7 +72,7 @@ export default function MainCarousel() {
             key={image.id}
             className="min-w-full h-full relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-purple-900/30 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-10" />
             <Image
               src={image.url}
               alt={image.title}
@@ -86,7 +86,7 @@ export default function MainCarousel() {
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-2xl">
                   {image.title}
                 </h2>
-                <p className="text-lg md:text-xl text-purple-100 drop-shadow-lg max-w-2xl">
+                <p className="text-lg md:text-xl text-gray-200 drop-shadow-lg max-w-2xl">
                   {image.description}
                 </p>
               </div>

@@ -2,6 +2,7 @@ const { designTokens } = require('./lib/config/design-tokens/tokens.js')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -38,14 +39,14 @@ module.exports = {
           DEFAULT: designTokens.colors.primary.DEFAULT,
           ...designTokens.colors.primary,
         },
-        // Purple palette
+        // Neutral palette (replacing purple)
         purple: {
           ...designTokens.colors.purple,
           glow: designTokens.colors.purple.glow,
           bright: designTokens.colors.purple.bright,
           dark: designTokens.colors.purple.dark,
         },
-        // Pink palette
+        // Gray palette (replacing pink)
         pink: designTokens.colors.pink,
         // Gray/Neutral palette
         gray: designTokens.colors.gray,

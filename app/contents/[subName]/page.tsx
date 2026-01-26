@@ -8,15 +8,55 @@ import type { KContentJson } from '@/types'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import Link from 'next/link'
+import { LoadingScreen } from '@/lib/utils/loading'
 
 export default function ContentDetailPage() {
   const router = useRouter()
   const params = useParams()
   const { setSearchResult } = useSearchResult()
-  const subName = params?.subName as string || ''
+  // 라우트 파라미터는 경우에 따라 이미 인코딩된 문자열이 들어올 수 있어 decode로 정규화
+  const rawSubName = (params?.subName as string) || ''
+  const subName = decodeURIComponent(rawSubName)
   
-  const { contents } = useKContentsBySubName(subName)
+  const { contents, loading, error } = useKContentsBySubName(subName)
   
+  // 로딩 중인데 contents가 비어있으면 "Not Found"가 잠깐 보이는 문제가 있어
+  // loading 상태를 먼저 처리한다.
+  if (loading) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <LoadingScreen label="Loading..." />
+      </PageLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{error}</p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => router.refresh()}
+                className="px-4 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-medium hover:opacity-90 transition"
+              >
+                Retry
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition"
+              >
+                Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
   if (contents.length === 0) {
     return (
       <PageLayout showSidePanel={false}>

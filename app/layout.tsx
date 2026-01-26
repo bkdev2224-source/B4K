@@ -6,7 +6,7 @@ import { SidebarProvider } from '@/components/SidebarContext'
 import { RouteProvider } from '@/components/RouteContext'
 import { SearchProvider } from '@/components/SearchContext'
 import { CartProvider } from '@/components/CartContext'
-import { AnalyticsTracker } from '@/lib/hooks/useAnalytics'
+import { AnalyticsTracker } from '@/lib/hooks'
 import { getTmapApiKey } from '@/lib/config/env'
 
 // Analytics IDs from environment variables

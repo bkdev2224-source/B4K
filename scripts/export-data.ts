@@ -2,7 +2,7 @@
  * MongoDB 데이터를 JSON 파일로 내보내는 스크립트 (백업)
  * 
  * 사용법:
- * yarn export-data
+ * npm run export-data
  * 
  * 이 스크립트는 MongoDB의 데이터를 mockupdata 형식의 JSON 파일로 내보냅니다.
  */

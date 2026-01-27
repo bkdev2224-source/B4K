@@ -2,7 +2,7 @@
  * MongoDB에 JSON 파일 데이터를 임포트하는 스크립트
  * 
  * 사용법:
- * yarn import-data
+ * npm run import-data
  * 
  * 이 스크립트는 mockupdata/save/ 디렉토리의 JSON 파일들을 MongoDB에 임포트합니다.
  */

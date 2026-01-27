@@ -11,7 +11,7 @@ import * as dotenv from 'dotenv'
 import { resolve } from 'path'
 import { MongoClient, ObjectId, Db, Collection, Document, WithId } from 'mongodb'
 import { writeFileSync, mkdirSync } from 'fs'
-import { getMongoDbName, getMongoUriRequired } from '../lib/env'
+import { getMongoDbName, getMongoUriRequired } from '../lib/config/env'
 
 // ============================================================================
 // Constants

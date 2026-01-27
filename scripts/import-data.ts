@@ -10,7 +10,7 @@
 import * as dotenv from 'dotenv'
 import { resolve } from 'path'
 import { MongoClient, ObjectId, Db, Collection, Document } from 'mongodb'
-import { getMongoDbName, getMongoUriRequired } from '../lib/env'
+import { getMongoDbName, getMongoUriRequired } from '../lib/config/env'
 import type { POIJson, TravelPackageJson, KContentJson, KContentCategory } from '../types'
 
 // JSON 데이터 import

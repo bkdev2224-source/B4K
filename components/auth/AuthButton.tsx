@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 import { useSession, signOut } from "next-auth/react"
 import Link from 'next/link'
 
@@ -40,11 +39,16 @@ export default function AuthButton() {
           className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-purple-400 hover:border-purple-300 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-black"
         >
           {session.user?.image ? (
-            <Image
+            // Use a plain <img> so this does NOT go through Next.js Image Optimizer.
+            // This reduces the attack surface of `/_next/image` (and avoids remotePatterns for Google avatars).
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={session.user.image}
               alt={session.user.name || "User"}
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">

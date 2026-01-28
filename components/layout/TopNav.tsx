@@ -230,7 +230,7 @@ export default function TopNav({
           <button
             type="button"
             onClick={toggleSidebar}
-            className="lg:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="lg:hidden p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             aria-label={sidebarOpen ? "Close menu" : "Open menu"}
           >
             <svg className="w-6 h-6 text-gray-800 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +349,7 @@ export default function TopNav({
               // TODO: Navigate to favorites page or open modal
               console.log('Favorites clicked')
             }}
-            className="hidden lg:inline-flex p-2 rounded-full transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="hidden lg:inline-flex p-2 rounded-full bg-gray-100 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             aria-label="Favorites"
             title="Favorites"
           >

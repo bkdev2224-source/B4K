@@ -36,20 +36,24 @@ export default function Sidebar() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          onClick={toggleSidebar}
+          aria-hidden="true"
         />
       )}
       
-      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+      <div className={`${sidebarOpen ? 'w-[80vw] max-w-sm lg:w-[12.75%] lg:max-w-none' : 'w-[80vw] max-w-sm lg:w-[80px] lg:max-w-none'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-[60] transition-all duration-300 lg:translate-x-0 flex flex-col ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
+        <div className={`${sidebarOpen ? 'p-4 sm:p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
           {/* Top area: B4K Home button */}
           <div className={`mb-6 flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'}`}>
             {/* B4K Home button */}
             <Link
               href="/"
-              className="text-xl font-bold transition-colors cursor-pointer text-gray-900 dark:text-gray-100"
+              className={`text-xl font-bold transition-colors cursor-pointer text-gray-900 dark:text-gray-100 ${
+                sidebarOpen ? 'inline' : 'opacity-0 lg:opacity-100 lg:inline'
+              }`}
             >
               B4K
             </Link>
@@ -87,6 +91,19 @@ export default function Sidebar() {
             )
           })}
         </nav>
+
+        {/* Info section */}
+        {sidebarOpen && (
+          <div className="px-4 pb-2 pt-2 border-t border-gray-200 dark:border-gray-800">
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              Info
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+              <p>Mobile map-style UI · B4K</p>
+              <p>Tip: Use search to find POIs & contents.</p>
+            </div>
+          </div>
+        )}
 
         {/* Bottom button - always visible */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2">

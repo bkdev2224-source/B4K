@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPOIById } from '@/lib/data/mock'
 import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
+import { getPOIById } from '@/lib/db/pois'
+import { getContentTypeLabel, getLogoSrcBySubName } from '@/lib/utils/logo'
 
 const categorySections = [
   {
@@ -28,52 +28,57 @@ const categorySections = [
   }
 ]
 
-function ContentCard({ content, poi }: { content: KContent; poi?: { name: string } }) {
+function getInitials(input: string) {
+  const s = input.trim()
+  if (!s) return '?'
+  const words = s.split(/\s+/).slice(0, 2)
+  const letters = words.map((w) => w[0]).join('')
+  return letters.toUpperCase()
+}
+
+function LogoContentCard({
+  content,
+  poi,
+  category,
+}: {
+  content: KContent
+  poi?: { name: string } | null
+  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+}) {
+  const logoSrc = getLogoSrcBySubName(content.subName)
   return (
     <Link
-      href={`/contents/${encodeURIComponent(content.subName)}`}
+      href={`/contents/${content.subName}`}
       className="group no-underline"
     >
-      <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] h-full">
-        <div className="relative h-48 overflow-hidden">
-          <Image
-            src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/800/600`}
-            alt={content.spotName}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className="px-3 py-1 bg-gray-900 dark:bg-gray-100 rounded-full text-white dark:text-gray-900 text-xs font-semibold">
-              {content.subName}
-            </span>
+      <div className="w-40 sm:w-44 shrink-0 snap-start">
+        <div className="flex flex-col items-center text-center">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm group-hover:shadow-md group-hover:border-gray-400 dark:group-hover:border-gray-600 transition-all">
+            {logoSrc ? (
+              // next/image는 SVG에서 설정 이슈가 생길 수 있어 img로 통일
+              // (src는 /api/logo/* 로 동일 origin)
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoSrc}
+                alt={`${content.subName} logo`}
+                className="w-full h-full object-contain p-4"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-gray-700 dark:text-gray-200 font-bold text-xl">
+                {getInitials(content.subName)}
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-            {content.spotName}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">
-            {content.description}
-          </p>
-          {poi && (
-            <p className="text-gray-500 dark:text-gray-400 text-xs mb-3">
-              📍 {poi.name}
-            </p>
-          )}
-          {content.tags && content.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {content.tags.slice(0, 3).map((tag, tagIdx) => (
-                <span
-                  key={tagIdx}
-                  className="px-2 py-1 border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
+          <div className="mt-4">
+            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors line-clamp-1">
+              {content.subName}
             </div>
-          )}
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {getContentTypeLabel(category)}
+            </div>
+          </div>
         </div>
       </div>
     </Link>
@@ -94,7 +99,14 @@ export default async function ContentsPage() {
           popularity: content.popularity,
           category: content.category,
         })) as KContent[]
-        const previewItems = contents.slice(0, 6)
+        // subName(아티스트/브랜드) 단위로 중복 제거 후 프리뷰 구성
+        const uniqueBySubName = Array.from(
+          contents.reduce((acc, item) => {
+            if (!acc.has(item.subName)) acc.set(item.subName, item)
+            return acc
+          }, new Map<string, KContent>()).values()
+        )
+        const previewItems = uniqueBySubName.slice(0, 12)
 
         return (
           <section key={section.id} id={section.id} className="w-full py-16 bg-gray-50 dark:bg-gray-900 odd:bg-white odd:dark:bg-gray-950">
@@ -117,17 +129,20 @@ export default async function ContentsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {await Promise.all(previewItems.map(async (content, index) => {
-                  const poi = await getPOIById(content.poiId.$oid)
-                  return (
-                    <ContentCard 
-                      key={`${section.id}-${index}`} 
-                      content={content} 
-                      poi={poi}
-                    />
-                  )
-                }))}
+              <div className="flex gap-8 overflow-x-auto pb-6 -mx-6 px-6 scroll-smooth snap-x snap-mandatory">
+                {await Promise.all(
+                  previewItems.map(async (content, index) => {
+                    const poi = await getPOIById(content.poiId.$oid)
+                    return (
+                      <LogoContentCard
+                        key={`${section.id}-${index}-${content.subName}`}
+                        content={content}
+                        poi={poi}
+                        category={section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'}
+                      />
+                    )
+                  })
+                )}
               </div>
             </div>
           </section>

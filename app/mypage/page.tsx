@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
 import { useTheme } from '@/components/ThemeContext'
@@ -64,6 +65,13 @@ export default function MyPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      // Use replace to avoid a back-button loop (mypage -> signin -> back -> mypage -> signin...)
+      router.replace(`/auth/signin?callbackUrl=${encodeURIComponent("/mypage")}`)
+    }
+  }, [status, router])
+
   if (status === "loading") {
     return (
       <PageLayout showSidePanel={false} className="pb-8 px-6">
@@ -75,8 +83,13 @@ export default function MyPage() {
   }
 
   if (!session) {
-    router.push("/auth/signin")
-    return null
+    return (
+      <PageLayout showSidePanel={false} className="pb-8 px-6">
+        <div className="container mx-auto">
+          <p className="text-gray-600 dark:text-gray-400">Redirecting to sign in…</p>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

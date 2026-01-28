@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import SidePanel from './SidePanel'
 import TopNav from './TopNav'
+import MobileBottomNav from '@/components/MobileBottomNav'
 import { useSearch } from '@/lib/hooks/useSearch'
 import { useLayout } from '@/lib/hooks/useLayout'
 
@@ -49,9 +50,11 @@ export default function PageLayout({
         topNavClasses={layout.topNavClasses}
       />
 
-      <main className={`pt-16 transition-all duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}>
+      <main className={`pt-16 pb-16 lg:pb-0 transition-all duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}>
         {children}
       </main>
+
+      <MobileBottomNav />
     </div>
   )
 }

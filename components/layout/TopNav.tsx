@@ -3,12 +3,13 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 import AuthButton from '@/components/auth/AuthButton'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useRoute } from '@/components/providers/RouteContext'
 import { useSearchResult } from '@/components/providers/SearchContext'
-import { getAllPOIs } from '@/lib/data/mock'
 import { useKContents } from '@/lib/hooks/useKContents'
+import { usePOIs } from '@/lib/hooks/usePOIs'
 
 interface TopNavProps {
   searchQuery?: string
@@ -45,7 +46,7 @@ export default function TopNav({
 }: TopNavProps) {
   // Use provided classes or calculate fallback
   const router = useRouter()
-  const { sidebarOpen } = useSidebar()
+  const { sidebarOpen, toggleSidebar } = useSidebar()
   const pathname = usePathname()
   const { selectedRoute } = useRoute()
   const { setSearchResult } = useSearchResult()
@@ -79,11 +80,11 @@ export default function TopNav({
 
   // 관련 검색어 계산 (POI 이름, 주소, 태그, subName 포함)
   const { contents: allKContents } = useKContents()
+  const { pois: allPOIs } = usePOIs()
   
   const relatedSearches = useMemo(() => {
     if (!searchQuery.trim()) return []
     
-    const allPOIs = getAllPOIs()
     const query = searchQuery.toLowerCase()
     const results: SearchResult[] = []
     const addedNames = new Set<string>()
@@ -109,11 +110,10 @@ export default function TopNav({
     })
     
     return results.slice(0, 5) // 최대 5개
-  }, [searchQuery, allKContents])
+  }, [searchQuery, allKContents, allPOIs])
 
   // 추천 검색어 결과 (POI ID 또는 subName 포함)
   const recommendedResults = useMemo(() => {
-    const allPOIs = getAllPOIs()
     const results: SearchResult[] = []
     
     RECOMMENDED_SEARCHES.forEach(recommended => {
@@ -131,7 +131,7 @@ export default function TopNav({
     })
     
     return results
-  }, [allKContents])
+  }, [allKContents, allPOIs])
 
   // 모든 검색 결과 (관련 검색어 + 추천 검색어)
   const allSearchResults = useMemo(() => {
@@ -167,7 +167,7 @@ export default function TopNav({
       if (result.type === 'poi' && result.poiId) {
         router.push(`/poi/${result.poiId}`)
       } else if (result.type === 'content' && result.subName) {
-        router.push(`/contents/${encodeURIComponent(result.subName)}`)
+        router.push(`/contents/${result.subName}`)
       }
     }
     onSearchChange?.(result.name)
@@ -224,11 +224,21 @@ export default function TopNav({
 
   return (
     <>
-      <div className={`h-16 fixed top-0 z-40 flex items-center gap-4 px-6 transition-all duration-300 ${navClasses}`}>
-        {/* Search, Favorites, Auth - aligned to the right */}
-        <div className="flex items-center gap-3 ml-auto" ref={searchRef}>
-          {/* Search box */}
-          <div className="relative w-[360px]">
+      <div className={`h-16 fixed top-0 left-0 right-0 z-40 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 transition-all duration-300 ${navClasses}`}>
+        {/* Left: logo + search */}
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="lg:hidden p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+          >
+            <svg className="w-6 h-6 text-gray-800 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div className="relative w-full sm:max-w-[520px] lg:max-w-[360px] min-w-0" ref={searchRef}>
             <input
               ref={inputRef}
               type="text"
@@ -245,10 +255,10 @@ export default function TopNav({
                 // 검색어를 지워도 SearchContext는 유지 (사이드 패널 유지)
               }}
               onFocus={handleFocus}
-              className="w-full px-6 py-2 pl-12 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 transition-all bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 placeholder-white/70 dark:placeholder-gray-500"
+              className="w-full px-4 sm:px-6 py-2 pl-10 sm:pl-12 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 transition-all bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 placeholder-white/70 dark:placeholder-gray-500 border border-gray-700/60 dark:border-gray-300/60"
             />
             <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white dark:text-gray-900"
+              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white dark:text-gray-900"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -263,7 +273,7 @@ export default function TopNav({
 
             {/* 검색어 드롭다운 패널 */}
             {isFocused && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-[60vh] overflow-y-auto">
                 {/* 관련 검색어 */}
                 {searchQuery.trim() && relatedSearches.length > 0 && (
                   <div className="p-4 border-b border-gray-100 dark:border-gray-800">
@@ -330,14 +340,16 @@ export default function TopNav({
               </div>
             )}
           </div>
+        </div>
 
-          {/* Favorites button */}
+        {/* Right: (desktop) favorites + account, (mobile) hamburger */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={() => {
               // TODO: Navigate to favorites page or open modal
               console.log('Favorites clicked')
             }}
-            className="p-2 rounded-full transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="hidden lg:inline-flex p-2 rounded-full bg-gray-100 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             aria-label="Favorites"
             title="Favorites"
           >
@@ -350,7 +362,7 @@ export default function TopNav({
               />
             </svg>
           </button>
-          
+
           <AuthButton />
         </div>
       </div>

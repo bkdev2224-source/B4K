@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useCart } from '@/components/providers/CartContext'
+import AuthButton from '@/components/auth/AuthButton'
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -37,19 +38,21 @@ export default function Sidebar() {
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={toggleSidebar}
+          aria-hidden="true"
         />
       )}
       
-      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+      <div className={`${sidebarOpen ? 'w-[80vw] max-w-sm lg:w-[12.75%] lg:max-w-none' : 'w-[80vw] max-w-sm lg:w-[80px] lg:max-w-none'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
+        <div className={`${sidebarOpen ? 'p-4 sm:p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
           {/* Top area: B4K Home button */}
           <div className={`mb-6 flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'}`}>
             {/* B4K Home button */}
             <Link
               href="/"
-              className="text-xl font-bold transition-colors cursor-pointer text-gray-900 dark:text-gray-100"
+              className="hidden lg:inline text-xl font-bold transition-colors cursor-pointer text-gray-900 dark:text-gray-100"
             >
               B4K
             </Link>

@@ -21,6 +21,14 @@ export default function MapsPage() {
   const { sidebarOpen } = useSidebar()
   const layout = useLayout({ showSidePanel: true, sidePanelWidth: 'routes' })
   const allPOIs = getAllPOIs()
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const update = () => setIsDesktop(window.innerWidth >= 1024)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   // Automatically show map route when cart has 2+ POIs
   // Map route should ALWAYS be shown when cart has 2+ POIs, regardless of search result
@@ -33,6 +41,12 @@ export default function MapsPage() {
   // Add 10% padding on both sides (10% of available map area width)
   // Cart should never overlap with side panel
   const bottomCartPosition = useMemo(() => {
+    // Mobile: do NOT reserve sidebar/panel space; use full width with padding.
+    // (Both Kakao/Naver map UIs treat panels as overlays on mobile.)
+    if (!isDesktop) {
+      return { left: '1rem', right: '1rem', maxWidth: '1200px' }
+    }
+
     // Calculate sidebar width
     const sidebarWidth = sidebarOpen 
       ? LAYOUT_CONSTANTS.SIDEBAR_OPEN_WIDTH 
@@ -60,7 +74,7 @@ export default function MapsPage() {
     const maxWidth = '1200px'
     
     return { left, right, maxWidth }
-  }, [sidebarOpen, layout.showSidePanel, layout.sidePanelType])
+  }, [isDesktop, sidebarOpen, layout.showSidePanel, layout.sidePanelType])
 
   // Get POIs to display based on search result or cart
   // ALWAYS include cart POIs for map route drawing - this is critical for polyline
@@ -226,7 +240,7 @@ export default function MapsPage() {
         {/* Cart should only appear in map area, centered horizontally, never overlap with side panel */}
         {orderedCartPOIs.length > 0 && (
           <div 
-            className="fixed bottom-6 z-10 flex justify-center items-center pointer-events-none"
+            className="fixed bottom-20 lg:bottom-6 z-10 flex justify-center items-center pointer-events-none"
             style={{ 
               left: bottomCartPosition.left,
               right: bottomCartPosition.right,

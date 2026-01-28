@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import './globals.css'
 import SessionProvider from '@/components/providers/SessionProvider'
@@ -17,6 +17,11 @@ const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID
 export const metadata: Metadata = {
   title: 'B4K',
   description: 'B4K Project',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({

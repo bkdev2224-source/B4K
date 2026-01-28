@@ -7,6 +7,7 @@ import { useEffect } from "react"
 export default function SignInClient() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
 
   useEffect(() => {
     if (error) {
@@ -17,7 +18,7 @@ export default function SignInClient() {
   const handleSignIn = async () => {
     try {
       await signIn("google", {
-        callbackUrl: "/",
+        callbackUrl,
         redirect: true,
       })
     } catch (error) {
@@ -26,7 +27,7 @@ export default function SignInClient() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 sm:p-12 lg:p-24 bg-gray-50 dark:bg-gray-950">
       <div className="z-10 max-w-md w-full items-center justify-center">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
           Sign In

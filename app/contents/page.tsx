@@ -109,7 +109,7 @@ export default async function ContentsPage() {
         const previewItems = uniqueBySubName.slice(0, 12)
 
         return (
-          <section key={section.id} id={section.id} className="w-full py-16 bg-gray-50 dark:bg-gray-900 odd:bg-white odd:dark:bg-gray-950">
+          <section key={section.id} id={section.id} className="w-full py-16">
             <div className="px-6">
               <div className="text-center mb-12">
                 <div className="flex items-center gap-4 mb-4 justify-start pl-2">
@@ -129,7 +129,7 @@ export default async function ContentsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-8 overflow-x-auto pb-6 -mx-6 px-6 scroll-smooth snap-x snap-mandatory">
+              <div className="flex gap-8 overflow-x-auto pb-6 -mx-6 px-6 scroll-smooth snap-x snap-mandatory scrollbar-hide">
                 {await Promise.all(
                   previewItems.map(async (content, index) => {
                     const poi = await getPOIById(content.poiId.$oid)

@@ -3,7 +3,8 @@ import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
 import { getPOIById } from '@/lib/db/pois'
-import { getContentTypeLabel, getLogoSrcBySubName } from '@/lib/utils/logo'
+import { getContentTypeLabel } from '@/lib/utils/logo'
+import { ArtistLogo } from '@/components/ui/ArtistLogo'
 
 const categorySections = [
   {
@@ -28,14 +29,6 @@ const categorySections = [
   }
 ]
 
-function getInitials(input: string) {
-  const s = input.trim()
-  if (!s) return '?'
-  const words = s.split(/\s+/).slice(0, 2)
-  const letters = words.map((w) => w[0]).join('')
-  return letters.toUpperCase()
-}
-
 function LogoContentCard({
   content,
   poi,
@@ -45,7 +38,6 @@ function LogoContentCard({
   poi?: { name: string } | null
   category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
 }) {
-  const logoSrc = getLogoSrcBySubName(content.subName)
   return (
     <Link
       href={`/contents/${content.subName}`}
@@ -53,23 +45,11 @@ function LogoContentCard({
     >
       <div className="w-40 sm:w-44 shrink-0 snap-start">
         <div className="flex flex-col items-center text-center">
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm group-hover:shadow-md group-hover:border-gray-400 dark:group-hover:border-gray-600 transition-all">
-            {logoSrc ? (
-              // next/image는 SVG에서 설정 이슈가 생길 수 있어 img로 통일
-              // (src는 /api/logo/* 로 동일 origin)
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoSrc}
-                alt={`${content.subName} logo`}
-                className="w-full h-full object-contain p-4"
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-gray-700 dark:text-gray-200 font-bold text-xl">
-                {getInitials(content.subName)}
-              </div>
-            )}
-          </div>
+          <ArtistLogo
+            subName={content.subName}
+            size="md"
+            className="transition-all group-hover:shadow-md group-hover:border-gray-400 dark:group-hover:border-gray-600"
+          />
 
           <div className="mt-4">
             <div className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors line-clamp-1">

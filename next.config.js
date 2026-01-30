@@ -6,9 +6,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        // Narrow to only the path shape we actually use in the codebase.
-        // This reduces the attack surface of the Next.js Image Optimizer.
         pathname: '/seed/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
       },
     ],
   },

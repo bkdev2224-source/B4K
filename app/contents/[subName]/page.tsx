@@ -5,11 +5,14 @@ import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson } from '@/types'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
+import { useKpopArtist } from '@/lib/hooks/useKpopArtist'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import Link from 'next/link'
 import { LoadingScreen } from '@/lib/utils/loading'
 import { useMemo } from 'react'
 import { usePOIs, usePOIById } from '@/lib/hooks/usePOIs'
+import { ArtistLogo } from '@/components/ui/ArtistLogo'
+import { SOCIAL_ICON_URLS } from '@/lib/config/social-icons'
 
 export default function ContentDetailPage() {
   const router = useRouter()
@@ -29,6 +32,8 @@ export default function ContentDetailPage() {
   const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
   // Banner/상단 표시에 쓸 POI (단건 조회)
   const { poi } = usePOIById(poiId)
+  // K-Pop 아티스트 정보 (kpop_artists 매칭)
+  const { artist } = useKpopArtist(category === 'kpop' ? subName : null)
   
   // 로딩 중인데 contents가 비어있으면 "Not Found"가 잠깐 보이는 문제가 있어
   // loading 상태를 먼저 처리한다.
@@ -143,36 +148,106 @@ export default function ContentDetailPage() {
         />
         <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/60 to-transparent">
           <div className="container mx-auto">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  {category && category in categoryIcons && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
-                      {categoryIcons[category as keyof typeof categoryIcons]}
-                      <span className="text-sm font-medium">{categoryLabels[category as keyof typeof categoryLabels]}</span>
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex-1 flex flex-col sm:flex-row items-start gap-6">
+                {/* 로고 — 목록 페이지와 동일한 로직(흰 원 + 로고/이니셜) */}
+                <ArtistLogo
+                  subName={category === 'kpop' && artist ? artist.name : subName}
+                  logoUrl={category === 'kpop' ? artist?.logoUrl ?? null : null}
+                  size="lg"
+                />
+                {/* 정보: 1행 = 이름 + agency(노란 영역), 2행 = SNS 아이콘(파란 영역) */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    {category && category in categoryIcons && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
+                        {categoryIcons[category as keyof typeof categoryIcons]}
+                        <span className="text-sm font-medium">{categoryLabels[category as keyof typeof categoryLabels]}</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* 노란 영역: 아티스트 이름 + 소속사(같은 줄 오른쪽) */}
+                  <div className="flex flex-wrap items-baseline gap-3 mb-3">
+                    <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl">
+                      {category === 'kpop' && artist ? artist.name : subName}
+                    </h1>
+                    {category === 'kpop' && artist?.agency && (
+                      <span className="text-white/80 text-sm md:text-base font-medium">{artist.agency}</span>
+                    )}
+                  </div>
+                  {/* 파란 영역: 유튜브, 인스타, X, 위키피디아 링크 아이콘 */}
+                  {category === 'kpop' && artist && (artist.youtube || artist.instagram || artist.twitter || artist.wikipedia) && (
+                    <div className="flex items-center gap-3 mb-3">
+                      {artist.youtube && (
+                        <a
+                          href={artist.youtube}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          aria-label="YouTube"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SOCIAL_ICON_URLS.youtube} alt="" className="w-5 h-5 object-contain" />
+                        </a>
+                      )}
+                      {artist.instagram && (
+                        <a
+                          href={artist.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          aria-label="Instagram"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SOCIAL_ICON_URLS.instagram} alt="" className="w-5 h-5 object-contain" />
+                        </a>
+                      )}
+                      {artist.twitter && (
+                        <a
+                          href={artist.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          aria-label="X"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SOCIAL_ICON_URLS.x} alt="" className="w-5 h-5 object-contain" />
+                        </a>
+                      )}
+                      {artist.wikipedia && (
+                        <a
+                          href={artist.wikipedia}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          aria-label="Wikipedia"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={SOCIAL_ICON_URLS.wikipedia} alt="" className="w-5 h-5 object-contain" />
+                        </a>
+                      )}
                     </div>
                   )}
-                </div>
-                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-2xl">{subName}</h1>
-                <div className="flex flex-wrap items-center gap-3 text-white/90 text-sm md:text-base">
-                  <span>{contents.length} spots</span>
-                  {poi && (
-                    <>
-                      <span className="text-white/70">·</span>
-                      <Link 
-                        href={`/poi/${poi._id.$oid}`}
-                        className="hover:text-white underline transition-colors"
-                      >
-                        {poi.name}
-                      </Link>
-                    </>
-                  )}
+                  <div className="flex flex-wrap items-center gap-3 text-white/90 text-sm md:text-base">
+                    <span>{contents.length} spots</span>
+                    {poi && (
+                      <>
+                        <span className="text-white/70">·</span>
+                        <Link
+                          href={`/poi/${poi._id.$oid}`}
+                          className="hover:text-white underline transition-colors"
+                        >
+                          {poi.name}
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               {/* 지도 아이콘 */}
               <button
                 onClick={handleMapClick}
-                className="ml-4 p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full hover:bg-white/30 transition-all"
+                className="flex-shrink-0 p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full hover:bg-white/30 transition-all"
                 aria-label="View on Map"
                 title="View on Map"
               >

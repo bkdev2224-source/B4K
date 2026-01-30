@@ -1,144 +1,84 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import PageLayout from '@/components/PageLayout'
-import { getPOIById } from '@/lib/data/mock'
+import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson as KContent } from '@/types'
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
-
-type AccentKey = 'purple' | 'pink' | 'amber' | 'emerald'
-
-const accentClasses: Record<AccentKey, {
-  from: string
-  solid: string
-  text: string
-  hoverText: string
-  groupHoverText: string
-  badge: string
-  borderHover: string
-  shadow: string
-  pill: string
-}> = {
-  purple: {
-    from: 'from-purple-500',
-    solid: 'bg-purple-500',
-    text: 'text-purple-600',
-    hoverText: 'hover:text-purple-700',
-    groupHoverText: 'group-hover:text-purple-600',
-    badge: 'bg-purple-500',
-    borderHover: 'hover:border-purple-400',
-    shadow: 'hover:shadow-purple-500/20',
-    pill: 'bg-purple-100 text-purple-700 border-purple-300'
-  },
-  pink: {
-    from: 'from-pink-500',
-    solid: 'bg-pink-500',
-    text: 'text-pink-600',
-    hoverText: 'hover:text-pink-700',
-    groupHoverText: 'group-hover:text-pink-600',
-    badge: 'bg-pink-500',
-    borderHover: 'hover:border-pink-400',
-    shadow: 'hover:shadow-pink-500/20',
-    pill: 'bg-pink-100 text-pink-700 border-pink-300'
-  },
-  amber: {
-    from: 'from-amber-500',
-    solid: 'bg-amber-500',
-    text: 'text-amber-600',
-    hoverText: 'hover:text-amber-700',
-    groupHoverText: 'group-hover:text-amber-600',
-    badge: 'bg-amber-500',
-    borderHover: 'hover:border-amber-400',
-    shadow: 'hover:shadow-amber-500/20',
-    pill: 'bg-amber-100 text-amber-700 border-amber-300'
-  },
-  emerald: {
-    from: 'from-emerald-500',
-    solid: 'bg-emerald-500',
-    text: 'text-emerald-600',
-    hoverText: 'hover:text-emerald-700',
-    groupHoverText: 'group-hover:text-emerald-600',
-    badge: 'bg-emerald-500',
-    borderHover: 'hover:border-emerald-400',
-    shadow: 'hover:shadow-emerald-500/20',
-    pill: 'bg-emerald-100 text-emerald-700 border-emerald-300'
-  }
-}
+import { getPOIById } from '@/lib/db/pois'
+import { getContentTypeLabel, getLogoSrcBySubName } from '@/lib/utils/logo'
 
 const categorySections = [
   {
     id: 'kpop',
     title: 'Kpop',
     subtitle: 'K-pop hot spots and fandom destinations',
-    accent: 'purple' as AccentKey
   },
   {
     id: 'kbeauty',
     title: 'Kbeauty',
     subtitle: 'Beauty landmarks, flagship stores, and skin care hubs',
-    accent: 'pink' as AccentKey
   },
   {
     id: 'kfood',
     title: 'Kfood',
     subtitle: 'Taste-driven content and food discovery spots',
-    accent: 'amber' as AccentKey
   },
   {
     id: 'kfestival',
     title: 'Kfestival',
     subtitle: 'Seasonal festivals and cultural highlights',
-    accent: 'emerald' as AccentKey
   }
 ]
 
-function ContentCard({ content, accent, poi }: { content: KContent; accent: AccentKey; poi?: { name: string } }) {
-  const accentStyle = accentClasses[accent]
+function getInitials(input: string) {
+  const s = input.trim()
+  if (!s) return '?'
+  const words = s.split(/\s+/).slice(0, 2)
+  const letters = words.map((w) => w[0]).join('')
+  return letters.toUpperCase()
+}
 
+function LogoContentCard({
+  content,
+  poi,
+  category,
+}: {
+  content: KContent
+  poi?: { name: string } | null
+  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+}) {
+  const logoSrc = getLogoSrcBySubName(content.subName)
   return (
     <Link
-      href={`/contents/${encodeURIComponent(content.subName)}`}
+      href={`/contents/${content.subName}`}
       className="group no-underline"
     >
-      <div className={`relative overflow-hidden rounded-xl bg-white border border-gray-200 ${accentStyle.borderHover} transition-all duration-300 hover:shadow-lg ${accentStyle.shadow} hover:scale-[1.02] h-full`}>
-        <div className="relative h-48 overflow-hidden">
-          <Image
-            src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/800/600`}
-            alt={content.spotName}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className={`px-3 py-1 ${accentStyle.badge} rounded-full text-white text-xs font-semibold`}>
-              {content.subName}
-            </span>
+      <div className="w-40 sm:w-44 shrink-0 snap-start">
+        <div className="flex flex-col items-center text-center">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm group-hover:shadow-md group-hover:border-gray-400 dark:group-hover:border-gray-600 transition-all">
+            {logoSrc ? (
+              // next/image는 SVG에서 설정 이슈가 생길 수 있어 img로 통일
+              // (src는 /api/logo/* 로 동일 origin)
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoSrc}
+                alt={`${content.subName} logo`}
+                className="w-full h-full object-contain p-4"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-gray-700 dark:text-gray-200 font-bold text-xl">
+                {getInitials(content.subName)}
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="p-6">
-          <h3 className={`text-lg font-bold text-gray-900 mb-2 line-clamp-2 ${accentStyle.groupHoverText} transition-colors`}>
-            {content.spotName}
-          </h3>
-          <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-            {content.description}
-          </p>
-          {poi && (
-            <p className={`${accentStyle.text} text-xs mb-3`}>
-              📍 {poi.name}
-            </p>
-          )}
-          {content.tags && content.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {content.tags.slice(0, 3).map((tag, tagIdx) => (
-                <span
-                  key={tagIdx}
-                  className={`px-2 py-1 border rounded-md text-xs ${accentStyle.pill}`}
-                >
-                  {tag}
-                </span>
-              ))}
+          <div className="mt-4">
+            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors line-clamp-1">
+              {content.subName}
             </div>
-          )}
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {getContentTypeLabel(category)}
+            </div>
+          </div>
         </div>
       </div>
     </Link>
@@ -149,7 +89,6 @@ export default async function ContentsPage() {
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="default">
       {await Promise.all(categorySections.map(async (section) => {
-        const accentStyle = accentClasses[section.accent]
         const dbContents = await getKContentsByCategoryDB(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival')
         const contents = dbContents.map((content) => ({
           subName: content.subName,
@@ -160,41 +99,50 @@ export default async function ContentsPage() {
           popularity: content.popularity,
           category: content.category,
         })) as KContent[]
-        const previewItems = contents.slice(0, 6)
+        // subName(아티스트/브랜드) 단위로 중복 제거 후 프리뷰 구성
+        const uniqueBySubName = Array.from(
+          contents.reduce((acc, item) => {
+            if (!acc.has(item.subName)) acc.set(item.subName, item)
+            return acc
+          }, new Map<string, KContent>()).values()
+        )
+        const previewItems = uniqueBySubName.slice(0, 12)
 
         return (
-          <section key={section.id} id={section.id} className="w-full py-16 bg-white">
+          <section key={section.id} id={section.id} className="w-full py-16">
             <div className="px-6">
               <div className="text-center mb-12">
                 <div className="flex items-center gap-4 mb-4 justify-start pl-2">
-                  <div className={`w-10 h-px ${accentStyle.solid}`}></div>
-                  <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
+                  <div className="w-10 h-px bg-gray-400 dark:bg-gray-600"></div>
+                  <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 text-left">
                     {section.title}
                   </h2>
-                  <div className={`flex-1 h-px bg-gradient-to-r ${accentStyle.from} to-transparent`}></div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
                 </div>
                 <div className="flex justify-end mt-2 pr-2">
                   <Link
                     href={`/contents?category=${section.id}`}
-                    className={`text-sm font-medium transition-colors ${accentStyle.text} ${accentStyle.hoverText}`}
+                    className="text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   >
                     Show All
                   </Link>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {await Promise.all(previewItems.map(async (content, index) => {
-                  const poi = await getPOIById(content.poiId.$oid)
-                  return (
-                    <ContentCard 
-                      key={`${section.id}-${index}`} 
-                      content={content} 
-                      accent={section.accent}
-                      poi={poi}
-                    />
-                  )
-                }))}
+              <div className="flex gap-8 overflow-x-auto pb-6 -mx-6 px-6 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+                {await Promise.all(
+                  previewItems.map(async (content, index) => {
+                    const poi = await getPOIById(content.poiId.$oid)
+                    return (
+                      <LogoContentCard
+                        key={`${section.id}-${index}-${content.subName}`}
+                        content={content}
+                        poi={poi}
+                        category={section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'}
+                      />
+                    )
+                  })
+                )}
               </div>
             </div>
           </section>

@@ -2,9 +2,23 @@ import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { env, ensureNextAuthUrl } from "@/lib/config/env"
 
-// NextAuth v4 reads NEXTAUTH_URL from process.env.
-// On Vercel Preview/Production, infer it from VERCEL_URL when not explicitly set.
-ensureNextAuthUrl()
+/**
+ * NextAuth v4 reads NEXTAUTH_URL from process.env.
+ *
+ * IMPORTANT:
+ * - Setting NEXTAUTH_URL to the deployment's `*.vercel.app` URL will cause Google OAuth
+ *   to use that as the `redirect_uri`, which breaks sign-in on custom domains unless
+ *   you also whitelist the vercel.app callback in Google Cloud Console.
+ * - On Vercel *Preview* we can safely infer NEXTAUTH_URL from VERCEL_URL to avoid
+ *   having to manage per-preview-domain env vars.
+ * - On Vercel *Production* (especially with custom domains), prefer an explicit
+ *   NEXTAUTH_URL (e.g. https://b4korea.com). If it's not set, let NextAuth infer
+ *   from the incoming request host headers.
+ */
+const vercelEnv = env("VERCEL_ENV")
+if (!env("NEXTAUTH_URL") && vercelEnv === "preview") {
+  ensureNextAuthUrl()
+}
 
 const googleClientId = env("GOOGLE_CLIENT_ID")
 const googleClientSecret = env("GOOGLE_CLIENT_SECRET")

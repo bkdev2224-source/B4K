@@ -7,6 +7,7 @@ import { useEffect } from "react"
 export default function SignInClient() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
 
   useEffect(() => {
     if (error) {
@@ -17,7 +18,7 @@ export default function SignInClient() {
   const handleSignIn = async () => {
     try {
       await signIn("google", {
-        callbackUrl: "/",
+        callbackUrl,
         redirect: true,
       })
     } catch (error) {
@@ -26,21 +27,21 @@ export default function SignInClient() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-[#0a0a0f] via-[#1a0a2e] to-[#0a0a0f]">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 sm:p-12 lg:p-24 bg-gray-50 dark:bg-gray-950">
       <div className="z-10 max-w-md w-full items-center justify-center">
-        <h1 className="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
           Sign In
         </h1>
         {error && (
           <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg">
-            <p className="text-red-400 text-sm text-center">
+            <p className="text-red-600 dark:text-red-400 text-sm text-center">
               An error occurred during sign in. Please try again.
             </p>
           </div>
         )}
         <button
           onClick={handleSignIn}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg shadow-lg shadow-purple-500/30 hover:from-purple-400 hover:to-pink-400 hover:scale-105 flex items-center justify-center gap-3 transition-all"
+          className="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 px-4 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 flex items-center justify-center gap-3 transition-all"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

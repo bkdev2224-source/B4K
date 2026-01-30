@@ -43,7 +43,8 @@ export interface GeoLocation {
 export interface POIJson {
   _id: OidWrapper
   name: string
-  address: string
+  address: string // English address for UI display
+  address_ko?: string // Korean address for Geocoding
   location: GeoLocation
   categoryTags: string[]
   openingHours: string
@@ -57,7 +58,8 @@ export interface POIJson {
 export interface POI {
   _id: ObjectId | string
   name: string
-  address: string
+  address: string // English address for UI display
+  address_ko?: string // Korean address for Geocoding
   location: GeoLocation
   categoryTags: string[]
   openingHours: string

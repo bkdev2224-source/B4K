@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, useParams } from 'next/navigation'
-import PageLayout from '@/components/PageLayout'
+import PageLayout from '@/components/layout/PageLayout'
 import { getRouteById } from '@/lib/services/routes'
 
 export default function RouteDetailPage() {

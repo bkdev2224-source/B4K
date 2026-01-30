@@ -64,11 +64,11 @@ export function getMongoUriRequired(): string {
   return requiredEnv("MONGODB_URI")
 }
 
-export function getTmapApiKey(): string | undefined {
-  // Support both client-exposed and server-only keys (user may rename).
-  // Note: Next.js will only expose envs to the browser when prefixed with NEXT_PUBLIC_.
-  return env("NEXT_PUBLIC_TMAP_API_KEY") ?? env("NEXT_TMAP_API_KEY") ?? env("TMAP_API_KEY")
+
+export function getNaverMapClientId(): string | undefined {
+  return env("NEXT_PUBLIC_NAVER_MAP_CLIENT_ID") ?? env("NEXT_NAVER_MAP_CLIENT_ID") ?? env("NAVER_MAP_CLIENT_ID")
 }
+
 
 /**
  * NextAuth on Vercel: if NEXTAUTH_URL isn't explicitly set, infer it from VERCEL_URL.

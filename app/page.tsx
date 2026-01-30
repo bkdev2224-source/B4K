@@ -1,11 +1,11 @@
 "use client"
 
-import PageLayout from '@/components/PageLayout'
-import MainCarousel from '@/components/MainCarousel'
-import BestPackages from '@/components/BestPackages'
-import EditorRecommendations from '@/components/EditorRecommendations'
-import SeoulExploration from '@/components/SeoulExploration'
-import SeasonalRecommendations from '@/components/SeasonalRecommendations'
+import PageLayout from '@/components/layout/PageLayout'
+import MainCarousel from '@/app/_components/home/MainCarousel'
+import BestPackages from '@/app/_components/home/BestPackages'
+import EditorRecommendations from '@/app/_components/home/EditorRecommendations'
+import SeoulExploration from '@/app/_components/home/SeoulExploration'
+import SeasonalRecommendations from '@/app/_components/home/SeasonalRecommendations'
 
 export default function Home() {
   return (

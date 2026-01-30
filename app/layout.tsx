@@ -1,13 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import './globals.css'
-import SessionProvider from '@/components/SessionProvider'
-import { SidebarProvider } from '@/components/SidebarContext'
-import { RouteProvider } from '@/components/RouteContext'
-import { SearchProvider } from '@/components/SearchContext'
-import { CartProvider } from '@/components/CartContext'
+import SessionProvider from '@/components/providers/SessionProvider'
+import { SidebarProvider } from '@/components/providers/SidebarContext'
+import { RouteProvider } from '@/components/providers/RouteContext'
+import { SearchProvider } from '@/components/providers/SearchContext'
+import { CartProvider } from '@/components/providers/CartContext'
 import { AnalyticsTracker } from '@/lib/hooks'
-import { getTmapApiKey } from '@/lib/config/env'
+import { ThemeProvider } from '@/components/ThemeContext'
+import { getNaverMapClientId } from '@/lib/config/env'
 
 // Analytics IDs from environment variables
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -18,31 +19,42 @@ export const metadata: Metadata = {
   description: 'B4K Project',
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // NOTE:
-  // TMAP Vector Map SDK uses `document.write()` internally.
-  // If the script is loaded asynchronously (e.g., injected after hydration),
-  // browsers can throw: "Failed to execute 'write' on 'Document'..."
-  // So we load it as a normal <script> in <head> during initial HTML parse.
-  const tmapAppKey = getTmapApiKey()
-  const tmapVectorSdkSrc = tmapAppKey
-    ? `https://apis.openapi.sk.com/tmap/vectorjs?version=1&appKey=${tmapAppKey}`
-    : undefined
+  const naverMapClientId = getNaverMapClientId()
 
   return (
-    <html lang="ko">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* TMAP Vector SDK uses document.write() internally.
-            We must use a raw <script> tag (not Next.js Script component)
-            to ensure it loads synchronously during initial HTML parse. */}
-        {tmapVectorSdkSrc ? (
-          // eslint-disable-next-line @next/next/no-sync-scripts
-          <script src={tmapVectorSdkSrc} />
-        ) : null}
+        {/* Naver Maps API - 공식 문서 예제에 따라 ncpKeyId와 language=en 사용 */}
+        {naverMapClientId && (
+          <>
+            <Script
+              src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverMapClientId}&language=en&submodules=geocoder`}
+              strategy="beforeInteractive"
+            />
+            {/* 인증 실패 시 처리 */}
+            <Script
+              id="naver-map-auth-failure"
+              strategy="beforeInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.navermap_authFailure = function() {
+                    console.error('Naver Maps API 인증 실패: 클라이언트 ID를 확인하세요.');
+                  };
+                `,
+              }}
+            />
+          </>
+        )}
         
         {/* Microsoft Clarity Analytics */}
         {CLARITY_ID && (
@@ -85,19 +97,21 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body>
-        <SessionProvider>
-          <SidebarProvider>
-            <RouteProvider>
-              <SearchProvider>
-                <CartProvider>
-                  <AnalyticsTracker />
-                  {children}
-                </CartProvider>
-              </SearchProvider>
-            </RouteProvider>
-          </SidebarProvider>
-        </SessionProvider>
+      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors">
+        <ThemeProvider>
+          <SessionProvider>
+            <SidebarProvider>
+              <RouteProvider>
+                <SearchProvider>
+                  <CartProvider>
+                    <AnalyticsTracker />
+                    {children}
+                  </CartProvider>
+                </SearchProvider>
+              </RouteProvider>
+            </SidebarProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

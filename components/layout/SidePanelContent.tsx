@@ -17,7 +17,7 @@ interface SidePanelItem {
 }
 
 interface SidePanelContentProps {
-  type: 'home' | 'contents' | 'route' | 'search' | null
+  type: 'home' | 'contents' | 'info' | 'route' | 'search' | null
   route?: Route | null
   routeId?: string | null
 }
@@ -52,6 +52,13 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     { id: 'kbeauty', name: 'Kbeauty', href: '/contents#kbeauty' },
     { id: 'kfood', name: 'Kfood', href: '/contents#kfood' },
     { id: 'kfestival', name: 'Kfestival', href: '/contents#kfestival' },
+  ]
+
+  // Info page sections
+  const infoSections: SidePanelItem[] = [
+    { id: 'about', name: 'About Us', href: '/info?section=about' },
+    { id: 'privacy', name: 'Privacy Policy', href: '/info?section=privacy' },
+    { id: 'terms', name: 'Terms & Conditions', href: '/info?section=terms' },
   ]
 
   // Render route details
@@ -304,18 +311,18 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   // Render home sections
   if (type === 'home') {
     return (
-      <div className="p-6 h-full flex flex-col">
-        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
           Sections
         </h3>
-        <nav className="flex-1 overflow-y-auto space-y-1">
+        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
           {homeSections.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
-              <span className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+              <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -331,20 +338,52 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   // Render contents categories
   if (type === 'contents') {
     return (
-      <div className="p-6 h-full flex flex-col">
-        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
           Categories
         </h3>
-        <nav className="flex-1 overflow-y-auto space-y-1">
+        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
           {contentCategories.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
-              <span className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+              <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium flex-1">{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    )
+  }
+
+  // Render info sections
+  if (type === 'info') {
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          Info
+        </h3>
+        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
+          {infoSections.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+            >
+              <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </span>
               <span className="text-sm font-medium flex-1">{item.name}</span>

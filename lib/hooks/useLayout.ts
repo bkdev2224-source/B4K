@@ -57,7 +57,11 @@ export function useLayout(options: UseLayoutOptions = {}) {
     // For fixed panels (default), always show on pages that actually have a panel (regardless of sidebar state)
     if (sidePanelWidth === 'default') {
       const supportsDefaultPanel =
-        pathname === '/' || pathname === '/contents' || pathname?.startsWith('/contents')
+        pathname === '/' ||
+        pathname === '/contents' ||
+        pathname?.startsWith('/contents') ||
+        pathname === '/info' ||
+        pathname?.startsWith('/info')
       return supportsDefaultPanel ? 'default' : 'none'
     }
     
@@ -65,7 +69,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
   }, [showSidePanel, sidePanelWidth, isRoutesPage, pathname, searchResult])
 
   // Determine side panel type
-  const sidePanelType = useMemo((): 'home' | 'contents' | 'route' | 'search' | null => {
+  const sidePanelType = useMemo((): 'home' | 'contents' | 'info' | 'route' | 'search' | null => {
     // For search results on Maps page
     if (isRoutesPage && searchResult) {
       return 'search'
@@ -80,6 +84,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
     if (sidePanelWidth === 'default') {
       if (pathname === '/') return 'home'
       if (pathname === '/contents' || pathname?.startsWith('/contents')) return 'contents'
+      if (pathname === '/info' || pathname?.startsWith('/info')) return 'info'
     }
     
     return null

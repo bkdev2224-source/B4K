@@ -64,27 +64,28 @@ const seasonalRecommendations: SeasonalItem[] = [
 ]
 
 export default function SeasonalRecommendations() {
+  // Monochrome season badges with different opacity
   const seasonColors = {
-    'Spring': 'from-green-500/80 to-pink-500/80',
-    'Summer': 'from-blue-500/80 to-cyan-500/80',
-    'Autumn': 'from-orange-500/80 to-red-500/80',
-    'Winter': 'from-blue-400/80 to-purple-500/80'
+    'Spring': 'bg-gray-800 dark:bg-gray-200',
+    'Summer': 'bg-gray-700 dark:bg-gray-300',
+    'Autumn': 'bg-gray-600 dark:bg-gray-400',
+    'Winter': 'bg-gray-900 dark:bg-gray-100'
   }
 
   return (
-    <section id="seasonal-recommendations" className="w-full py-16 bg-white">
+    <section id="seasonal-recommendations" className="w-full py-16 bg-white dark:bg-gray-950">
       <div className="px-6">
         {/* Title section */}
         <div className="text-center mb-12">
           <div className="flex items-center gap-4 mb-4 justify-start pl-2">
-            <div className="w-10 h-px bg-emerald-500"></div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
+            <div className="w-10 h-px bg-gray-400 dark:bg-gray-600"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 text-left">
               Seasonal Travel Recommendations
             </h2>
-            <div className="flex-1 h-px bg-gradient-to-r from-emerald-500 to-transparent"></div>
+            <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
           </div>
           <div className="flex justify-end mt-2 pr-2">
-            <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+            <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors">
               Show All
             </button>
           </div>
@@ -97,7 +98,7 @@ export default function SeasonalRecommendations() {
               href={item.href || '#'}
               className="group no-underline"
             >
-              <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 hover:border-emerald-400 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-lg hover:scale-105">
                 <div className="relative h-64 overflow-hidden">
                   <Image
                     src={item.imageUrl}
@@ -107,17 +108,17 @@ export default function SeasonalRecommendations() {
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute top-4 left-4">
-                    <span className={`px-3 py-1 bg-gradient-to-r ${seasonColors[item.season]} rounded-full text-white text-xs font-semibold`}>
+                    <span className={`px-3 py-1 ${seasonColors[item.season]} rounded-full text-white dark:text-gray-900 text-xs font-semibold`}>
                       {item.season}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
                     {item.description}
                   </p>
                 </div>

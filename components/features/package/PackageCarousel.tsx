@@ -44,7 +44,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
   return (
     <div className="mb-12">
       <div className="flex items-center justify-between mb-4 px-6">
-        <h2 className="text-2xl font-bold text-white hover:text-purple-300 cursor-pointer transition-colors">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors">
           Recommended Packages
         </h2>
       </div>
@@ -53,10 +53,10 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
         {showLeftArrow && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-r from-[#0a0a0f]/90 to-transparent hover:from-[#0a0a0f] transition-all"
+            className="absolute left-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-r from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-all"
             aria-label="Previous"
           >
-            <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -78,7 +78,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
               href={`/package/${pkg._id.$oid}`}
               className="flex-shrink-0 w-[360px] group cursor-pointer no-underline"
             >
-              <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 rounded-xl overflow-hidden hover:border-purple-400/50 hover:from-purple-800/60 hover:to-pink-800/60 transition-all duration-200 h-full shadow-lg hover:shadow-purple-500/20">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200 h-full">
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
                   <Image
@@ -91,7 +91,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                   <div className="absolute top-4 left-4 right-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-full">
                         {pkg.duration} days
                       </span>
                       <span className="px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">
@@ -103,10 +103,10 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-purple-300 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                     {pkg.name}
                   </h3>
-                  <p className="text-purple-200 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                     {pkg.concept}
                   </p>
                   
@@ -116,7 +116,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                       {pkg.highlights.slice(0, 4).map((highlight, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-1 bg-purple-500/30 border border-purple-400/50 rounded-md text-purple-200 text-xs"
+                          className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-300 text-xs"
                         >
                           {highlight}
                         </span>
@@ -125,7 +125,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                   )}
 
                   {/* Category */}
-                  <div className="flex items-center gap-2 text-purple-300 text-sm">
+                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
                     <span>{pkg.cities.length} cities</span>
                     <span>·</span>
                     <span>{pkg.itinerary.length} day itinerary</span>
@@ -139,10 +139,10 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
         {showRightArrow && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-l from-[#0a0a0f]/90 to-transparent hover:from-[#0a0a0f] transition-all"
+            className="absolute right-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-l from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-all"
             aria-label="Next"
           >
-            <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>

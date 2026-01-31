@@ -14,21 +14,63 @@ export default function Sidebar() {
   const poiCartCount = cartItems.filter(item => item.type === 'poi').length
   
   const navItems = [
-    { name: 'Home', href: '/', icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    )},
-    { name: 'Map', href: '/maps', icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-      </svg>
-    ), badgeCount: poiCartCount },
-    { name: 'Contents', href: '/contents', icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6h8M12 12h8M12 18h8M4 6h4v4H4V6zm0 6h4v4H4v-4zm0 6h4v4H4v-4z" />
-      </svg>
-    )},
+    {
+      name: 'Home',
+      href: '/',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+      ),
+    },
+    {
+      name: 'Map',
+      href: '/maps',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+          />
+        </svg>
+      ),
+      badgeCount: poiCartCount,
+    },
+     {
+      name: 'Contents',
+      href: '/contents',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6h8M12 12h8M12 18h8M4 6h4v4H4V6zm0 6h4v4H4v-4zm0 6h4v4H4v-4z"
+          />
+        </svg>
+      ),
+    },
+    {
+      name: 'Info',
+      href: '/info',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 16h-1v-4h-1m1-4h.01M12 4a8 8 0 100 16 8 8 0 000-16z"
+          />
+        </svg>
+      ),
+    },
   ]
 
   return (
@@ -36,28 +78,37 @@ export default function Sidebar() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          onClick={toggleSidebar}
+          aria-hidden="true"
         />
       )}
       
-      <div className={`${sidebarOpen ? 'w-[12.75%]' : 'w-[80px]'} bg-white border-r border-gray-200 h-screen fixed left-0 top-0 z-40 transition-all duration-300 lg:translate-x-0 flex flex-col ${
+      <div className={`${sidebarOpen ? 'w-[80vw] max-w-sm lg:w-[12.75%] lg:max-w-none' : 'w-[80vw] max-w-sm lg:w-[80px] lg:max-w-none'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-[60] transition-transform duration-300 lg:duration-0 lg:translate-x-0 flex flex-col ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className={`${sidebarOpen ? 'p-6' : 'p-4'} transition-all duration-300 flex-shrink-0`}>
+        <div className="p-4 flex-shrink-0 relative">
           {/* Top area: B4K Home button */}
-          <div className={`mb-6 flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'}`}>
-            {/* B4K Home button */}
+          <div className="mb-6 flex items-center h-6">
+            {/* B4K Home button - always positioned at same spot */}
             <Link
               href="/"
-              className="text-xl font-bold transition-colors cursor-pointer"
-              style={{ color: '#62256e' }}
+              className={`text-xl font-bold transition-[opacity] duration-300 cursor-pointer text-gray-900 dark:text-gray-100 absolute left-4 ${
+                sidebarOpen ? 'opacity-100' : 'opacity-0 lg:opacity-100'
+              }`}
             >
               B4K
             </Link>
+            {/* Centered placeholder when collapsed (invisible but maintains layout) */}
+            <span className={`text-xl font-bold text-transparent pointer-events-none mx-auto ${
+                sidebarOpen ? 'hidden' : 'lg:block'
+              }`}>
+              B4K
+            </span>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto space-y-2 px-4">
+        <nav className="flex-1 overflow-y-auto space-y-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href || 
               (item.href === '/' && pathname === '/') ||
@@ -67,69 +118,84 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
+                className={`group relative flex items-center gap-3 px-5 py-1.5 rounded-full transition-colors ${
                   isActive
-                    ? `${sidebarOpen ? 'border-l-4' : ''}` 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-                style={isActive ? { 
-                  backgroundColor: 'rgba(98, 37, 110, 0.1)', 
-                  color: '#62256e',
-                  borderLeftColor: sidebarOpen ? '#62256e' : 'transparent'
-                } : {}}
+                    ? 'text-gray-900 dark:text-gray-100'
+                    : 'text-gray-700 dark:text-gray-300'
+                } ${sidebarOpen && !isActive ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
                 title={!sidebarOpen ? item.name : undefined}
               >
-                <span className={`${isActive ? '' : 'text-gray-600'} [&>svg]:stroke-current relative flex-shrink-0`} style={isActive ? { color: '#62256e' } : {}}>
-                  {item.icon}
-                  {item.badgeCount !== undefined && item.badgeCount > 0 && (
-                    <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 translate-x-1/2 -translate-y-1/2">
-                      {item.badgeCount > 9 ? '9+' : item.badgeCount}
-                    </span>
-                  )}
+                {/* Active highlight: circle (collapsed) -> pill (expanded) */}
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute left-5 top-1/2 -translate-y-1/2 h-11 rounded-full bg-gray-100 dark:bg-gray-800 transition-[width] duration-300 ease-out ${
+                      sidebarOpen ? 'w-[calc(100%-2.5rem)]' : 'w-11'
+                    }`}
+                  />
+                )}
+
+                <span
+                  className={`relative z-10 w-11 h-11 flex items-center justify-center rounded-full flex-shrink-0 transition-colors ${
+                    !sidebarOpen && !isActive ? 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800' : ''
+                  }`}
+                >
+                  <span className={`${isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'} [&>svg]:stroke-current`}>
+                    {item.icon}
+                    {item.badgeCount !== undefined && item.badgeCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 translate-x-1/2 -translate-y-1/2">
+                        {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                      </span>
+                    )}
+                  </span>
                 </span>
-                <span className={`font-medium transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>{item.name}</span>
+                <span
+                  className={`relative z-10 font-medium whitespace-nowrap overflow-hidden transition-[max-width,opacity,transform] duration-300 ${
+                    sidebarOpen ? 'max-w-40 opacity-100 translate-x-0' : 'max-w-0 opacity-0 -translate-x-2'
+                  }`}
+                >
+                  {item.name}
+                </span>
               </Link>
             )
           })}
         </nav>
 
         {/* Bottom button - always visible */}
-        <div className="flex-shrink-0 px-4 pb-4 pt-2">
+        <div className="flex-shrink-0 px-4 pb-4 pt-2 relative">
           <button
             onClick={toggleSidebar}
-            className={`w-full py-3 rounded-lg flex items-center transition-all ${
-              sidebarOpen ? 'justify-end px-4' : 'justify-center'
-            }`}
-            style={{ color: '#62256e' }}
+            className="w-full py-3 rounded-lg flex items-center justify-center transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 relative"
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
-            {sidebarOpen ? (
-              // Collapse button: <<< icon (right aligned)
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#62256e' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </>
-            ) : (
-              // Expand button: >>> icon
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#62256e' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-                <svg className="w-5 h-5 text-purple-600 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </>
-            )}
+            {/* Expand icon - always centered */}
+            <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+              sidebarOpen ? 'opacity-0' : 'opacity-100'
+            }`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+            {/* Collapse icon - right aligned when expanded */}
+            <span className={`absolute inset-0 flex items-center transition-[opacity,transform] duration-300 ${
+              sidebarOpen ? 'opacity-100 justify-end pr-4' : 'opacity-0 justify-center'
+            }`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            </span>
           </button>
         </div>
       </div>

@@ -90,11 +90,10 @@ export async function updatePOI(
       },
       { returnDocument: 'after' }
     )
-    const updated = result.value
 
-    if (!updated) return null
+    if (!result?.value) return null
 
-    return convertPOI(updated)
+    return convertPOI(result.value)
   } catch (error) {
     console.error('Error updating POI:', error)
     return null

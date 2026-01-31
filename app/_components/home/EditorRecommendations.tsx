@@ -57,19 +57,19 @@ const editorRecommendations: RecommendationItem[] = [
 
 export default function EditorRecommendations() {
   return (
-    <section id="editor-recommendations" className="w-full py-16 bg-white">
+    <section id="editor-recommendations" className="w-full py-16 bg-white dark:bg-gray-950">
       <div className="px-6">
         {/* Title section - centered with border lines */}
         <div className="text-center mb-12">
           <div className="flex items-center gap-4 mb-4 justify-start pl-2">
-            <div className="w-10 h-px bg-cyan-500"></div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 text-left">
+            <div className="w-10 h-px bg-gray-400 dark:bg-gray-600"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 text-left">
               B4K Recommended Experiences
             </h2>
-            <div className="flex-1 h-px bg-gradient-to-r from-cyan-500 to-transparent"></div>
+            <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
           </div>
           <div className="flex justify-end mt-2 pr-2">
-            <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+            <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors">
               Show All
             </button>
           </div>
@@ -81,7 +81,7 @@ export default function EditorRecommendations() {
               key={item.id}
               className="group"
             >
-              <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 transition-all duration-300">
+              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 transition-all duration-300">
                 <div className="relative h-64 overflow-hidden">
                   <Image
                     src={item.imageUrl}
@@ -92,22 +92,22 @@ export default function EditorRecommendations() {
                   />
                   {/* Coming Soon overlay */}
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span className="px-4 py-2 bg-white/90 rounded-full text-gray-800 text-sm font-semibold">
+                    <span className="px-4 py-2 bg-white/90 dark:bg-gray-900/90 rounded-full text-gray-800 dark:text-gray-200 text-sm font-semibold">
                       Coming Soon
                     </span>
                   </div>
                   <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-cyan-500 rounded-full text-white text-xs font-semibold">
+                    <span className="px-3 py-1 bg-gray-900 dark:bg-gray-100 rounded-full text-white dark:text-gray-900 text-xs font-semibold">
                       {item.category}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
                     {item.description}
                   </p>
                 </div>

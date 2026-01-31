@@ -6,14 +6,31 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        pathname: '/**',
+        pathname: '/seed/**',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        hostname: 'res.cloudinary.com',
         pathname: '/**',
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        // Apply baseline security headers to all routes (including static assets).
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=()',
+          },
+        ],
+      },
+    ]
   },
   webpack: (config, { isServer }) => {
     // 클라이언트 번들에서 Node.js 모듈 제외

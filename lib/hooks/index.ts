@@ -6,5 +6,6 @@
 
 export * from './useAnalytics'
 export * from './useKContents'
+export * from './useKpopArtist'
 export * from './useLayout'
 export * from './useSearch'

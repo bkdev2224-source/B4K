@@ -3,11 +3,12 @@
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { getPOIById } from '@/lib/data/mock'
 import { useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
 import { useState } from 'react'
+import { usePOIById } from '@/lib/hooks/usePOIs'
+import { LoadingScreen } from '@/lib/utils/loading'
 
 export default function POIDetailPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function POIDetailPage() {
   const { addToCart, removeFromCart, isInCart } = useCart()
   const id = params?.id as string || ''
   
-  const poi = getPOIById(id)
+  const { poi, loading: poiLoading, error: poiError } = usePOIById(id)
   const { contents: kContents } = useKContentsByPOIId(id)
   const cartItemId = poi ? `poi-${poi._id.$oid}` : ''
   const inCart = cartItemId ? isInCart(cartItemId) : false
@@ -49,15 +50,42 @@ export default function POIDetailPage() {
     }
   }
 
+  if (poiLoading) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <LoadingScreen label="Loading..." />
+      </PageLayout>
+    )
+  }
+
+  if (poiError) {
+    return (
+      <PageLayout showSidePanel={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{poiError}</p>
+            <button
+              onClick={() => router.push('/')}
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              Return to Home
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
   if (!poi) {
     return (
       <PageLayout showSidePanel={false}>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Location Not Found</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Location Not Found</h1>
             <button
               onClick={() => router.push('/')}
-              className="text-purple-600 hover:text-purple-700 transition-colors"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
               Return to Home
             </button>
@@ -127,13 +155,13 @@ export default function POIDetailPage() {
                     onClick={handleCartClick}
                     className={`p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 ${
                       inCart 
-                        ? 'bg-purple-600 hover:bg-purple-700' 
+                        ? 'bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200' 
                         : 'bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30'
                     }`}
                     aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
                     title={inCart ? "Remove from Cart" : "Add to Cart"}
                   >
-                    <svg className={`w-7 h-7 transition-colors ${inCart ? 'text-white' : 'text-white'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
+                    <svg className={`w-7 h-7 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-white'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
                       {inCart ? (
                         <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                       ) : (
@@ -141,10 +169,10 @@ export default function POIDetailPage() {
                       )}
                     </svg>
                   </button>
-                  {/* 지도 아이콘 - 눈에 띄게 수정 */}
+                  {/* 지도 아이콘 */}
                   <button
                     onClick={handleMapClick}
-                    className="p-4 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                    className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                     aria-label="View on Map"
                     title="View on Map"
                   >
@@ -165,15 +193,15 @@ export default function POIDetailPage() {
             <div className="mb-12">
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center mb-4">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500 to-purple-500"></div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 px-8 flex items-center gap-3">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-gray-400 dark:to-gray-600"></div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 px-8 flex items-center gap-3">
+                    <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Spots to Visit
                   </h2>
-                  <div className="flex-1 h-px bg-gradient-to-l from-transparent via-purple-500 to-purple-500"></div>
+                  <div className="flex-1 h-px bg-gradient-to-l from-transparent via-gray-400 dark:via-gray-600 to-gray-400 dark:to-gray-600"></div>
                 </div>
               </div>
 
@@ -181,20 +209,20 @@ export default function POIDetailPage() {
                 {kContents.map((content, index) => (
                   <div
                     key={index}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:border-purple-400 transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-purple-500/20"
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 shadow-sm hover:shadow-lg"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         {/* Use spotName as title */}
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{content.spotName}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{content.spotName}</h3>
                         {/* Use subName as hashtag */}
                         {content.subName && (
-                          <span className="inline-block px-3 py-1 bg-purple-100 border border-purple-300 rounded-full text-purple-700 text-sm font-medium mb-3">
+                          <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">
                             #{content.subName}
                           </span>
                         )}
                       </div>
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                         <Image
                           src={`https://picsum.photos/seed/${poi._id.$oid}-${content.spotName}/100/100`}
                           alt={content.spotName}
@@ -203,7 +231,7 @@ export default function POIDetailPage() {
                         />
                       </div>
                     </div>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                       {content.description}
                     </p>
                     {content.tags && content.tags.length > 0 && (
@@ -211,7 +239,7 @@ export default function POIDetailPage() {
                         {content.tags.map((tag, tagIdx) => (
                           <span
                             key={tagIdx}
-                            className="px-2 py-1 bg-purple-50 border border-purple-200 rounded-md text-purple-700 text-xs"
+                            className="px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 text-xs"
                           >
                             {tag}
                           </span>

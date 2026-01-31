@@ -45,6 +45,8 @@ export function getLogoSrcBySubName(subName: string) {
   return filename ? `/api/logo/${encodeURIComponent(filename)}` : null
 }
 
+// test
+
 export function getContentTypeLabel(category: LogoCategory) {
   switch (category) {
     case 'kpop':

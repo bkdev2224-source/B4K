@@ -56,12 +56,14 @@ export default function ContentDetailPage() {
               <button
                 onClick={() => router.refresh()}
                 className="px-4 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-medium hover:opacity-90 transition"
+                aria-label="Retry"
               >
                 Retry
               </button>
               <button
                 onClick={() => router.push('/')}
                 className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition"
+                aria-label="Go to home"
               >
                 Home
               </button>
@@ -81,6 +83,7 @@ export default function ContentDetailPage() {
             <button
               onClick={() => router.push('/')}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              aria-label="Return to home"
             >
               Return to Home
             </button>
@@ -290,7 +293,7 @@ export default function ContentDetailPage() {
                   const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <Link
-                      key={index}
+                      key={`${content.poiId?.$oid ?? 'no-poi'}-${content.spotName}-${index}`}
                       href={`/poi/${content.poiId.$oid}`}
                       className="group"
                     >

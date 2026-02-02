@@ -68,6 +68,7 @@ export default function POIDetailPage() {
             <button
               onClick={() => router.push('/')}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              aria-label="Return to home"
             >
               Return to Home
             </button>
@@ -86,6 +87,7 @@ export default function POIDetailPage() {
             <button
               onClick={() => router.push('/')}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              aria-label="Return to home"
             >
               Return to Home
             </button>
@@ -103,6 +105,7 @@ export default function POIDetailPage() {
             src={`https://picsum.photos/seed/${poi._id.$oid}/1920/600`}
             alt={poi.name}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />
@@ -208,7 +211,7 @@ export default function POIDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {kContents.map((content, index) => (
                   <div
-                    key={index}
+                    key={`${content.poiId?.$oid ?? poi._id.$oid}-${content.spotName}-${index}`}
                     className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 shadow-sm hover:shadow-lg"
                   >
                     <div className="flex items-start justify-between mb-4">
@@ -227,6 +230,7 @@ export default function POIDetailPage() {
                           src={`https://picsum.photos/seed/${poi._id.$oid}-${content.spotName}/100/100`}
                           alt={content.spotName}
                           fill
+                          sizes="48px"
                           className="object-cover"
                         />
                       </div>

@@ -69,7 +69,10 @@ export default function EditorRecommendations() {
             <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
           </div>
           <div className="flex justify-end mt-2 pr-2">
-            <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors">
+            <button
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
+              aria-label="Show all recommendations"
+            >
               Show All
             </button>
           </div>

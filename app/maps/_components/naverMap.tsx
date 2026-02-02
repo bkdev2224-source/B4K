@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { POIJson as POI } from '@/types'
 import { useSearchResult } from '@/components/providers/SearchContext'
 
@@ -76,7 +76,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
   const geocodingInProgressRef = useRef<Set<string>>(new Set()) // Geocoding 진행 중인 POI ID 추적
 
   // Create numbered marker icon SVG data URL
-  const createNumberedMarkerIcon = (number: number): string => {
+  const createNumberedMarkerIcon = useCallback((number: number): string => {
     const svg = `
       <svg width="40" height="50" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 0C8.954 0 0 8.954 0 20c0 11.046 20 30 20 30s20-18.954 20-30C40 8.954 31.046 0 20 0z" fill="#62256e"/>
@@ -85,7 +85,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       </svg>
     `
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
-  }
+  }, [])
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -189,7 +189,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
     } catch (error) {
       console.error('Error initializing Naver Maps:', error)
     }
-  }, [isReady, isMounted]) // center, zoom 제거 - 한 번만 초기화
+  }, [isReady, isMounted, center, zoom]) // safe: guarded by mapInstanceRef.current
 
   // Cleanup on unmount
   useEffect(() => {
@@ -428,7 +428,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
   }
 
   // 마커 생성 함수
-  const createMarker = (lat: number, lng: number, poi: POI, cartOrder?: number) => {
+  const createMarker = useCallback((lat: number, lng: number, poi: POI, cartOrder?: number) => {
     if (!window.naver.maps.Marker) return null
 
     const poiData = {
@@ -465,7 +465,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
     })
 
     return marker
-  }
+  }, [createNumberedMarkerIcon, setSearchResult])
 
   // Add POI markers to map with Geocoding support
   useEffect(() => {
@@ -555,7 +555,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       })
       markersRef.current = []
     }
-  }, [isReady, pois, setSearchResult, cartOrderMap, hasSearchResult])
+  }, [isReady, pois, cartOrderMap, hasSearchResult, createMarker])
 
   // Update map center and zoom with smooth animation using morph (사용자가 직접 조작 중이 아닐 때만)
   useEffect(() => {

@@ -497,7 +497,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Related Spots ({contents.length})</h3>
                     <div className="space-y-2">
                       {contents.slice(0, 5).map((content, idx) => (
-                        <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div key={`${content.poiId.$oid}-${content.spotName}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                           <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
                           <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{content.description}</p>
                           {content.tags && content.tags.length > 0 && (
@@ -537,7 +537,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <button
-                      key={idx}
+                      key={`${content.poiId.$oid}-${content.spotName}-${idx}`}
                       onClick={() => {
                         if (contentPoi) {
                           // POI 검색 결과로 변경하여 상세 정보 표시

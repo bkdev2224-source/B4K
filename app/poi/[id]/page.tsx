@@ -66,6 +66,7 @@ export default function POIDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{poiError}</p>
             <button
+              type="button"
               onClick={() => router.push('/')}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
               aria-label="Return to home"
@@ -85,6 +86,7 @@ export default function POIDetailPage() {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Location Not Found</h1>
             <button
+              type="button"
               onClick={() => router.push('/')}
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
               aria-label="Return to home"
@@ -120,7 +122,7 @@ export default function POIDetailPage() {
                   <div className="mb-4 flex flex-wrap items-center gap-3 text-white/90 text-sm md:text-base">
                     <div className="flex gap-2 flex-wrap">
                       {poi.categoryTags.map((tag, idx) => (
-                        <span key={`${tag}-${idx}`} className="px-3 py-1 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
+                        <span key={`${tag}-${idx}`} className="px-3 py-1 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white">
                           {tag}
                         </span>
                       ))}
@@ -155,11 +157,12 @@ export default function POIDetailPage() {
                 <div className="ml-4 flex gap-3">
                   {/* 장바구니 버튼 */}
                   <button
+                    type="button"
                     onClick={handleCartClick}
                     className={`p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 ${
                       inCart 
                         ? 'bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200' 
-                        : 'bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30'
+                        : 'bg-black/40 backdrop-blur-sm border border-white/20 hover:bg-black/50'
                     }`}
                     aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
                     title={inCart ? "Remove from Cart" : "Add to Cart"}
@@ -174,6 +177,7 @@ export default function POIDetailPage() {
                   </button>
                   {/* 지도 아이콘 */}
                   <button
+                    type="button"
                     onClick={handleMapClick}
                     className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                     aria-label="View on Map"

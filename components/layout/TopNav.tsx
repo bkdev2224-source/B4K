@@ -54,6 +54,8 @@ export default function TopNav({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const listboxId = 'topnav-search-results'
+  const optionId = (idx: number) => `topnav-search-option-${idx}`
   
   // Maps 페이지인지 확인
   const isMapsPage = pathname === '/maps' || pathname?.startsWith('/maps/route')
@@ -255,6 +257,11 @@ export default function TopNav({
                 // 검색어를 지워도 SearchContext는 유지 (사이드 패널 유지)
               }}
               onFocus={handleFocus}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={isFocused}
+              aria-controls={listboxId}
+              aria-activedescendant={selectedIndex >= 0 ? optionId(selectedIndex) : undefined}
               className="focus-ring w-full px-4 sm:px-6 py-2 pl-10 sm:pl-12 rounded-full text-sm transition-colors bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 border border-gray-300/80 dark:border-gray-700/70"
             />
             <svg
@@ -273,7 +280,17 @@ export default function TopNav({
 
             {/* 검색어 드롭다운 패널 */}
             {isFocused && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-[60vh] overflow-y-auto">
+              <div
+                id={listboxId}
+                role="listbox"
+                aria-label="Search results"
+                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50 max-h-[60vh] overflow-y-auto"
+              >
+                <div role="status" aria-live="polite" className="sr-only">
+                  {searchQuery.trim()
+                    ? `Showing ${allSearchResults.length} results.`
+                    : `Showing ${recommendedResults.length} recommended searches.`}
+                </div>
                 {/* 관련 검색어 */}
                 {searchQuery.trim() && relatedSearches.length > 0 && (
                   <div className="p-4 border-b border-gray-100 dark:border-gray-800">
@@ -286,8 +303,13 @@ export default function TopNav({
                         const isSelected = selectedIndex === globalIndex
                         return (
                           <button
+                            type="button"
                             key={`${result.type}-${result.poiId ?? result.subName ?? result.name}`}
                             onClick={() => handleSearchClick(result)}
+                            id={optionId(globalIndex)}
+                            role="option"
+                            aria-selected={isSelected}
+                            tabIndex={-1}
                             className={`focus-ring w-full text-left px-3 py-2 text-sm rounded transition-colors ${
                               isSelected 
                                 ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100' 
@@ -318,8 +340,13 @@ export default function TopNav({
                       const isSelected = selectedIndex === globalIndex
                       return (
                         <button
+                          type="button"
                           key={`${result.type}-${result.poiId ?? result.subName ?? result.name}`}
                           onClick={() => handleSearchClick(result)}
+                          id={optionId(globalIndex)}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={-1}
                           className={`focus-ring w-full text-left px-3 py-2 text-sm rounded transition-colors ${
                             isSelected 
                               ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100' 
@@ -345,6 +372,7 @@ export default function TopNav({
         {/* Right: (desktop) favorites + account, (mobile) hamburger */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
+            type="button"
             onClick={() => {
               // TODO: Navigate to favorites page or open modal
               console.log('Favorites clicked')

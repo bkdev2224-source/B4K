@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useCart } from '@/components/providers/CartContext'
 
@@ -12,6 +13,16 @@ export default function Sidebar() {
   
   // POI 타입만 필터링하여 개수 계산
   const poiCartCount = cartItems.filter(item => item.type === 'poi').length
+
+  // Allow closing the sidebar with Escape (helps keyboard users, especially on mobile).
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') toggleSidebar()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [sidebarOpen, toggleSidebar])
   
   const navItems = [
     {
@@ -164,6 +175,7 @@ export default function Sidebar() {
         {/* Bottom button - always visible */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2 relative">
           <button
+            type="button"
             onClick={toggleSidebar}
             className="focus-ring w-full py-3 rounded-lg flex items-center justify-center transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 relative"
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}

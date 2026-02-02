@@ -46,7 +46,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
   if (packages.length === 0) {
     return (
-      <div className="mb-12 px-6">
+      <div className="mb-12 px-6" role="status" aria-live="polite">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Recommended Packages
         </h2>
@@ -58,16 +58,21 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
   }
 
   return (
-    <div className="mb-12">
+    <div className="mb-12" role="region" aria-roledescription="carousel" aria-label="Recommended packages">
       <div className="flex items-center justify-between mb-4 px-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors">
+        <Link
+          href="/package"
+          className="focus-ring rounded-md text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          aria-label="View all packages"
+        >
           Recommended Packages
-        </h2>
+        </Link>
       </div>
 
       <div className="relative">
         {showLeftArrow && (
           <button
+            type="button"
             onClick={() => scroll('left')}
             className="focus-ring absolute left-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-r from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-colors"
             aria-label="Previous"
@@ -81,6 +86,8 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
+          role="list"
+          aria-label="Package cards"
           className="flex gap-6 overflow-x-auto overflow-y-hidden px-6 scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
@@ -92,6 +99,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
             <Link
               key={pkg._id.$oid}
               href={`/package/${pkg._id.$oid}`}
+              role="listitem"
               className="focus-ring flex-shrink-0 w-[360px] group cursor-pointer no-underline rounded-xl"
             >
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200 h-full">
@@ -154,6 +162,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
         {showRightArrow && (
           <button
+            type="button"
             onClick={() => scroll('right')}
             className="focus-ring absolute right-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-l from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-colors"
             aria-label="Next"

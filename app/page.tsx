@@ -10,6 +10,7 @@ import SeasonalRecommendations from '@/app/_components/home/SeasonalRecommendati
 export default function Home() {
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="default">
+      <h1 className="sr-only">B4K</h1>
       {/* Main carousel */}
       <MainCarousel />
       

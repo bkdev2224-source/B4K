@@ -169,7 +169,7 @@ export default function ContentDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     {category && category in categoryIcons && (
-                      <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
+                      <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white">
                         {categoryIcons[category as keyof typeof categoryIcons]}
                         <span className="text-sm font-medium">{categoryLabels[category as keyof typeof categoryLabels]}</span>
                       </div>
@@ -192,7 +192,7 @@ export default function ContentDetailPage() {
                           href={artist.youtube}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-all inline-flex items-center justify-center"
                           aria-label="YouTube"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -204,7 +204,7 @@ export default function ContentDetailPage() {
                           href={artist.instagram}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-all inline-flex items-center justify-center"
                           aria-label="Instagram"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -216,7 +216,7 @@ export default function ContentDetailPage() {
                           href={artist.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-all inline-flex items-center justify-center"
                           aria-label="X"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -228,7 +228,7 @@ export default function ContentDetailPage() {
                           href={artist.wikipedia}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 transition-all inline-flex items-center justify-center"
+                          className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-all inline-flex items-center justify-center"
                           aria-label="Wikipedia"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -255,8 +255,9 @@ export default function ContentDetailPage() {
               </div>
               {/* 지도 아이콘 */}
               <button
+                type="button"
                 onClick={handleMapClick}
-                className="flex-shrink-0 p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full hover:bg-white/30 transition-all"
+                className="focus-ring flex-shrink-0 p-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full hover:bg-black/50 transition-all"
                 aria-label="View on Map"
                 title="View on Map"
               >

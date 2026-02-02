@@ -2,6 +2,7 @@
 
 import { SidePanelContent } from './SidePanelContent'
 import { useRouter } from 'next/navigation'
+import { useCallback, useEffect } from 'react'
 import { Route } from '@/lib/services/routes'
 import { useRoute } from '@/components/providers/RouteContext'
 import { useSearchResult } from '@/components/providers/SearchContext'
@@ -26,14 +27,11 @@ export default function SidePanel({
   const { setSelectedRoute } = useRoute()
   const { setSearchResult } = useSearchResult()
 
-  if (!visible || !type) {
-    return null
-  }
-
   const panelLeft = getSidePanelLeft(sidebarOpen)
-  const panelWidth = getSidePanelWidthClass(type)
+  const panelWidth = type ? getSidePanelWidthClass(type) : ''
 
-  const closeMobileSheet = () => {
+  const closeMobileSheet = useCallback(() => {
+    if (!type) return
     if (type === 'search') {
       setSearchResult(null)
       return
@@ -46,6 +44,20 @@ export default function SidePanel({
         setSelectedRoute(null)
       }
     }
+  }, [type, routeId, router, setSearchResult, setSelectedRoute])
+
+  // Close mobile sheet with Escape (keyboard accessibility).
+  useEffect(() => {
+    if (!(type === 'route' || type === 'search')) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeMobileSheet()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [type, closeMobileSheet])
+
+  if (!visible || !type) {
+    return null
   }
 
   return (
@@ -59,8 +71,18 @@ export default function SidePanel({
             aria-hidden="true"
           />
           <div className="fixed inset-x-0 bottom-0 z-50 max-h-[75vh] overflow-hidden rounded-t-2xl bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-2xl pb-[env(safe-area-inset-bottom)]">
-            <div className="flex justify-center pt-3 pb-2">
+            <div className="relative flex justify-center pt-3 pb-2">
               <div className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+              <button
+                type="button"
+                onClick={closeMobileSheet}
+                className="focus-ring absolute right-3 top-2 p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Close panel"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             <div className="max-h-[calc(75vh-20px)] overflow-y-auto">
               <SidePanelContent type={type} route={route} routeId={routeId} />

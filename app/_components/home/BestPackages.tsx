@@ -21,6 +21,7 @@ export default function BestPackages() {
           </div>
           <div className="flex justify-end mt-2 pr-2">
             <button
+              type="button"
               className="focus-ring rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
               aria-label="Show all packages"
             >
@@ -29,7 +30,16 @@ export default function BestPackages() {
           </div>
         </div>
 
-        {loading ? <Loading /> : <PackageCarousel packages={packages} />}
+        {loading ? (
+          <>
+            <div role="status" aria-live="polite" className="sr-only">
+              Loading packages…
+            </div>
+            <Loading />
+          </>
+        ) : (
+          <PackageCarousel packages={packages} />
+        )}
       </div>
     </section>
   )

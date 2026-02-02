@@ -80,18 +80,26 @@ export default function MainCarousel() {
   return (
     <div 
       className="relative w-full h-[340px] sm:h-[420px] md:h-[520px] lg:h-[600px] overflow-hidden"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Featured categories"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
     >
       {/* Image slides */}
       <div 
         className={`flex transition-transform ease-in-out h-full ${prefersReducedMotion ? 'duration-0' : 'duration-1000'}`}
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
-        {images.map((image) => (
+        {images.map((image, idx) => (
           <div
             key={image.id}
             className="min-w-full h-full relative"
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${idx + 1} of ${images.length}`}
+            aria-hidden={idx !== currentIndex}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
             <Image
@@ -118,6 +126,7 @@ export default function MainCarousel() {
 
       {/* Previous/Next buttons */}
       <button
+        type="button"
         onClick={prevSlide}
         className="focus-ring absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 text-white transition-colors"
         aria-label="Previous slide"
@@ -127,6 +136,7 @@ export default function MainCarousel() {
         </svg>
       </button>
       <button
+        type="button"
         onClick={nextSlide}
         className="focus-ring absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 text-white transition-colors"
         aria-label="Next slide"
@@ -140,6 +150,7 @@ export default function MainCarousel() {
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
         {images.map((image, index) => (
           <button
+            type="button"
             key={image.id}
             onClick={() => goToSlide(index)}
             className={`focus-ring h-2 rounded-full transition-all ${
@@ -148,6 +159,7 @@ export default function MainCarousel() {
                 : 'w-2 bg-white/50 hover:bg-white/75'
             }`}
             aria-label={`Go to slide ${index + 1}`}
+            aria-current={index === currentIndex ? 'true' : undefined}
           />
         ))}
       </div>

@@ -124,30 +124,30 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
         {/* Action Buttons */}
         <div className="px-4 pb-4 flex gap-3 flex-shrink-0">
-          <button className="focus-ring flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <button type="button" className="focus-ring flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             Depart
           </button>
-          <button className="focus-ring flex-1 py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+          <button type="button" className="focus-ring flex-1 py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
             Arrive
           </button>
         </div>
 
         {/* Functional Icons */}
         <div className="px-4 pb-4 flex gap-6 flex-shrink-0">
-          <button className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
             <span className="text-xs">Save</span>
           </button>
-          <button className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-xs">Street View</span>
           </button>
-          <button className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
@@ -161,6 +161,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
             {(['home', 'reviews', 'photos', 'info'] as const).map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
                 className={`focus-ring py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
@@ -186,7 +187,11 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                 </svg>
                 <div className="flex-1">
                   <p className="text-gray-900 dark:text-gray-100 text-sm">{route.startLocation.address}</p>
-                  <button className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded">
+                  <button
+                    type="button"
+                    className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                    aria-label="Show more address details"
+                  >
                     <span>More</span>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -207,7 +212,11 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   <p className="text-gray-600 dark:text-gray-300 text-xs mt-1">
                     Distance: {route.distance} • Duration: {route.duration}
                   </p>
-                  <button className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded">
+                  <button
+                    type="button"
+                    className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                    aria-label="Show more directions details"
+                  >
                     <span>More</span>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -224,7 +233,11 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   </svg>
                   <div className="flex-1">
                     <p className="text-gray-900 dark:text-gray-100 text-sm">{route.operatingHours}</p>
-                    <button className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded">
+                    <button
+                      type="button"
+                      className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                      aria-label="Show more operating hours details"
+                    >
                       <span>More</span>
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -243,14 +256,23 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-gray-900 dark:text-gray-100 text-sm">{route.phoneNumber}</p>
-                      <button className="focus-ring text-gray-700 dark:text-gray-300 text-xs font-medium rounded px-1">Copy</button>
+                      <button
+                        type="button"
+                        className="focus-ring text-gray-700 dark:text-gray-300 text-xs font-medium rounded px-1"
+                        aria-label="Copy phone number"
+                      >
+                        Copy
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* More Information Button */}
-              <button className="focus-ring w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mt-4">
+              <button
+                type="button"
+                className="focus-ring w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mt-4"
+              >
                 More Information &gt;
               </button>
             </div>
@@ -416,6 +438,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         {/* Top Bar */}
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <button
+            type="button"
             onClick={() => {
               setSearchResult(null)
             }}
@@ -448,6 +471,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1">{poi.name}</h2>
                     {/* 장바구니 버튼 */}
                     <button
+                      type="button"
                       onClick={() => {
                         if (inCart) {
                           removeFromCart(cartItemId)
@@ -537,6 +561,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <button
+                      type="button"
                       key={`${content.poiId.$oid}-${content.spotName}-${idx}`}
                       onClick={() => {
                         if (contentPoi) {

@@ -70,6 +70,7 @@ export default function EditorRecommendations() {
           </div>
           <div className="flex justify-end mt-2 pr-2">
             <button
+              type="button"
               className="focus-ring rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
               aria-label="Show all recommendations"
             >

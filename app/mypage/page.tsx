@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
 import { useTheme } from '@/components/ThemeContext'
 
@@ -101,13 +100,21 @@ export default function MyPage() {
           <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-4 mb-6">
               {session.user?.image ? (
-                <Image
-                  src={session.user.image}
-                  alt={session.user.name || "User"}
-                  width={80}
-                  height={80}
-                  className="rounded-full border-2 border-gray-300 dark:border-gray-600"
-                />
+                <>
+                  {/* Use a plain <img> so this does NOT go through Next.js Image Optimizer.
+                      This avoids needing remotePatterns for third-party OAuth avatars (e.g. Google). */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || "User"}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 rounded-full border-2 border-gray-300 dark:border-gray-600 object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                  />
+                </>
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-gray-300 dark:border-gray-600">
                   {session.user?.name?.charAt(0).toUpperCase() || 'U'}

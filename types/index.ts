@@ -18,7 +18,7 @@ export interface OidWrapper {
 /**
  * K-Content categories
  */
-export type KContentCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+export type KContentCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 
 /**
  * Package categories

@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const category = searchParams.get('category') as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | null
+    const category = searchParams.get('category') as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama' | null
     const poiId = searchParams.get('poiId')
     const subName = searchParams.get('subName')
 

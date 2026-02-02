@@ -53,7 +53,7 @@ export function useKContents() {
   return { contents, loading, error }
 }
 
-export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival') {
+export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama') {
   const [contents, setContents] = useState<KContentJson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

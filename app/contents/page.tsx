@@ -26,6 +26,11 @@ const categorySections = [
     id: 'kfestival',
     title: 'Kfestival',
     subtitle: 'Seasonal festivals and cultural highlights',
+  },
+  {
+    id: 'kdrama',
+    title: 'Kdrama',
+    subtitle: 'K-drama filming locations and iconic spots',
   }
 ]
 
@@ -36,7 +41,7 @@ function LogoContentCard({
 }: {
   content: KContent
   poi?: { name: string } | null
-  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+  category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 }) {
   return (
     <Link
@@ -69,7 +74,7 @@ export default async function ContentsPage() {
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="default">
       {await Promise.all(categorySections.map(async (section) => {
-        const dbContents = await getKContentsByCategoryDB(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival')
+        const dbContents = await getKContentsByCategoryDB(section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama')
         const contents = dbContents.map((content) => ({
           subName: content.subName,
           poiId: { $oid: content.poiId },
@@ -118,7 +123,7 @@ export default async function ContentsPage() {
                         key={`${section.id}-${index}-${content.subName}`}
                         content={content}
                         poi={poi}
-                        category={section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'}
+                        category={section.id as 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'}
                       />
                     )
                   })

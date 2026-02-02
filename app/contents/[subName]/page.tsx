@@ -1,110 +1,79 @@
-"use client"
-
-import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import type { KContentJson } from '@/types'
-import { useKContentsBySubName } from '@/lib/hooks/useKContents'
-import { useKpopArtist } from '@/lib/hooks/useKpopArtist'
-import { useSearchResult } from '@/components/providers/SearchContext'
+import type { KContentJson, POIJson } from '@/types'
 import Link from 'next/link'
-import { LoadingScreen } from '@/lib/utils/loading'
-import { useMemo } from 'react'
-import { usePOIs, usePOIById } from '@/lib/hooks/usePOIs'
 import { ArtistLogo } from '@/components/ui/ArtistLogo'
 import { SOCIAL_ICON_URLS } from '@/lib/config/social-icons'
+import ContentMapButton from './ContentMapButton'
+import { getKContentsBySubName } from '@/lib/db/kcontents'
+import { getPOIById } from '@/lib/db/pois'
+import { getKpopArtistByName } from '@/lib/db/kpop-artists'
 
-export default function ContentDetailPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { setSearchResult } = useSearchResult()
-  // 라우트 파라미터는 경우에 따라 이미 인코딩된 문자열이 들어올 수 있어 decode로 정규화
-  const rawSubName = (params?.subName as string) || ''
+export const revalidate = 60
+
+function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
+  return { ...poi, _id: { $oid: poi._id } }
+}
+
+export default async function ContentDetailPage({
+  params,
+}: {
+  params: { subName: string }
+}) {
+  const rawSubName = params?.subName || ''
   const subName = decodeURIComponent(rawSubName)
-  
-  const { contents, loading, error } = useKContentsBySubName(subName)
-  const firstContent = contents[0]
-  const poiId = firstContent?.poiId?.$oid ?? ''
-  const category = (firstContent as any)?.category as string | undefined
 
-  // POI lookup (전체 POI 목록 기반)
-  const { pois } = usePOIs()
-  const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
-  // Banner/상단 표시에 쓸 POI (단건 조회)
-  const { poi } = usePOIById(poiId)
-  // K-Pop 아티스트 정보 (kpop_artists 매칭)
-  const { artist } = useKpopArtist(category === 'kpop' ? subName : null)
-  
-  // 로딩 중인데 contents가 비어있으면 "Not Found"가 잠깐 보이는 문제가 있어
-  // loading 상태를 먼저 처리한다.
-  if (loading) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <LoadingScreen label="Loading..." />
-      </PageLayout>
+  try {
+    const dbContents = await getKContentsBySubName(subName)
+    const contents = dbContents.map(
+      (content) =>
+        ({
+          subName: content.subName,
+          poiId: { $oid: content.poiId },
+          spotName: content.spotName,
+          description: content.description,
+          tags: content.tags,
+          popularity: content.popularity,
+          category: content.category,
+        }) as KContentJson
     )
-  }
 
-  if (error) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center max-w-md px-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{error}</p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => router.refresh()}
-                className="px-4 py-2 rounded-lg bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 font-medium hover:opacity-90 transition"
-                aria-label="Retry"
+    if (contents.length === 0) {
+      return (
+        <PageLayout showSidePanel={false}>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Content Not Found</h1>
+              <a
+                href="/"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                aria-label="Return to home"
               >
-                Retry
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition"
-                aria-label="Go to home"
-              >
-                Home
-              </button>
+                Return to Home
+              </a>
             </div>
           </div>
-        </div>
-      </PageLayout>
+        </PageLayout>
+      )
+    }
+
+    const firstContent = contents[0]
+    const poiId = firstContent?.poiId?.$oid ?? ''
+    const category = (firstContent as any)?.category as string | undefined
+
+    const uniquePoiIds = Array.from(new Set(contents.map((c) => c.poiId?.$oid).filter(Boolean))) as string[]
+    const poiEntries = await Promise.all(
+      uniquePoiIds.map(async (id) => {
+        const dbPoi = await getPOIById(id)
+        return [id, dbPoi ? toPOIJson(dbPoi as any) : null] as const
+      })
     )
-  }
+    const poiById = new Map(poiEntries.filter(([, poi]) => poi).map(([id, poi]) => [id, poi!]))
 
-  if (contents.length === 0) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Content Not Found</h1>
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-              aria-label="Return to home"
-            >
-              Return to Home
-            </button>
-          </div>
-        </div>
-      </PageLayout>
-    )
-  }
+    const dbPoiForBanner = poiId ? await getPOIById(poiId) : null
+    const poi = dbPoiForBanner ? toPOIJson(dbPoiForBanner as any) : null
 
-  // 첫 번째 content의 정보 사용 (이미 위에서 firstContent로 뽑아둠)
-
-  const handleMapClick = () => {
-    // SearchContext에 Content 검색 결과 저장
-    setSearchResult({
-      name: subName,
-      type: 'content',
-      subName: subName
-    })
-    // Maps 페이지로 이동
-    router.push('/maps')
-  }
+    const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
 
   // 카테고리별 아이콘
   const categoryIcons = {
@@ -253,18 +222,7 @@ export default function ContentDetailPage() {
                   </div>
                 </div>
               </div>
-              {/* 지도 아이콘 */}
-              <button
-                type="button"
-                onClick={handleMapClick}
-                className="focus-ring flex-shrink-0 p-3 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full hover:bg-black/50 transition-all"
-                aria-label="View on Map"
-                title="View on Map"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-              </button>
+              <ContentMapButton subName={subName} />
             </div>
           </div>
         </div>
@@ -291,7 +249,7 @@ export default function ContentDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {contents.map((content, index) => {
-                  const contentPoi = poiById.get(content.poiId.$oid)
+                  const contentPoi = poiById.get(content.poiId.$oid) ?? null
                   return (
                     <Link
                       key={`${content.poiId?.$oid ?? 'no-poi'}-${content.spotName}-${index}`}
@@ -348,5 +306,24 @@ export default function ContentDetailPage() {
         </div>
     </PageLayout>
   )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load'
+    return (
+      <PageLayout showSidePanel={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{message}</p>
+            <a
+              href="/"
+              className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition inline-block"
+            >
+              Home
+            </a>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
 }
 

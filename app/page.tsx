@@ -1,5 +1,3 @@
-"use client"
-
 import PageLayout from '@/components/layout/PageLayout'
 import MainCarousel from '@/app/_components/home/MainCarousel'
 import BestPackages from '@/app/_components/home/BestPackages'

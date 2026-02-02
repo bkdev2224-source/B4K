@@ -1,11 +1,20 @@
-"use client"
-
 import PackageCarousel from '@/components/features/package/PackageCarousel'
-import { usePackages } from '@/lib/hooks/usePackages'
-import { Loading } from '@/lib/utils/loading'
+import { getAllPackages } from '@/lib/db/packages'
+import type { TravelPackageJson } from '@/types'
+import Link from 'next/link'
 
-export default function BestPackages() {
-  const { packages, loading } = usePackages()
+export const revalidate = 60
+
+function toPackageJson(pkg: { _id: string } & Omit<TravelPackageJson, '_id'>): TravelPackageJson {
+  return {
+    ...pkg,
+    _id: { $oid: pkg._id },
+  }
+}
+
+export default async function BestPackages() {
+  const pkgs = await getAllPackages()
+  const packages = pkgs.map((p) => toPackageJson(p as any))
 
   return (
     <section id="best-packages" className="w-full py-16 bg-gray-50 dark:bg-gray-900">
@@ -20,26 +29,17 @@ export default function BestPackages() {
             <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
           </div>
           <div className="flex justify-end mt-2 pr-2">
-            <button
-              type="button"
+            <Link
+              href="/package"
               className="focus-ring rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
               aria-label="Show all packages"
             >
               Show All
-            </button>
+            </Link>
           </div>
         </div>
 
-        {loading ? (
-          <>
-            <div role="status" aria-live="polite" className="sr-only">
-              Loading packages…
-            </div>
-            <Loading />
-          </>
-        ) : (
-          <PackageCarousel packages={packages} />
-        )}
+        <PackageCarousel packages={packages} />
       </div>
     </section>
   )

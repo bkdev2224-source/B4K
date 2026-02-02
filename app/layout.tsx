@@ -9,10 +9,7 @@ import { CartProvider } from '@/components/providers/CartContext'
 import { AnalyticsTracker } from '@/lib/hooks'
 import { ThemeProvider } from '@/components/ThemeContext'
 import { getNaverMapClientId } from '@/lib/config/env'
-
-// Analytics IDs from environment variables
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID
+import AnalyticsGate from '@/components/analytics/AnalyticsGate'
 
 export const metadata: Metadata = {
   title: 'B4K',
@@ -55,47 +52,6 @@ export default function RootLayout({
             />
           </>
         )}
-        
-        {/* Microsoft Clarity Analytics */}
-        {CLARITY_ID && (
-          <Script
-            id="clarity-script"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function(c,l,a,r,i,t,y){
-                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "${CLARITY_ID}");
-              `,
-            }}
-          />
-        )}
-
-        {/* Google Analytics 4 */}
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script
-              id="gtag-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${GA_ID}', {
-                    send_page_view: false
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors">
         <a
@@ -110,6 +66,7 @@ export default function RootLayout({
               <RouteProvider>
                 <SearchProvider>
                   <CartProvider>
+                    <AnalyticsGate />
                     <AnalyticsTracker />
                     {children}
                   </CartProvider>

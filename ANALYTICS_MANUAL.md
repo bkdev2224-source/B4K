@@ -61,16 +61,29 @@ These are **public** tracking IDs (not sensitive).
 ```
 /lib/analytics.ts          # Analytics utility layer
 /lib/hooks/useAnalytics.ts # Route change tracking hook
-/app/layout.tsx            # Script injection
+/components/analytics/AnalyticsGate.tsx # Script injection (optionally consent-gated)
+/app/layout.tsx            # Renders AnalyticsGate + AnalyticsTracker
 ```
 
 ---
 
 ## 5. How It Works
 
-### 5.1 Script Loading (`app/layout.tsx`)
+### 5.1 Script Loading (`AnalyticsGate`)
 
-Both GA4 and Clarity scripts load with `strategy="afterInteractive"` to avoid blocking page render.
+GA4 and Clarity scripts are injected by `components/analytics/AnalyticsGate.tsx` using
+`strategy="afterInteractive"` to avoid blocking page render.
+
+#### Optional consent gating
+
+If you set:
+
+```env
+NEXT_PUBLIC_REQUIRE_ANALYTICS_CONSENT=true
+```
+
+Then GA4/Clarity will only load after the user accepts the analytics prompt. If the user declines,
+scripts are not loaded and `pageview()` / `trackEvent()` become no-ops.
 
 **GA4 Configuration:**
 ```js

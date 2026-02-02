@@ -13,6 +13,21 @@ declare global {
   }
 }
 
+const REQUIRE_ANALYTICS_CONSENT =
+  process.env.NEXT_PUBLIC_REQUIRE_ANALYTICS_CONSENT === 'true'
+
+const ANALYTICS_CONSENT_STORAGE_KEY = 'b4k_analytics_consent'
+
+function hasAnalyticsConsent(): boolean {
+  if (!REQUIRE_ANALYTICS_CONSENT) return true
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY) === 'granted'
+  } catch {
+    return false
+  }
+}
+
 /**
  * Track a page view
  * Use this for manual page tracking in App Router client-side navigation
@@ -20,6 +35,7 @@ declare global {
 export const pageview = (path: string) => {
   if (typeof window === 'undefined') return
   if (!process.env.NEXT_PUBLIC_GA_ID) return
+  if (!hasAnalyticsConsent()) return
   
   window.gtag?.('config', process.env.NEXT_PUBLIC_GA_ID, {
     page_path: path,
@@ -44,6 +60,7 @@ export const trackEvent = (
   params: Record<string, any> = {}
 ) => {
   if (typeof window === 'undefined') return
+  if (!hasAnalyticsConsent()) return
   
   window.gtag?.('event', eventName, params)
 }

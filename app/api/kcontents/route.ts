@@ -6,7 +6,13 @@ import {
   getKContentsBySubName 
 } from '@/lib/db/kcontents'
 
+// Query-string based route handlers can't be statically prerendered.
+// Use CDN caching headers instead.
 export const dynamic = 'force-dynamic'
+
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+} as const
 
 /**
  * GET /api/kcontents
@@ -43,7 +49,7 @@ export async function GET(request: NextRequest) {
       category: content.category,
     }))
 
-    return NextResponse.json(formattedContents)
+    return NextResponse.json(formattedContents, { headers: CACHE_HEADERS })
   } catch (error) {
     console.error('Error fetching KContents:', error)
     return NextResponse.json(

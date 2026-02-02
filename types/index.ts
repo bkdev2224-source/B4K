@@ -2,7 +2,7 @@
  * Shared TypeScript types and interfaces for the B4K application
  */
 
-import { ObjectId } from 'mongodb'
+import type { ObjectId } from 'mongodb'
 
 // ============================================================================
 // Common Types

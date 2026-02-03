@@ -75,7 +75,7 @@ export default function MapsPage() {
     const maxWidth = '1200px'
     
     return { left, right, maxWidth }
-  }, [isDesktop, sidebarOpen, layout.showSidePanel, layout.sidePanelType])
+  }, [isDesktop, sidebarOpen, layout.showSidePanel])
 
   // Map viewport should not sit under sidebar/panel on desktop.
   const mapViewportPosition = useMemo(() => {
@@ -202,31 +202,28 @@ export default function MapsPage() {
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [cartOverflows, setCartOverflows] = useState(false)
 
-  const checkScrollButtons = () => {
-    if (!cartScrollRef.current) return
-    const { scrollLeft, scrollWidth, clientWidth } = cartScrollRef.current
-    setCanScrollLeft(scrollLeft > 0)
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-    setCartOverflows(scrollWidth > clientWidth + 1)
-  }
-
   useEffect(() => {
-    checkScrollButtons()
     const scrollElement = cartScrollRef.current
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', checkScrollButtons)
-      window.addEventListener('resize', checkScrollButtons)
-      
-      // If content fits, keep it aligned to the start.
-      // (Avoid forced centering, which causes "cut off" cards at both ends.)
-      if (scrollElement.scrollWidth <= scrollElement.clientWidth) {
-        scrollElement.scrollLeft = 0
-      }
-      
-      return () => {
-        scrollElement.removeEventListener('scroll', checkScrollButtons)
-        window.removeEventListener('resize', checkScrollButtons)
-      }
+    if (!scrollElement) return
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollElement
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+      setCartOverflows(scrollWidth > clientWidth + 1)
+    }
+
+    handleScroll()
+    if (scrollElement.scrollWidth <= scrollElement.clientWidth) {
+      scrollElement.scrollLeft = 0
+    }
+
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
+
+    return () => {
+      scrollElement.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
     }
   }, [orderedCartPOIs])
 
@@ -304,7 +301,6 @@ export default function MapsPage() {
                   msOverflowStyle: 'none',
                   justifyContent: 'flex-start',
                 }}
-                onScroll={checkScrollButtons}
               >
                 {orderedCartPOIs.map(({ poi, order, cartItemId }, index) => (
                   <div key={poi._id.$oid} className="flex items-stretch gap-3 flex-shrink-0 snap-start">

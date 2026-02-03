@@ -9,6 +9,9 @@ import ContentMapButton from './ContentMapButton'
 import { getKContentsBySubName } from '@/lib/db/kcontents'
 import { getPOIById } from '@/lib/db/pois'
 import { getKpopArtistByName } from '@/lib/db/kpop-artists'
+import { getKBeautyPlaceByName } from '@/lib/db/kbeauty-places'
+import { getKFoodBrandByName } from '@/lib/db/kfood-brands'
+import { getKFestivalPlaceByName } from '@/lib/db/kfestival-places'
 import { getSiteUrl } from '@/lib/config/env'
 
 export const revalidate = 60
@@ -113,7 +116,50 @@ export default async function ContentDetailPage({
     const poiById = new Map(poiEntries.filter(([, poi]) => poi).map(([id, poi]) => [id, poi!]))
     const poi = poiId ? (poiById.get(poiId) ?? null) : null
 
-    const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
+    // 카테고리별로 적절한 데이터 가져오기 (contents 페이지와 동일한 로직)
+    let logoUrl: string | null = null
+    let displayName = subName
+    let socialLinks: { instagram?: string; youtube?: string; twitter?: string; wikipedia?: string } | null = null
+    let agency: string | undefined = undefined
+    
+    if (category === 'kpop') {
+      const artist = await getKpopArtistByName(subName)
+      if (artist) {
+        logoUrl = artist.logoUrl ?? null
+        displayName = artist.name ?? subName
+        agency = artist.agency
+        socialLinks = {
+          instagram: artist.instagram,
+          youtube: artist.youtube,
+          twitter: artist.twitter,
+          wikipedia: artist.wikipedia,
+        }
+      }
+    } else if (category === 'kbeauty') {
+      const place = await getKBeautyPlaceByName(subName)
+      if (place) {
+        logoUrl = place.logoUrl ?? null
+        displayName = place.name ?? subName
+        socialLinks = {
+          instagram: place.instagram,
+          youtube: place.youtube,
+          twitter: place.twitter,
+          wikipedia: place.wikipedia,
+        }
+      }
+    } else if (category === 'kfood') {
+      const brand = await getKFoodBrandByName(subName)
+      if (brand) {
+        logoUrl = brand.logoUrl ?? null
+        displayName = brand.name ?? subName
+      }
+    } else if (category === 'kfestival') {
+      const place = await getKFestivalPlaceByName(subName)
+      if (place) {
+        logoUrl = place.logoUrl ?? null
+        displayName = place.name ?? subName
+      }
+    }
 
   // 카테고리별 아이콘
   const categoryIcons = {
@@ -162,8 +208,8 @@ export default async function ContentDetailPage({
               <div className="flex-1 flex flex-col sm:flex-row items-start gap-6">
                 {/* 로고 — 목록 페이지와 동일한 로직(흰 원 + 로고/이니셜) */}
                 <ArtistLogo
-                  subName={category === 'kpop' && artist ? artist.name : subName}
-                  logoUrl={category === 'kpop' ? artist?.logoUrl ?? null : null}
+                  subName={displayName}
+                  logoUrl={logoUrl}
                   size="lg"
                 />
                 {/* 정보: 1행 = 이름 + agency(노란 영역), 2행 = SNS 아이콘(파란 영역) */}
@@ -179,18 +225,18 @@ export default async function ContentDetailPage({
                   {/* 노란 영역: 아티스트 이름 + 소속사(같은 줄 오른쪽) */}
                   <div className="flex flex-wrap items-baseline gap-3 mb-3">
                     <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl">
-                      {category === 'kpop' && artist ? artist.name : subName}
+                      {displayName}
                     </h1>
-                    {category === 'kpop' && artist?.agency && (
-                      <span className="text-white/80 text-sm md:text-base font-medium">{artist.agency}</span>
+                    {category === 'kpop' && agency && (
+                      <span className="text-white/80 text-sm md:text-base font-medium">{agency}</span>
                     )}
                   </div>
                   {/* 파란 영역: 유튜브, 인스타, X, 위키피디아 링크 아이콘 */}
-                  {category === 'kpop' && artist && (artist.youtube || artist.instagram || artist.twitter || artist.wikipedia) && (
+                  {socialLinks && (socialLinks.youtube || socialLinks.instagram || socialLinks.twitter || socialLinks.wikipedia) && (
                     <div className="flex items-center gap-3 mb-3">
-                      {artist.youtube && (
+                      {socialLinks.youtube && (
                         <a
-                          href={artist.youtube}
+                          href={socialLinks.youtube}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -200,9 +246,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.youtube} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.instagram && (
+                      {socialLinks.instagram && (
                         <a
-                          href={artist.instagram}
+                          href={socialLinks.instagram}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -212,9 +258,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.instagram} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.twitter && (
+                      {socialLinks.twitter && (
                         <a
-                          href={artist.twitter}
+                          href={socialLinks.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -224,9 +270,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.x} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.wikipedia && (
+                      {socialLinks.wikipedia && (
                         <a
-                          href={artist.wikipedia}
+                          href={socialLinks.wikipedia}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"

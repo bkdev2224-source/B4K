@@ -11,6 +11,10 @@ import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kco
 import { getPOIById } from '@/lib/db/pois'
 import { getContentTypeLabel } from '@/lib/utils/logo'
 import { ArtistLogo } from '@/components/ui/ArtistLogo'
+import { getKBeautyPlaceByName } from '@/lib/db/kbeauty-places'
+import { getKpopArtistByName } from '@/lib/db/kpop-artists'
+import { getKFoodBrandByName } from '@/lib/db/kfood-brands'
+import { getKFestivalPlaceByName } from '@/lib/db/kfestival-places'
 
 const categorySections = [
   {
@@ -40,7 +44,7 @@ const categorySections = [
   }
 ]
 
-function LogoContentCard({
+async function LogoContentCard({
   content,
   poi,
   category,
@@ -49,6 +53,22 @@ function LogoContentCard({
   poi?: { name: string } | null
   category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 }) {
+  // category에 따라 적절한 데이터 소스에서 logoUrl 가져오기
+  let logoUrl: string | null = null
+  if (category === 'kbeauty') {
+    const place = await getKBeautyPlaceByName(content.subName)
+    logoUrl = place?.logoUrl ?? null
+  } else if (category === 'kpop') {
+    const artist = await getKpopArtistByName(content.subName)
+    logoUrl = artist?.logoUrl ?? null
+  } else if (category === 'kfood') {
+    const brand = await getKFoodBrandByName(content.subName)
+    logoUrl = brand?.logoUrl ?? null
+  } else if (category === 'kfestival') {
+    const place = await getKFestivalPlaceByName(content.subName)
+    logoUrl = place?.logoUrl ?? null
+  }
+
   return (
     <Link
       href={`/contents/${content.subName}`}
@@ -58,6 +78,7 @@ function LogoContentCard({
         <div className="flex flex-col items-center text-center">
           <ArtistLogo
             subName={content.subName}
+            logoUrl={logoUrl}
             size="md"
             className="transition-[border-color,box-shadow] group-hover:shadow-md group-hover:border-gray-400 dark:group-hover:border-gray-600"
           />
@@ -97,7 +118,34 @@ export default async function ContentsPage() {
             return acc
           }, new Map<string, KContent>()).values()
         )
-        const previewItems = uniqueBySubName.slice(0, 12)
+        
+        // logoUrl이 있는 항목만 필터링
+        const itemsWithLogo = await Promise.all(
+          uniqueBySubName.map(async (content) => {
+            let logoUrl: string | null = null
+            if (section.id === 'kbeauty') {
+              const place = await getKBeautyPlaceByName(content.subName)
+              logoUrl = place?.logoUrl ?? null
+            } else if (section.id === 'kpop') {
+              const artist = await getKpopArtistByName(content.subName)
+              logoUrl = artist?.logoUrl ?? null
+            } else if (section.id === 'kfood') {
+              const brand = await getKFoodBrandByName(content.subName)
+              logoUrl = brand?.logoUrl ?? null
+            } else if (section.id === 'kfestival') {
+              const place = await getKFestivalPlaceByName(content.subName)
+              logoUrl = place?.logoUrl ?? null
+            }
+            return { content, logoUrl }
+          })
+        )
+        
+        // logoUrl이 있는 항목만 선택
+        const filteredItems = itemsWithLogo
+          .filter(({ logoUrl }) => logoUrl !== null)
+          .map(({ content }) => content)
+        
+        const previewItems = filteredItems.slice(0, 12)
 
         return (
           <section key={section.id} id={section.id} className="w-full py-16">

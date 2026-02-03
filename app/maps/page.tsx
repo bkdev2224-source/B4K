@@ -200,12 +200,14 @@ export default function MapsPage() {
   const cartScrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+  const [cartOverflows, setCartOverflows] = useState(false)
 
   const checkScrollButtons = () => {
     if (!cartScrollRef.current) return
     const { scrollLeft, scrollWidth, clientWidth } = cartScrollRef.current
     setCanScrollLeft(scrollLeft > 0)
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+    setCartOverflows(scrollWidth > clientWidth + 1)
   }
 
   useEffect(() => {
@@ -238,6 +240,8 @@ export default function MapsPage() {
     cartScrollRef.current.scrollTo({ left: newScroll, behavior: 'smooth' })
   }
 
+  const shouldWrapCartRail = orderedCartPOIs.length <= 2 && !cartOverflows
+
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="routes">
       {/* Desktop: reserve sidebar + side panel space for map viewport. */}
@@ -256,9 +260,13 @@ export default function MapsPage() {
               margin: '0 auto'
             }}
           >
-            <div className="pointer-events-auto relative w-full">
+            <div className="pointer-events-auto w-full flex justify-center">
               {/* Clean rail (simple + consistent, like major map UIs) */}
-              <div className="relative w-full rounded-2xl bg-white/80 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200/60 dark:border-gray-700/60 shadow-lg overflow-hidden">
+              <div
+                className={`relative rounded-2xl bg-white/80 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200/60 dark:border-gray-700/60 shadow-lg overflow-hidden ${
+                  shouldWrapCartRail ? 'w-fit max-w-full' : 'w-full'
+                }`}
+              >
 
               {/* Left scroll button */}
               {canScrollLeft && (
@@ -288,7 +296,9 @@ export default function MapsPage() {
 
               <div 
                 ref={cartScrollRef}
-                className="flex items-stretch gap-2 overflow-x-auto scrollbar-hide w-full snap-x snap-proximity scroll-px-3 pl-3 pr-3 py-2"
+                className={`flex items-stretch gap-2 scrollbar-hide snap-x snap-proximity scroll-px-3 pl-3 pr-3 py-2 ${
+                  shouldWrapCartRail ? 'w-fit overflow-x-hidden' : 'w-full overflow-x-auto'
+                }`}
                 style={{ 
                   scrollbarWidth: 'none', 
                   msOverflowStyle: 'none',

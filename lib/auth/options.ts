@@ -22,6 +22,9 @@ if (!env("NEXTAUTH_URL") && vercelEnv === "preview") {
 
 const googleClientId = env("GOOGLE_CLIENT_ID")
 const googleClientSecret = env("GOOGLE_CLIENT_SECRET")
+// Feature flag: Set NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false to temporarily disable Google auth
+// Defaults to true if not set (backward compatible)
+const googleAuthEnabled = env("NEXT_PUBLIC_GOOGLE_AUTH_ENABLED") !== "false"
 const nodeEnv = env("NODE_ENV")
 
 // Require NEXTAUTH_SECRET in production to prevent JWT forgery
@@ -40,7 +43,7 @@ const nextAuthSecret =
 
 export const authOptions: NextAuthOptions = {
   providers:
-    googleClientId && googleClientSecret
+    googleAuthEnabled && googleClientId && googleClientSecret
       ? [
           GoogleProvider({
             clientId: googleClientId,

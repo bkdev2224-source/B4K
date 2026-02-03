@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import { getSiteUrl } from '@/lib/config/env'
 import './globals.css'
 import SessionProvider from '@/components/providers/SessionProvider'
 import { SidebarProvider } from '@/components/providers/SidebarContext'
@@ -16,9 +17,33 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+const SITE_NAME = 'B4K'
+const DEFAULT_DESCRIPTION =
+  'Explore Korea with B4K — discover K-Pop spots, K-Beauty, K-Food, festivals, and K-Drama locations. Plan your trip with curated travel packages and maps.'
+
 export const metadata: Metadata = {
-  title: 'B4K',
-  description: 'B4K Project',
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${SITE_NAME} | Korea Travel & Culture`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | Korea Travel & Culture`,
+    description: DEFAULT_DESCRIPTION,
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} | Korea Travel & Culture`,
+    description: DEFAULT_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export const viewport: Viewport = {
@@ -34,6 +59,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Prevent theme flash: set dark class before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t==='dark'||(t!=='light'&&d);document.documentElement.classList.toggle('dark',dark);})();`,
+          }}
+        />
         {/* Fonts: Pretendard (Korean) + Inter (Latin via next/font) */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link

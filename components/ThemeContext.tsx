@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -42,10 +42,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeEventListener('change', updateResolvedTheme)
   }, [theme])
 
-  // Apply theme to document
+  // Apply theme to document (skip first run — inline script in head already set it)
+  const isFirstApply = useRef(true)
   useEffect(() => {
+    if (isFirstApply.current) {
+      isFirstApply.current = false
+      return
+    }
     const root = document.documentElement
-    
     if (resolvedTheme === 'dark') {
       root.classList.add('dark')
     } else {

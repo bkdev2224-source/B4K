@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import { promises as fs } from 'fs'
+import { checkApiLimit } from '@/lib/ratelimit'
 
 const BASE_DIR = path.join(process.cwd(), 'mockupdata', 'logo')
 
@@ -18,7 +19,10 @@ function getContentType(ext: string) {
   }
 }
 
-export async function GET(_request: NextRequest, ctx: { params: { path: string[] } }) {
+export async function GET(request: NextRequest, ctx: { params: { path: string[] } }) {
+  const limitRes = await checkApiLimit(request)
+  if (limitRes) return limitRes
+
   const relPath = (ctx.params?.path ?? []).join('/')
   if (!relPath) return new NextResponse('Not found', { status: 404 })
 

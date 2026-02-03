@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getKpopArtistByName } from '@/lib/db/kpop-artists'
+import { checkApiLimit } from '@/lib/ratelimit'
 
 // Query-string based route handlers can't be statically prerendered.
 // Use CDN caching headers instead.
@@ -14,6 +15,9 @@ const CACHE_HEADERS = {
  * name으로 아티스트 1건 조회 (대소문자 무시)
  */
 export async function GET(request: NextRequest) {
+  const limitRes = await checkApiLimit(request)
+  if (limitRes) return limitRes
+
   try {
     const name = request.nextUrl.searchParams.get('name')
     if (!name?.trim()) {

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import SessionProvider from '@/components/providers/SessionProvider'
@@ -7,9 +6,8 @@ import { SidebarProvider } from '@/components/providers/SidebarContext'
 import { RouteProvider } from '@/components/providers/RouteContext'
 import { SearchProvider } from '@/components/providers/SearchContext'
 import { CartProvider } from '@/components/providers/CartContext'
-import { AnalyticsTracker } from '@/lib/hooks'
+import { AnalyticsTracker } from '@/lib/hooks/useAnalytics'
 import { ThemeProvider } from '@/components/ThemeContext'
-import { getNaverMapClientId } from '@/lib/config/env'
 import AnalyticsGate from '@/components/analytics/AnalyticsGate'
 
 const inter = Inter({
@@ -33,8 +31,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const naverMapClientId = getNaverMapClientId()
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -44,27 +40,6 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
         />
-        {/* Naver Maps API - 공식 문서 예제에 따라 ncpKeyId와 language=en 사용 */}
-        {naverMapClientId && (
-          <>
-            <Script
-              src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverMapClientId}&language=en&submodules=geocoder`}
-              strategy="beforeInteractive"
-            />
-            {/* 인증 실패 시 처리 */}
-            <Script
-              id="naver-map-auth-failure"
-              strategy="beforeInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.navermap_authFailure = function() {
-                    console.error('Naver Maps API 인증 실패: 클라이언트 ID를 확인하세요.');
-                  };
-                `,
-              }}
-            />
-          </>
-        )}
       </head>
       <body className={`${inter.variable} font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors`}>
         <a

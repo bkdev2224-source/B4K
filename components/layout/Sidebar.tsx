@@ -132,24 +132,20 @@ export default function Sidebar() {
                 className={`focus-ring group relative flex items-center gap-3 px-5 py-1.5 rounded-full transition-colors ${
                   isActive
                     ? 'text-gray-900 dark:text-gray-100'
-                    : 'text-gray-700 dark:text-gray-300'
-                } ${!isActive ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
                 title={!sidebarOpen ? item.name : undefined}
               >
-                {/* Active highlight: circle (collapsed) -> pill (expanded) */}
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className={`absolute left-5 top-1/2 -translate-y-1/2 h-11 rounded-full bg-gray-100 dark:bg-gray-800 transition-[width] duration-300 ease-out ${
-                      sidebarOpen ? 'w-[calc(100%-2.5rem)]' : 'w-11'
-                    }`}
-                  />
-                )}
+                {/* Highlight: active + hover share the same style (circle -> pill). */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-5 top-1/2 -translate-y-1/2 h-11 rounded-full bg-gray-100 dark:bg-gray-800 transition-[width,opacity] duration-300 ease-out ${
+                    sidebarOpen ? 'w-[calc(100%-2.5rem)]' : 'w-11'
+                  } ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                />
 
                 <span
-                  className={`relative z-10 w-11 h-11 flex items-center justify-center rounded-full flex-shrink-0 transition-colors ${
-                    !sidebarOpen && !isActive ? 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800' : ''
-                  }`}
+                  className="relative z-10 w-11 h-11 flex items-center justify-center rounded-full flex-shrink-0"
                 >
                   <span className={`${isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'} [&>svg]:stroke-current`}>
                     {item.icon}

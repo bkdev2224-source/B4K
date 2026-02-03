@@ -8,6 +8,10 @@
   margin: 0;
 }
 
+html {
+  color-scheme: light;
+}
+
 html,
 body {
   max-width: 100vw;
@@ -103,6 +107,7 @@ body {
 
 /* Dark mode */
 .dark {
+  color-scheme: dark;
   --foreground-rgb: 250, 250, 250;
   --background-start-rgb: 10, 10, 10;
   --background-end-rgb: 10, 10, 10;

@@ -61,14 +61,14 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     { id: 'terms', name: 'Terms & Conditions', href: '/terms' },
   ]
 
-  // Generic navigation (used as a fallback on pages like POI/Package/MyPage)
+  // Generic navigation (used as a fallback on pages like POI/Package/Profile)
   const navLinks: SidePanelItem[] = [
     { id: 'home', name: 'Home', href: '/' },
     { id: 'packages', name: 'Packages', href: '/package' },
     { id: 'maps', name: 'Map', href: '/maps' },
     { id: 'contents', name: 'Contents', href: '/contents' },
     { id: 'info', name: 'Info', href: '/info' },
-    { id: 'mypage', name: 'MyPage', href: '/mypage' },
+    { id: 'mypage', name: 'Profile', href: '/mypage' },
   ]
 
   const formatEntryFee = (fee: string) => {

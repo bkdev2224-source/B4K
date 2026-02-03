@@ -16,6 +16,15 @@ const nextConfig = {
     ],
   },
   async headers() {
+    const cspReportOnly = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.clarity.ms https://oapi.map.naver.com",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' https://cdn.jsdelivr.net",
+      "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://clarity.ms https://oapi.map.naver.com https://naveropenapi.apigw.ntruss.com",
+      "frame-src 'self' https://accounts.google.com",
+    ].join('; ')
     return [
       {
         // Apply baseline security headers to all routes (including static assets).
@@ -27,6 +36,10 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), payment=()',
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: cspReportOnly,
           },
         ],
       },

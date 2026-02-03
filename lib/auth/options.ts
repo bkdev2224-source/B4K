@@ -22,8 +22,21 @@ if (!env("NEXTAUTH_URL") && vercelEnv === "preview") {
 
 const googleClientId = env("GOOGLE_CLIENT_ID")
 const googleClientSecret = env("GOOGLE_CLIENT_SECRET")
-const nextAuthSecret = env("NEXTAUTH_SECRET")
 const nodeEnv = env("NODE_ENV")
+
+// Require NEXTAUTH_SECRET in production to prevent JWT forgery
+const nextAuthSecret =
+  nodeEnv === "production"
+    ? (() => {
+        const secret = env("NEXTAUTH_SECRET")
+        if (!secret || secret.length < 32) {
+          throw new Error(
+            "NEXTAUTH_SECRET must be set and at least 32 characters in production. Generate with: openssl rand -base64 32"
+          )
+        }
+        return secret
+      })()
+    : env("NEXTAUTH_SECRET")
 
 export const authOptions: NextAuthOptions = {
   providers:
@@ -55,10 +68,9 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      // 세션에 토큰 정보 추가
+      // 세션에 사용자 id 추가 (accessToken은 클라이언트에 노출하지 않음 - 보안)
       if (session.user) {
         session.user.id = token.id as string || ""
-        session.accessToken = token.accessToken as string
       }
       return session
     },

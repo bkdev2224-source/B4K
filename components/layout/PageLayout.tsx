@@ -50,7 +50,10 @@ export default function PageLayout({
         topNavClasses={layout.topNavClasses}
       />
 
-      <main className={`pt-16 pb-16 lg:pb-0 transition-all duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}>
+      <main
+        id="main-content"
+        className={`pt-16 pb-16 lg:pb-0 transition-[margin,padding] duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}
+      >
         {children}
       </main>
 

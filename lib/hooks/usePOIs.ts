@@ -1,84 +1,49 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import type { POIJson } from '@/types'
+import { fetcher } from '@/lib/utils/fetcher'
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url)
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Failed to fetch (${res.status}). ${text}`)
+const DEDUPING_INTERVAL_MS = 30_000
+
+export function usePOIs(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
+  const key = enabled ? '/api/pois' : null
+  const { data, error, isLoading } = useSWR<POIJson[]>(
+    key,
+    fetcher,
+    {
+      dedupingInterval: DEDUPING_INTERVAL_MS,
+      revalidateOnFocus: false,
+    }
+  )
+
+  const pois = Array.isArray(data) ? data : []
+  const loading = enabled && isLoading
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch pois' : null)
+
+  return {
+    pois,
+    loading,
+    error: err,
   }
-  return (await res.json()) as T
 }
 
-export function usePOIs() {
-  const [pois, setPois] = useState<POIJson[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function usePOIById(poiId: string, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
+  const key = enabled && poiId ? `/api/pois?poiId=${encodeURIComponent(poiId)}` : null
+  const { data, error, isLoading } = useSWR<POIJson | null>(key, fetcher, {
+    dedupingInterval: DEDUPING_INTERVAL_MS,
+    revalidateOnFocus: false,
+  })
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchJson<POIJson[]>('/api/pois')
-      .then((data) => {
-        if (cancelled) return
-        setPois(Array.isArray(data) ? data : [])
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setPois([])
-        setError(err instanceof Error ? err.message : 'Failed to fetch pois')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const poi = data ?? null
+  const loading = enabled && poiId ? isLoading : false
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch poi' : null)
 
-  return { pois, loading, error }
+  return {
+    poi,
+    loading,
+    error: err,
+  }
 }
-
-export function usePOIById(poiId: string) {
-  const [poi, setPoi] = useState<POIJson | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!poiId) {
-      setPoi(null)
-      setLoading(false)
-      return
-    }
-
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchJson<POIJson | null>(`/api/pois?poiId=${encodeURIComponent(poiId)}`)
-      .then((data) => {
-        if (cancelled) return
-        setPoi(data ?? null)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setPoi(null)
-        setError(err instanceof Error ? err.message : 'Failed to fetch poi')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [poiId])
-
-  return { poi, loading, error }
-}
-
-

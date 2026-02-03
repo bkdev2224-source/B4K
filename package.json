@@ -18,10 +18,12 @@
     "next": "^14.2.0",
     "next-auth": "^4.24.13",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "swr": "^2.4.0"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "playwright": "^1.58.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.23",

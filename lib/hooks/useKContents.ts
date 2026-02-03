@@ -1,19 +1,14 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import type { KContentJson } from '@/types'
+import { fetcher } from '@/lib/utils/fetcher'
 
-async function fetchKContents(url: string): Promise<KContentJson[]> {
-  const res = await fetch(url)
-  if (!res.ok) {
-    // API가 500이면 보통 { error: "..." } 형태가 오므로 텍스트로 남김
-    const text = await res.text().catch(() => '')
-    throw new Error(`Failed to fetch kcontents (${res.status}). ${text}`)
-  }
+const DEDUPING_INTERVAL_MS = 30_000
 
-  const data = await res.json()
+async function kContentsFetcher(url: string): Promise<KContentJson[]> {
+  const data = await fetcher<unknown>(url)
   if (!Array.isArray(data)) {
-    // { error: ... } 같은 형태가 오면 여기로 들어옴 → UI 크래시 방지
     throw new Error('Invalid kcontents response (expected array).')
   }
   return data as KContentJson[]
@@ -22,137 +17,75 @@ async function fetchKContents(url: string): Promise<KContentJson[]> {
 /**
  * 클라이언트 컴포넌트에서 KContents를 가져오는 훅
  */
-export function useKContents() {
-  const [contents, setContents] = useState<KContentJson[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function useKContents(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
+  const key = enabled ? '/api/kcontents' : null
+  const { data, error, isLoading } = useSWR<KContentJson[]>(key, kContentsFetcher, {
+    dedupingInterval: DEDUPING_INTERVAL_MS,
+    revalidateOnFocus: false,
+  })
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchKContents('/api/kcontents')
-      .then((data) => {
-        if (cancelled) return
-        setContents(data)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setContents([])
-        setError(err instanceof Error ? err.message : 'Failed to fetch kcontents')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const contents = Array.isArray(data) ? data : []
+  const loading = enabled && isLoading
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch kcontents' : null)
 
-  return { contents, loading, error }
+  return {
+    contents,
+    loading,
+    error: err,
+  }
 }
 
-export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival') {
-  const [contents, setContents] = useState<KContentJson[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function useKContentsByCategory(category: 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama') {
+  const key = `/api/kcontents?category=${category}`
+  const { data, error, isLoading } = useSWR<KContentJson[]>(key, kContentsFetcher, {
+    dedupingInterval: DEDUPING_INTERVAL_MS,
+    revalidateOnFocus: false,
+  })
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchKContents(`/api/kcontents?category=${category}`)
-      .then((data) => {
-        if (cancelled) return
-        setContents(data)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setContents([])
-        setError(err instanceof Error ? err.message : 'Failed to fetch kcontents')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [category])
+  const contents = Array.isArray(data) ? data : []
+  const loading = isLoading
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch kcontents' : null)
 
-  return { contents, loading, error }
+  return {
+    contents,
+    loading,
+    error: err,
+  }
 }
 
 export function useKContentsByPOIId(poiId: string) {
-  const [contents, setContents] = useState<KContentJson[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const key = poiId ? `/api/kcontents?poiId=${encodeURIComponent(poiId)}` : null
+  const { data, error, isLoading } = useSWR<KContentJson[]>(key, kContentsFetcher, {
+    dedupingInterval: DEDUPING_INTERVAL_MS,
+    revalidateOnFocus: false,
+  })
 
-  useEffect(() => {
-    if (!poiId) {
-      setLoading(false)
-      return
-    }
-    
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchKContents(`/api/kcontents?poiId=${encodeURIComponent(poiId)}`)
-      .then((data) => {
-        if (cancelled) return
-        setContents(data)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setContents([])
-        setError(err instanceof Error ? err.message : 'Failed to fetch kcontents')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [poiId])
+  const contents = Array.isArray(data) ? data : []
+  const loading = !!poiId && isLoading
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch kcontents' : null)
 
-  return { contents, loading, error }
+  return {
+    contents,
+    loading,
+    error: err,
+  }
 }
 
 export function useKContentsBySubName(subName: string) {
-  const [contents, setContents] = useState<KContentJson[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const key = subName ? `/api/kcontents?subName=${encodeURIComponent(subName)}` : null
+  const { data, error, isLoading } = useSWR<KContentJson[]>(key, kContentsFetcher, {
+    dedupingInterval: DEDUPING_INTERVAL_MS,
+    revalidateOnFocus: false,
+  })
 
-  useEffect(() => {
-    if (!subName) {
-      setLoading(false)
-      return
-    }
-    
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetchKContents(`/api/kcontents?subName=${encodeURIComponent(subName)}`)
-      .then((data) => {
-        if (cancelled) return
-        setContents(data)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setContents([])
-        setError(err instanceof Error ? err.message : 'Failed to fetch kcontents')
-      })
-      .finally(() => {
-        if (cancelled) return
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [subName])
+  const contents = Array.isArray(data) ? data : []
+  const loading = !!subName && isLoading
+  const err = error instanceof Error ? error.message : (error ? 'Failed to fetch kcontents' : null)
 
-  return { contents, loading, error }
+  return {
+    contents,
+    loading,
+    error: err,
+  }
 }
-

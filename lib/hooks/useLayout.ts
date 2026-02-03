@@ -48,43 +48,50 @@ export function useLayout(options: UseLayoutOptions = {}) {
       return 'routes'
     }
     
-    // For routes pages with 'routes' width
+    // For maps/routes pages with 'routes' width
     if (isRoutesPage && sidePanelWidth === 'routes') {
-      // Maps page exception: show route panel as an overlay (do NOT shrink map/main)
-      return 'none'
+      return 'routes'
     }
     
-    // For fixed panels (default), always show on pages that actually have a panel (regardless of sidebar state)
+    // For fixed panels (default), always show on non-maps pages (regardless of sidebar state)
     if (sidePanelWidth === 'default') {
-      const supportsDefaultPanel =
-        pathname === '/' ||
-        pathname === '/contents' ||
-        pathname?.startsWith('/contents') ||
-        pathname === '/info' ||
-        pathname?.startsWith('/info')
-      return supportsDefaultPanel ? 'default' : 'none'
+      // Keep Maps full-width unless it's showing search results (handled above).
+      if (isRoutesPage) return 'none'
+      return 'default'
     }
     
     return sidePanelWidth
-  }, [showSidePanel, sidePanelWidth, isRoutesPage, pathname, searchResult])
+  }, [showSidePanel, sidePanelWidth, isRoutesPage, searchResult])
 
   // Determine side panel type
-  const sidePanelType = useMemo((): 'home' | 'contents' | 'info' | 'route' | 'search' | null => {
-    // For search results on Maps page
+  const sidePanelType = useMemo((): 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | null => {
+    // Search results:
+    // - On /maps we keep the panel as "maps" so we can show list <-> detail in one UI.
+    // - On /maps/route/* we use "search" bottom-sheet behavior.
     if (isRoutesPage && searchResult) {
-      return 'search'
+      return pathname === '/maps' ? 'maps' : 'search'
     }
     
     // For routes pages
     if (isRoutesPage && sidePanelWidth === 'routes' && hasRoute) {
       return 'route'
     }
+
+    // Maps default panel (recommended list)
+    if (pathname === '/maps' && sidePanelWidth === 'routes') {
+      return 'maps'
+    }
     
     // For fixed panels (always show regardless of sidebar state)
     if (sidePanelWidth === 'default') {
+      // Keep Maps free unless it's route/search (handled above).
+      if (isRoutesPage) return null
       if (pathname === '/') return 'home'
       if (pathname === '/contents' || pathname?.startsWith('/contents')) return 'contents'
       if (pathname === '/info' || pathname?.startsWith('/info')) return 'info'
+      if (pathname === '/privacy' || pathname === '/terms') return 'info'
+      // Default fallback: show a simple navigation panel on all other pages.
+      return 'nav'
     }
     
     return null

@@ -1,5 +1,3 @@
-"use client"
-
 import PageLayout from '@/components/layout/PageLayout'
 import MainCarousel from '@/app/_components/home/MainCarousel'
 import BestPackages from '@/app/_components/home/BestPackages'
@@ -10,6 +8,7 @@ import SeasonalRecommendations from '@/app/_components/home/SeasonalRecommendati
 export default function Home() {
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="default">
+      <h1 className="sr-only">B4K</h1>
       {/* Main carousel */}
       <MainCarousel />
       

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
 
 export interface CartItem {
   id: string
@@ -67,7 +67,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isInitialized])
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = useCallback((item: CartItem) => {
     setCartItems((prev) => {
       // 이미 장바구니에 있는지 확인
       const exists = prev.some((cartItem) => cartItem.id === item.id)
@@ -76,30 +76,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, item]
     })
-  }
+  }, [])
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id))
-  }
+  }, [])
 
-  const isInCart = (id: string) => {
-    return cartItems.some((item) => item.id === id)
-  }
+  const isInCart = useCallback(
+    (id: string) => cartItems.some((item) => item.id === id),
+    [cartItems]
+  )
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([])
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      cartItems,
+      addToCart,
+      removeFromCart,
+      isInCart,
+      clearCart,
+    }),
+    [cartItems, addToCart, removeFromCart, isInCart, clearCart]
+  )
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        removeFromCart,
-        isInCart,
-        clearCart,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   )

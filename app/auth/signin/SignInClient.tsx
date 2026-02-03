@@ -41,7 +41,7 @@ export default function SignInClient() {
         )}
         <button
           onClick={handleSignIn}
-          className="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 px-4 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 flex items-center justify-center gap-3 transition-all"
+          className="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 px-4 rounded-lg shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 flex items-center justify-center gap-3 transition-[background-color,transform]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

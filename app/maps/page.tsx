@@ -54,9 +54,8 @@ export default function MapsPage() {
       ? LAYOUT_CONSTANTS.SIDEBAR_OPEN_WIDTH 
       : LAYOUT_CONSTANTS.SIDEBAR_CLOSED_WIDTH
     
-    // Check if side panel is actually visible using layout.showSidePanel
-    // This is the most accurate way to determine if side panel is shown
-    const hasSidePanel = layout.showSidePanel && (layout.sidePanelType === 'search' || layout.sidePanelType === 'route')
+    // Side panel is always reserved on desktop maps when layout.showSidePanel is true.
+    const hasSidePanel = layout.showSidePanel
     const sidePanelWidth = hasSidePanel ? LAYOUT_CONSTANTS.SIDE_PANEL_ROUTES_WIDTH : '0px'
     
     // Calculate left position: start after sidebar + side panel, then add 10% padding
@@ -76,7 +75,23 @@ export default function MapsPage() {
     const maxWidth = '1200px'
     
     return { left, right, maxWidth }
-  }, [isDesktop, sidebarOpen, layout.showSidePanel, layout.sidePanelType])
+  }, [isDesktop, sidebarOpen, layout.showSidePanel])
+
+  // Map viewport should not sit under sidebar/panel on desktop.
+  const mapViewportPosition = useMemo(() => {
+    if (!isDesktop) return { left: '0px' }
+
+    const sidebarWidth = sidebarOpen
+      ? LAYOUT_CONSTANTS.SIDEBAR_OPEN_WIDTH
+      : LAYOUT_CONSTANTS.SIDEBAR_CLOSED_WIDTH
+
+    const sidePanelWidth = layout.showSidePanel ? LAYOUT_CONSTANTS.SIDE_PANEL_ROUTES_WIDTH : '0px'
+    const left = layout.showSidePanel
+      ? `calc(${sidebarWidth} + ${sidePanelWidth})`
+      : `${sidebarWidth}`
+
+    return { left }
+  }, [isDesktop, sidebarOpen, layout.showSidePanel])
 
   // Get POIs to display based on search result or cart
   // ALWAYS include cart POIs for map route drawing - this is critical for polyline
@@ -185,40 +200,30 @@ export default function MapsPage() {
   const cartScrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-
-  const checkScrollButtons = () => {
-    if (!cartScrollRef.current) return
-    const { scrollLeft, scrollWidth, clientWidth } = cartScrollRef.current
-    setCanScrollLeft(scrollLeft > 0)
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-  }
+  const [cartOverflows, setCartOverflows] = useState(false)
 
   useEffect(() => {
-    checkScrollButtons()
     const scrollElement = cartScrollRef.current
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', checkScrollButtons)
-      window.addEventListener('resize', checkScrollButtons)
-      
-      // Center scroll position when items change (add/remove)
-      // Only center if content is smaller than container
-      const centerScroll = () => {
-        if (scrollElement.scrollWidth <= scrollElement.clientWidth) {
-          scrollElement.scrollLeft = 0
-        } else {
-          // If content is larger, try to center the scroll
-          const maxScroll = scrollElement.scrollWidth - scrollElement.clientWidth
-          scrollElement.scrollLeft = maxScroll / 2
-        }
-      }
-      
-      // Small delay to ensure DOM is updated
-      setTimeout(centerScroll, 0)
-      
-      return () => {
-        scrollElement.removeEventListener('scroll', checkScrollButtons)
-        window.removeEventListener('resize', checkScrollButtons)
-      }
+    if (!scrollElement) return
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollElement
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+      setCartOverflows(scrollWidth > clientWidth + 1)
+    }
+
+    handleScroll()
+    if (scrollElement.scrollWidth <= scrollElement.clientWidth) {
+      scrollElement.scrollLeft = 0
+    }
+
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
+
+    return () => {
+      scrollElement.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
     }
   }, [orderedCartPOIs])
 
@@ -232,10 +237,12 @@ export default function MapsPage() {
     cartScrollRef.current.scrollTo({ left: newScroll, behavior: 'smooth' })
   }
 
+  const shouldWrapCartRail = orderedCartPOIs.length <= 2 && !cartOverflows
+
   return (
     <PageLayout showSidePanel={true} sidePanelWidth="routes">
-      {/* Map-only exception: map is a fixed background layer; sidebar/sidepanel overlay on top. */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
+      {/* Desktop: reserve sidebar + side panel space for map viewport. */}
+      <div className="fixed inset-0 z-0 overflow-hidden" style={{ left: mapViewportPosition.left }}>
         <NaverMap center={mapCenter} zoom={mapZoom} pois={displayPOIs} cartOrderMap={cartOrderMap} hasSearchResult={!!searchResult} showMapRoute={showMapRoute} />
 
         {/* Bottom POI List - always show when cart has items (even when search result is shown) */}
@@ -250,12 +257,19 @@ export default function MapsPage() {
               margin: '0 auto'
             }}
           >
-            <div className="pointer-events-auto relative w-full flex justify-center" style={{ paddingLeft: canScrollLeft ? '3rem' : '1rem', paddingRight: canScrollRight ? '3rem' : '1rem' }}>
+            <div className="pointer-events-auto w-full flex justify-center">
+              {/* Clean rail (simple + consistent, like major map UIs) */}
+              <div
+                className={`relative rounded-2xl bg-white/80 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200/60 dark:border-gray-700/60 shadow-lg overflow-hidden ${
+                  shouldWrapCartRail ? 'w-fit max-w-full' : 'w-full'
+                }`}
+              >
+
               {/* Left scroll button */}
               {canScrollLeft && (
                 <button
                   onClick={() => scrollCart('left')}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg border border-gray-200 transition-all"
+                  className="focus-ring absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-md border border-gray-200/70 dark:border-gray-700/70 transition-colors"
                   aria-label="Scroll left"
                 >
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +282,7 @@ export default function MapsPage() {
               {canScrollRight && (
                 <button
                   onClick={() => scrollCart('right')}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg border border-gray-200 transition-all"
+                  className="focus-ring absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-md border border-gray-200/70 dark:border-gray-700/70 transition-colors"
                   aria-label="Scroll right"
                 >
                   <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,56 +293,61 @@ export default function MapsPage() {
 
               <div 
                 ref={cartScrollRef}
-                className="flex items-center gap-3 overflow-x-auto scrollbar-hide w-full"
+                className={`flex items-stretch gap-2 scrollbar-hide snap-x snap-proximity scroll-px-3 pl-3 pr-3 py-2 ${
+                  shouldWrapCartRail ? 'w-fit overflow-x-hidden' : 'w-full overflow-x-auto'
+                }`}
                 style={{ 
                   scrollbarWidth: 'none', 
                   msOverflowStyle: 'none',
-                  justifyContent: 'center',
-                  paddingLeft: '1rem',
-                  paddingRight: '1rem'
+                  justifyContent: 'flex-start',
                 }}
-                onScroll={checkScrollButtons}
               >
-                <style jsx>{`
-                  .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                  }
-                `}</style>
                 {orderedCartPOIs.map(({ poi, order, cartItemId }, index) => (
-                  <div key={poi._id.$oid} className="flex items-center gap-3 flex-shrink-0">
-                    {/* Floating Box for each POI */}
-                    <div className="relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 p-3 min-w-[200px] max-w-[200px] transition-all hover:shadow-xl hover:scale-105">
-                      {/* Delete button - top right */}
-                      <button
-                        onClick={() => removeFromCart(cartItemId)}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all z-10"
-                        aria-label="Remove from cart"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                      
-                      {/* Order badge */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
+                  <div key={poi._id.$oid} className="flex items-stretch gap-3 flex-shrink-0 snap-start">
+                    {/* Simple card (fixed height to prevent "crooked" rows) */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/70 px-3 py-3 w-[280px] h-[84px] shadow-sm">
+                      <div className="flex items-start gap-3 h-full">
+                        {/* Order badge */}
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-bold text-xs">
                           {order}
                         </div>
-                        <h3 className="font-semibold text-gray-900 text-sm truncate flex-1">{poi.name}</h3>
+
+                        <div className="min-w-0 flex-1 flex flex-col justify-between h-full">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-snug truncate">
+                              {poi.name}
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={() => removeFromCart(cartItemId)}
+                              className="focus-ring -mt-1 -mr-1 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              aria-label="Remove from cart"
+                              title="Remove"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <p className="text-gray-600 dark:text-gray-400 text-xs leading-snug line-clamp-2">
+                            {poi.address}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-gray-600 text-xs line-clamp-2 ml-9">{poi.address}</p>
                     </div>
                     
                     {/* Arrow connector - show between items, not after last item */}
                     {index < orderedCartPOIs.length - 1 && (
-                      <div className="flex-shrink-0 flex items-center">
-                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex-shrink-0 flex items-center self-center">
+                        <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
                     )}
                   </div>
                 ))}
+              </div>
               </div>
             </div>
           </div>

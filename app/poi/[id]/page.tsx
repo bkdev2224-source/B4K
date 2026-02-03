@@ -1,108 +1,68 @@
-"use client"
-
-import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import PageLayout from '@/components/layout/PageLayout'
-import { useKContentsByPOIId } from '@/lib/hooks/useKContents'
-import { useSearchResult } from '@/components/providers/SearchContext'
-import { useCart } from '@/components/providers/CartContext'
-import { useState } from 'react'
-import { usePOIById } from '@/lib/hooks/usePOIs'
-import { LoadingScreen } from '@/lib/utils/loading'
+import PoiActionButtons from './PoiActionButtons'
+import { getPOIById } from '@/lib/db/pois'
+import { getKContentsByPOIId } from '@/lib/db/kcontents'
+import type { KContentJson, POIJson } from '@/types'
 
-export default function POIDetailPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { setSearchResult } = useSearchResult()
-  const { addToCart, removeFromCart, isInCart } = useCart()
-  const id = params?.id as string || ''
-  
-  const { poi, loading: poiLoading, error: poiError } = usePOIById(id)
-  const { contents: kContents } = useKContentsByPOIId(id)
-  const cartItemId = poi ? `poi-${poi._id.$oid}` : ''
-  const inCart = cartItemId ? isInCart(cartItemId) : false
+export const revalidate = 60
 
-  const handleMapClick = () => {
-    if (poi) {
-      // SearchContext에 POI 검색 결과 저장
-      setSearchResult({
-        name: poi.name,
-        type: 'poi',
-        poiId: poi._id.$oid
-      })
-      // Maps 페이지로 이동
-      router.push('/maps')
-    }
-  }
+function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
+  return { ...poi, _id: { $oid: poi._id } }
+}
 
-  const handleCartClick = () => {
-    if (poi) {
-      if (inCart) {
-        removeFromCart(cartItemId)
-      } else {
-        addToCart({
-          id: cartItemId,
-          name: poi.name,
-          type: 'poi',
-          poiId: poi._id.$oid
-        })
-      }
-    }
-  }
+export default async function POIDetailPage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const id = params?.id || ''
 
-  if (poiLoading) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <LoadingScreen label="Loading..." />
-      </PageLayout>
+  try {
+    const dbPoi = await getPOIById(id)
+    const poi = dbPoi ? toPOIJson(dbPoi as any) : null
+    const dbContents = await getKContentsByPOIId(id)
+    const kContents = dbContents.map(
+      (content) =>
+        ({
+          subName: content.subName,
+          poiId: { $oid: content.poiId },
+          spotName: content.spotName,
+          description: content.description,
+          tags: content.tags,
+          popularity: content.popularity,
+          category: content.category,
+        }) as KContentJson
     )
-  }
 
-  if (poiError) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center max-w-md px-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{poiError}</p>
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-            >
-              Return to Home
-            </button>
+    if (!poi) {
+      return (
+        <PageLayout>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Location Not Found</h1>
+              <a
+                href="/"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                aria-label="Return to home"
+              >
+                Return to Home
+              </a>
+            </div>
           </div>
-        </div>
-      </PageLayout>
-    )
-  }
-
-  if (!poi) {
-    return (
-      <PageLayout showSidePanel={false}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Location Not Found</h1>
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-            >
-              Return to Home
-            </button>
-          </div>
-        </div>
-      </PageLayout>
-    )
-  }
+        </PageLayout>
+      )
+    }
 
   return (
-    <PageLayout showSidePanel={false}>
+    <PageLayout>
         {/* Banner image */}
         <div className="relative h-96">
           <Image
             src={`https://picsum.photos/seed/${poi._id.$oid}/1920/600`}
             alt={poi.name}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />
@@ -117,7 +77,7 @@ export default function POIDetailPage() {
                   <div className="mb-4 flex flex-wrap items-center gap-3 text-white/90 text-sm md:text-base">
                     <div className="flex gap-2 flex-wrap">
                       {poi.categoryTags.map((tag, idx) => (
-                        <span key={idx} className="px-3 py-1 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white">
+                        <span key={`${tag}-${idx}`} className="px-3 py-1 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white">
                           {tag}
                         </span>
                       ))}
@@ -148,39 +108,7 @@ export default function POIDetailPage() {
                     </div>
                   </div>
                 </div>
-                {/* 액션 버튼들 */}
-                <div className="ml-4 flex gap-3">
-                  {/* 장바구니 버튼 */}
-                  <button
-                    onClick={handleCartClick}
-                    className={`p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 ${
-                      inCart 
-                        ? 'bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200' 
-                        : 'bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30'
-                    }`}
-                    aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
-                    title={inCart ? "Remove from Cart" : "Add to Cart"}
-                  >
-                    <svg className={`w-7 h-7 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-white'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
-                      {inCart ? (
-                        <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      )}
-                    </svg>
-                  </button>
-                  {/* 지도 아이콘 */}
-                  <button
-                    onClick={handleMapClick}
-                    className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                    aria-label="View on Map"
-                    title="View on Map"
-                  >
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                  </button>
-                </div>
+                <PoiActionButtons poiId={poi._id.$oid} poiName={poi.name} />
               </div>
             </div>
           </div>
@@ -208,8 +136,8 @@ export default function POIDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {kContents.map((content, index) => (
                   <div
-                    key={index}
-                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200 shadow-sm hover:shadow-lg"
+                    key={`${content.poiId?.$oid ?? poi._id.$oid}-${content.spotName}-${index}`}
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -227,6 +155,7 @@ export default function POIDetailPage() {
                           src={`https://picsum.photos/seed/${poi._id.$oid}-${content.spotName}/100/100`}
                           alt={content.spotName}
                           fill
+                          sizes="48px"
                           className="object-cover"
                         />
                       </div>
@@ -254,4 +183,24 @@ export default function POIDetailPage() {
         </div>
     </PageLayout>
   )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load'
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-md px-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">Failed to load</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 break-words">{message}</p>
+            <a
+              href="/"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              aria-label="Return to home"
+            >
+              Return to Home
+            </a>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
 }

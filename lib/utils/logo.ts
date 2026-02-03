@@ -1,4 +1,4 @@
-export type LogoCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+export type LogoCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 
 function normalizeKey(input: string) {
   return input
@@ -64,6 +64,8 @@ export function getContentTypeLabel(category: LogoCategory) {
       return 'food'
     case 'kfestival':
       return 'festival'
+    case 'kdrama':
+      return 'drama'
   }
 }
 

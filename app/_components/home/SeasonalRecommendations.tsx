@@ -85,7 +85,11 @@ export default function SeasonalRecommendations() {
             <div className="flex-1 h-px bg-gradient-to-r from-gray-400 dark:from-gray-600 to-transparent"></div>
           </div>
           <div className="flex justify-end mt-2 pr-2">
-            <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors">
+            <button
+              type="button"
+              className="focus-ring rounded-md px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors"
+              aria-label="Show all seasonal recommendations"
+            >
               Show All
             </button>
           </div>
@@ -96,9 +100,9 @@ export default function SeasonalRecommendations() {
             <Link
               key={item.id}
               href={item.href || '#'}
-              className="group no-underline"
+              className="focus-ring group no-underline rounded-xl"
             >
-              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-300 hover:shadow-lg hover:scale-105">
+              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow,transform] duration-300 hover:shadow-lg hover:scale-105">
                 <div className="relative h-64 overflow-hidden">
                   <Image
                     src={item.imageUrl}

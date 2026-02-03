@@ -89,10 +89,10 @@ export default function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={[
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-0",
+                "focus-ring flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-0",
                 active
                   ? "text-gray-900 dark:text-gray-100"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100",
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100",
               ].join(" ")}
               aria-current={active ? "page" : undefined}
             >

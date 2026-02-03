@@ -1,5 +1,7 @@
 import PageLayout from '@/components/layout/PageLayout'
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 type InfoPageProps = {
   searchParams?: {
@@ -7,8 +9,17 @@ type InfoPageProps = {
   }
 }
 
+export const metadata: Metadata = {
+  title: 'Info | B4K',
+  description: 'About B4K and important information for using the service.',
+}
+
 export default function InfoPage({ searchParams }: InfoPageProps) {
   const section = (searchParams?.section || 'about') as 'about' | 'privacy' | 'terms'
+
+  // Canonicalize old query-param routes.
+  if (section === 'privacy') redirect('/privacy')
+  if (section === 'terms') redirect('/terms')
 
   return (
     <PageLayout showSidePanel={true}>
@@ -18,8 +29,7 @@ export default function InfoPage({ searchParams }: InfoPageProps) {
             B4K Information
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-10">
-            Learn more about B4K, how we handle your data, and the terms that apply when you
-            use this service.
+            Learn more about B4K and find important links like our Privacy Policy and Terms.
           </p>
 
           <div className="space-y-8">
@@ -29,33 +39,21 @@ export default function InfoPage({ searchParams }: InfoPageProps) {
                   About Us
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  This page will contain details about the B4K project, its purpose, and how to
-                  get in touch. You can expand this section with your own content.
+                  B4K helps you explore places, routes, and curated content about Korea. This page
+                  is the central place for key information and policy links.
                 </p>
-              </section>
-            )}
-
-            {section === 'privacy' && (
-              <section id="privacy">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Privacy Policy
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Describe how you collect, use, and store personal data. You can move your full
-                  privacy policy text here or link out to a dedicated document.
-                </p>
-              </section>
-            )}
-
-            {section === 'terms' && (
-              <section id="terms">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Terms &amp; Conditions
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Outline the conditions under which users may use B4K, including limitations of
-                  liability, user responsibilities, and other legal details.
-                </p>
+                <div className="mt-6 space-y-3 text-sm">
+                  <div>
+                    <Link className="underline" href="/privacy">
+                      Privacy Policy
+                    </Link>
+                  </div>
+                  <div>
+                    <Link className="underline" href="/terms">
+                      Terms &amp; Conditions
+                    </Link>
+                  </div>
+                </div>
               </section>
             )}
           </div>

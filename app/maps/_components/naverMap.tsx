@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { POIJson as POI } from '@/types'
 import { useSearchResult } from '@/components/providers/SearchContext'
 
@@ -69,14 +69,93 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
   const [isReady, setIsReady] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const log = useCallback((...args: unknown[]) => {
+    if (process.env.NODE_ENV === 'development') console.log(...args)
+  }, [])
   const isUserInteractingRef = useRef(false) // 사용자가 지도를 직접 조작 중인지 추적
   const lastCenterRef = useRef<number[]>(center) // 마지막 center 값 추적
   const lastZoomRef = useRef<number>(zoom) // 마지막 zoom 값 추적
   const geocodedPoisRef = useRef<Map<string, { lat: number; lng: number }>>(new Map()) // Geocoding된 POI 좌표 캐시
   const geocodingInProgressRef = useRef<Set<string>>(new Set()) // Geocoding 진행 중인 POI ID 추적
 
+  // Geocoding 함수: 주소를 좌표로 변환 (Naver Maps JavaScript SDK 사용)
+  const geocodeAddress = useCallback(
+    (address: string, poiId: string, poi: POI): Promise<{ lat: number; lng: number } | null> => {
+      return new Promise((resolve) => {
+        // 이미 Geocoding된 좌표가 있으면 캐시에서 반환
+        const cached = geocodedPoisRef.current.get(poiId)
+        if (cached) {
+          resolve(cached)
+          return
+        }
+
+        // 이미 Geocoding 진행 중이면 대기하지 않고 null 반환 (중복 요청 방지)
+        if (geocodingInProgressRef.current.has(poiId)) {
+          resolve(null)
+          return
+        }
+
+        if (!window.naver?.maps?.Service) {
+          console.error('[Geocoding] Naver Maps Service is not available')
+          resolve(null)
+          return
+        }
+
+        geocodingInProgressRef.current.add(poiId)
+        log(`[Geocoding Request] POI: ${poi.name}, Address: ${address}`)
+
+        // Naver Maps JavaScript SDK의 geocode 사용 (JSONP 방식, CORS 문제 없음)
+        window.naver.maps.Service.geocode({ query: address }, function (status: number, response: any) {
+          geocodingInProgressRef.current.delete(poiId)
+
+          // 예제 코드에 따라 Status.ERROR 체크
+          if (status === window.naver.maps.Service.Status.ERROR) {
+            console.error(`[Geocoding Status Error] POI: ${poi.name}, Address: ${address}`)
+            resolve(null)
+            return
+          }
+
+          // 예제 코드에 따라 response.v2.meta.totalCount 확인
+          if (!response.v2 || response.v2.meta.totalCount === 0) {
+            console.warn(
+              `[Geocoding No Results] POI: ${poi.name}, Address: ${address}, totalCount: ${response.v2?.meta?.totalCount || 0}`
+            )
+            resolve(null)
+            return
+          }
+
+          // 예제 코드에 따라 response.v2.addresses[0]에서 좌표 추출
+          const item = response.v2.addresses[0]
+          if (!item || !item.x || !item.y) {
+            console.error(`[Geocoding Invalid Response] POI: ${poi.name}, Address: ${address}`, item)
+            resolve(null)
+            return
+          }
+
+          const lat = parseFloat(item.y)
+          const lng = parseFloat(item.x)
+
+          if (isNaN(lat) || isNaN(lng)) {
+            console.error(
+              `[Geocoding Invalid Coordinates] POI: ${poi.name}, Address: ${address}, x=${item.x}, y=${item.y}`
+            )
+            resolve(null)
+            return
+          }
+
+          log(`[Geocoding Success] POI: ${poi.name}, Address: ${address}, Result: lat=${lat}, lng=${lng}`)
+
+          // 캐시에 저장
+          geocodedPoisRef.current.set(poiId, { lat, lng })
+          resolve({ lat, lng })
+        })
+      })
+    },
+    [log]
+  )
+
   // Create numbered marker icon SVG data URL
-  const createNumberedMarkerIcon = (number: number): string => {
+  const createNumberedMarkerIcon = useCallback((number: number): string => {
     const svg = `
       <svg width="40" height="50" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 0C8.954 0 0 8.954 0 20c0 11.046 20 30 20 30s20-18.954 20-30C40 8.954 31.046 0 20 0z" fill="#62256e"/>
@@ -85,7 +164,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       </svg>
     `
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
-  }
+  }, [])
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -180,7 +259,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       mapInstanceRef.current = map
       lastCenterRef.current = center
       lastZoomRef.current = zoom
-      console.log('Naver Maps initialized successfully')
+      log('Naver Maps initialized successfully')
 
       return () => {
         window.removeEventListener('resize', handleResize)
@@ -189,7 +268,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
     } catch (error) {
       console.error('Error initializing Naver Maps:', error)
     }
-  }, [isReady, isMounted]) // center, zoom 제거 - 한 번만 초기화
+  }, [isReady, isMounted, center, zoom, log]) // safe: guarded by mapInstanceRef.current
 
   // Cleanup on unmount
   useEffect(() => {
@@ -353,82 +432,10 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
         polylineRef.current = null
       }
     }
-  }, [isReady, showMapRoute, pois, cartOrderMap])
-
-  // Geocoding 함수: 주소를 좌표로 변환 (Naver Maps JavaScript SDK 사용)
-  const geocodeAddress = (address: string, poiId: string, poi: POI): Promise<{ lat: number; lng: number } | null> => {
-    return new Promise((resolve) => {
-      // 이미 Geocoding된 좌표가 있으면 캐시에서 반환
-      const cached = geocodedPoisRef.current.get(poiId)
-      if (cached) {
-        resolve(cached)
-        return
-      }
-
-      // 이미 Geocoding 진행 중이면 대기하지 않고 null 반환 (중복 요청 방지)
-      if (geocodingInProgressRef.current.has(poiId)) {
-        resolve(null)
-        return
-      }
-
-      if (!window.naver?.maps?.Service) {
-        console.error('[Geocoding] Naver Maps Service is not available')
-        resolve(null)
-        return
-      }
-
-      geocodingInProgressRef.current.add(poiId)
-      console.log(`[Geocoding Request] POI: ${poi.name}, Address: ${address}`)
-
-      // Naver Maps JavaScript SDK의 geocode 사용 (JSONP 방식, CORS 문제 없음)
-      window.naver.maps.Service.geocode({
-        query: address
-      }, function(status: number, response: any) {
-        geocodingInProgressRef.current.delete(poiId)
-
-        // 예제 코드에 따라 Status.ERROR 체크
-        if (status === window.naver.maps.Service.Status.ERROR) {
-          console.error(`[Geocoding Status Error] POI: ${poi.name}, Address: ${address}`)
-          resolve(null)
-          return
-        }
-
-        // 예제 코드에 따라 response.v2.meta.totalCount 확인
-        if (!response.v2 || response.v2.meta.totalCount === 0) {
-          console.warn(`[Geocoding No Results] POI: ${poi.name}, Address: ${address}, totalCount: ${response.v2?.meta?.totalCount || 0}`)
-          resolve(null)
-          return
-        }
-
-        // 예제 코드에 따라 response.v2.addresses[0]에서 좌표 추출
-        const item = response.v2.addresses[0]
-        if (!item || !item.x || !item.y) {
-          console.error(`[Geocoding Invalid Response] POI: ${poi.name}, Address: ${address}`, item)
-          resolve(null)
-          return
-        }
-
-        // 예제 코드에 따라 Point 객체 생성하지만, 여기서는 숫자로 변환
-        const lat = parseFloat(item.y)
-        const lng = parseFloat(item.x)
-
-        if (isNaN(lat) || isNaN(lng)) {
-          console.error(`[Geocoding Invalid Coordinates] POI: ${poi.name}, Address: ${address}, x=${item.x}, y=${item.y}`)
-          resolve(null)
-          return
-        }
-
-        console.log(`[Geocoding Success] POI: ${poi.name}, Address: ${address}, Result: lat=${lat}, lng=${lng}`)
-        
-        // 캐시에 저장
-        geocodedPoisRef.current.set(poiId, { lat, lng })
-        resolve({ lat, lng })
-      })
-    })
-  }
+  }, [isReady, showMapRoute, pois, cartOrderMap, geocodeAddress])
 
   // 마커 생성 함수
-  const createMarker = (lat: number, lng: number, poi: POI, cartOrder?: number) => {
+  const createMarker = useCallback((lat: number, lng: number, poi: POI, cartOrder?: number) => {
     if (!window.naver.maps.Marker) return null
 
     const poiData = {
@@ -465,7 +472,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
     })
 
     return marker
-  }
+  }, [createNumberedMarkerIcon, setSearchResult])
 
   // Add POI markers to map with Geocoding support
   useEffect(() => {
@@ -498,14 +505,14 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
 
           // 무조건 address_ko로 Geocoding 수행 (없으면 address 사용)
           const addressForGeocoding = poi.address_ko || poi.address
-          console.log(`[Geocoding] POI: ${poi.name}, Address: ${addressForGeocoding}`)
+          log(`[Geocoding] POI: ${poi.name}, Address: ${addressForGeocoding}`)
           
           if (addressForGeocoding) {
             const geocoded = await geocodeAddress(addressForGeocoding, poi._id.$oid, poi)
             if (geocoded) {
               lat = geocoded.lat
               lng = geocoded.lng
-              console.log(`[Geocoding Success] POI: ${poi.name}, lat: ${lat}, lng: ${lng}`)
+              log(`[Geocoding Success] POI: ${poi.name}, lat: ${lat}, lng: ${lng}`)
             } else {
               console.warn(`[Geocoding Failed] POI: ${poi.name}, Address: ${addressForGeocoding}`)
             }
@@ -517,11 +524,11 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
           if (lat !== null && lng !== null) {
             try {
               const cartOrder = !hasSearchResult ? cartOrderMap.get(poi._id.$oid) : undefined
-              console.log(`[Create Marker] POI: ${poi.name}, lat: ${lat}, lng: ${lng}, cartOrder: ${cartOrder}`)
+              log(`[Create Marker] POI: ${poi.name}, lat: ${lat}, lng: ${lng}, cartOrder: ${cartOrder}`)
               const marker = createMarker(lat, lng, poi, cartOrder)
               if (marker) {
                 markersRef.current.push(marker)
-                console.log(`[Marker Created] POI: ${poi.name} marker added successfully`)
+                log(`[Marker Created] POI: ${poi.name} marker added successfully`)
                 return marker
               }
             } catch (markerError) {
@@ -534,7 +541,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
         })
 
         await Promise.all(markerPromises)
-        console.log(`[Markers Complete] Total markers created: ${markersRef.current.length}`)
+        log(`[Markers Complete] Total markers created: ${markersRef.current.length}`)
       }
 
       processPois()
@@ -555,7 +562,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       })
       markersRef.current = []
     }
-  }, [isReady, pois, setSearchResult, cartOrderMap, hasSearchResult])
+  }, [isReady, pois, cartOrderMap, hasSearchResult, createMarker, geocodeAddress, log])
 
   // Update map center and zoom with smooth animation using morph (사용자가 직접 조작 중이 아닐 때만)
   useEffect(() => {

@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson as KContent } from '@/types'
+
+export const metadata: Metadata = {
+  title: 'Contents',
+  description: 'Explore K-Pop, K-Beauty, K-Food, K-Festival, and K-Drama content and hot spots in Korea.',
+}
 import { getKContentsByCategory as getKContentsByCategoryDB } from '@/lib/db/kcontents'
 import { getPOIById } from '@/lib/db/pois'
 import { getContentTypeLabel } from '@/lib/utils/logo'

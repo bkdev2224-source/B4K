@@ -1,5 +1,11 @@
 import Script from 'next/script'
+import type { Metadata } from 'next'
 import { getNaverMapClientId } from '@/lib/config/env'
+
+export const metadata: Metadata = {
+  title: 'Interactive Map',
+  description: 'Explore Korea on an interactive map. Add POIs to your cart, plan routes, and discover K-Pop, K-Beauty, K-Food spots.',
+}
 
 export default function MapsLayout({
   children,

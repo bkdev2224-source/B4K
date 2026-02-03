@@ -1,14 +1,42 @@
 import Image from 'next/image'
+import type { Metadata } from 'next'
 import PageLayout from '@/components/layout/PageLayout'
 import PoiActionButtons from './PoiActionButtons'
 import { getPOIById } from '@/lib/db/pois'
 import { getKContentsByPOIId } from '@/lib/db/kcontents'
 import type { KContentJson, POIJson } from '@/types'
+import { getSiteUrl } from '@/lib/config/env'
 
 export const revalidate = 60
 
 function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
   return { ...poi, _id: { $oid: poi._id } }
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const id = params?.id || ''
+  try {
+    const dbPoi = await getPOIById(id)
+    if (!dbPoi) return { title: 'Location Not Found' }
+    const poi = toPOIJson(dbPoi as any)
+    const title = poi.name
+    const description = `${poi.name} — ${poi.address}. ${poi.categoryTags?.join(', ') || ''} spot in Korea. Explore on B4K.`
+    const imageUrl = `https://picsum.photos/seed/${id}/1200/630`
+    const baseUrl = getSiteUrl()
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: [imageUrl],
+        url: `${baseUrl}/poi/${id}`,
+      },
+      twitter: { card: 'summary_large_image', title, description },
+    }
+  } catch {
+    return { title: 'Location' }
+  }
 }
 
 export default async function POIDetailPage({

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import type { Metadata } from 'next'
 import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson, POIJson } from '@/types'
 import Link from 'next/link'
@@ -8,11 +9,52 @@ import ContentMapButton from './ContentMapButton'
 import { getKContentsBySubName } from '@/lib/db/kcontents'
 import { getPOIById } from '@/lib/db/pois'
 import { getKpopArtistByName } from '@/lib/db/kpop-artists'
+import { getSiteUrl } from '@/lib/config/env'
 
 export const revalidate = 60
 
+const categoryLabels: Record<string, string> = {
+  kpop: 'K-Pop',
+  kbeauty: 'K-Beauty',
+  kfood: 'K-Food',
+  kfestival: 'K-Festival',
+  kdrama: 'K-Drama',
+}
+
 function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
   return { ...poi, _id: { $oid: poi._id } }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { subName: string }
+}): Promise<Metadata> {
+  const subName = decodeURIComponent(params?.subName || '')
+  try {
+    const contents = await getKContentsBySubName(subName)
+    if (contents.length === 0) return { title: 'Content Not Found' }
+    const first = contents[0]
+    const category = first.category as string | undefined
+    const label = category && categoryLabels[category] ? categoryLabels[category] : subName
+    const title = category === 'kpop' ? (await getKpopArtistByName(subName))?.name ?? subName : subName
+    const description = `${label} — ${first.spotName} and related spots in Korea. Explore on B4K.`
+    const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(subName)}/1200/630`
+    const baseUrl = getSiteUrl()
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: [imageUrl],
+        url: `${baseUrl}/contents/${encodeURIComponent(subName)}`,
+      },
+      twitter: { card: 'summary_large_image', title, description },
+    }
+  } catch {
+    return { title: 'Content' }
+  }
 }
 
 export default async function ContentDetailPage({
@@ -69,9 +111,7 @@ export default async function ContentDetailPage({
       })
     )
     const poiById = new Map(poiEntries.filter(([, poi]) => poi).map(([id, poi]) => [id, poi!]))
-
-    const dbPoiForBanner = poiId ? await getPOIById(poiId) : null
-    const poi = dbPoiForBanner ? toPOIJson(dbPoiForBanner as any) : null
+    const poi = poiId ? (poiById.get(poiId) ?? null) : null
 
     const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
 
@@ -102,14 +142,6 @@ export default async function ContentDetailPage({
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
-  }
-
-  const categoryLabels = {
-    kpop: 'K-Pop',
-    kbeauty: 'K-Beauty',
-    kfood: 'K-Food',
-    kfestival: 'K-Festival',
-    kdrama: 'K-Drama',
   }
 
   return (

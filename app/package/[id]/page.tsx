@@ -1,8 +1,10 @@
 import Image from 'next/image'
+import type { Metadata } from 'next'
 import PageLayout from '@/components/layout/PageLayout'
 import PackageCartButton from './PackageCartButton'
 import { getPackageById } from '@/lib/db/packages'
 import type { TravelPackageJson } from '@/types'
+import { getSiteUrl } from '@/lib/config/env'
 
 export const revalidate = 60
 
@@ -10,6 +12,32 @@ function toPackageJson(pkg: { _id: string } & Omit<TravelPackageJson, '_id'>): T
   return {
     ...pkg,
     _id: { $oid: pkg._id },
+  }
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const id = params?.id || ''
+  try {
+    const dbPkg = await getPackageById(id)
+    if (!dbPkg) return { title: 'Package Not Found' }
+    const pkg = toPackageJson(dbPkg as any)
+    const title = pkg.name
+    const description = `${pkg.name} — ${pkg.duration} days, ${pkg.cities.join(' → ')}. ${pkg.concept?.slice(0, 120)}...`
+    const imageUrl = pkg.imageUrl || `https://picsum.photos/seed/${id}/1200/630`
+    const baseUrl = getSiteUrl()
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: [imageUrl],
+        url: `${baseUrl}/package/${id}`,
+      },
+      twitter: { card: 'summary_large_image', title, description },
+    }
+  } catch {
+    return { title: 'Package' }
   }
 }
 
@@ -50,6 +78,7 @@ export default async function PackageDetailPage({
             src={pkg.imageUrl || `https://picsum.photos/seed/${pkg._id.$oid}/1920/600`}
             alt={pkg.name}
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />

@@ -10,6 +10,7 @@ const COLLECTION_NAME = 'kpop_artists'
 export type KpopArtist = {
   name: string
   logoUrl?: string
+  backgroundUrl?: string
   agency?: string
   youtube?: string
   instagram?: string
@@ -31,6 +32,7 @@ export async function getKpopArtistByName(name: string): Promise<KpopArtist | nu
   return {
     name: (doc as any).name,
     logoUrl: (doc as any).logoUrl,
+    backgroundUrl: (doc as any).backgroundUrl,
     agency: (doc as any).agency,
     youtube: (doc as any).youtube,
     instagram: (doc as any).instagram,

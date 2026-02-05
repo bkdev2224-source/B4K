@@ -107,7 +107,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
             >
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-[border-color,box-shadow] duration-200 h-full">
                 {/* Image */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-64 overflow-hidden">
                   <Image
                     src={pkg.imageUrl}
                     alt={pkg.name}
@@ -115,13 +115,12 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                     sizes="360px"
                     className="object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                   <div className="absolute top-4 left-4 right-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-full">
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-semibold rounded-full shadow-md">
                         {pkg.duration} days
                       </span>
-                      <span className="px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-medium rounded-full shadow-md">
                         {getPackageCities(pkg, language).join(', ')}
                       </span>
                     </div>

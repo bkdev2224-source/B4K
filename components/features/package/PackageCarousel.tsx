@@ -4,12 +4,15 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { TravelPackageJson as TravelPackage } from '@/types'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { getPackageConcept, getPackageCities, getPackageHighlights } from '@/lib/utils/locale'
 
 interface PackageCarouselProps {
   packages: TravelPackage[]
 }
 
 export default function PackageCarousel({ packages }: PackageCarouselProps) {
+  const { language } = useLanguage()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
@@ -119,7 +122,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                         {pkg.duration} days
                       </span>
                       <span className="px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">
-                        {pkg.cities.join(', ')}
+                        {getPackageCities(pkg, language).join(', ')}
                       </span>
                     </div>
                   </div>
@@ -131,13 +134,13 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                     {pkg.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                    {pkg.concept}
+                    {getPackageConcept(pkg, language)}
                   </p>
                   
                   {/* Highlights */}
-                  {pkg.highlights && pkg.highlights.length > 0 && (
+                  {getPackageHighlights(pkg, language).length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {pkg.highlights.slice(0, 4).map((highlight, idx) => (
+                      {getPackageHighlights(pkg, language).slice(0, 4).map((highlight, idx) => (
                         <span
                           key={`${highlight}-${idx}`}
                           className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-300 text-xs"
@@ -150,7 +153,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
                   {/* Category */}
                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
-                    <span>{pkg.cities.length} cities</span>
+                    <span>{getPackageCities(pkg, language).length} cities</span>
                     <span>·</span>
                     <span>{pkg.itinerary.length} day itinerary</span>
                   </div>

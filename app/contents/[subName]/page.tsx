@@ -13,7 +13,7 @@ import { getKBeautyPlaceByName } from '@/lib/db/kbeauty-places'
 import { getKFoodBrandByName } from '@/lib/db/kfood-brands'
 import { getKFestivalPlaceByName } from '@/lib/db/kfestival-places'
 import { getSiteUrl } from '@/lib/config/env'
-import { getKFestivalPlaceName, getKFoodBrandName, getPOIName, getKContentSubName } from '@/lib/utils/locale'
+import { getKFestivalPlaceName, getKFoodBrandName, getPOIName, getKContentSubName, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
 import { cookies } from 'next/headers'
 
 export const revalidate = 60
@@ -43,7 +43,8 @@ export async function generateMetadata({
     const category = first.category as string | undefined
     const label = category && categoryLabels[category] ? categoryLabels[category] : subName
     const title = category === 'kpop' ? (await getKpopArtistByName(subName))?.name ?? subName : subName
-    const description = `${label} — ${first.spotName} and related spots in Korea. Explore on B4K.`
+    const spotName = typeof first.spotName === 'string' ? first.spotName : first.spotName.spotName_en
+    const description = `${label} — ${spotName} and related spots in Korea. Explore on B4K.`
     const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(subName)}/1200/630`
     const baseUrl = getSiteUrl()
     return {
@@ -343,14 +344,14 @@ export default async function ContentDetailPage({
                   const contentPoi = poiById.get(content.poiId.$oid) ?? null
                   return (
                     <Link
-                      key={`${content.poiId?.$oid ?? 'no-poi'}-${content.spotName}-${index}`}
+                      key={`${content.poiId?.$oid ?? 'no-poi'}-${getKContentSpotName(content, language)}-${index}`}
                       href={`/poi/${content.poiId.$oid}`}
                       className="group"
                     >
                       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg h-full">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{content.spotName}</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{getKContentSpotName(content, language)}</h3>
                             {content.subName && (
                               <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">
                                 #{getKContentSubName(content, language)}
@@ -359,8 +360,8 @@ export default async function ContentDetailPage({
                           </div>
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                             <Image
-                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/100/100`}
-                              alt={content.spotName}
+                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${getKContentSpotName(content, language)}/100/100`}
+                              alt={getKContentSpotName(content, language)}
                               fill
                               sizes="48px"
                               className="object-cover"
@@ -368,7 +369,7 @@ export default async function ContentDetailPage({
                           </div>
                         </div>
                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                          {content.description}
+                          {getKContentDescription(content, language)}
                         </p>
                         {contentPoi && (
                           <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">

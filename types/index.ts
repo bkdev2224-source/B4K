@@ -92,7 +92,10 @@ export interface KContentJson {
     subName_ko: string
   }
   poiId: OidWrapper
-  spotName: string
+  spotName: {
+    spotName_en: string
+    spotName_ko: string
+  }
   description: string
   tags: string[]
   popularity?: number
@@ -109,8 +112,14 @@ export interface KContent {
     subName_ko: string
   }
   poiId: ObjectId | string
-  spotName: string
-  description: string
+  spotName: {
+    spotName_en: string
+    spotName_ko: string
+  }
+  description: {
+    description_en: string
+    description_ko: string
+  }
   tags: string[]
   popularity?: number
   category: KContentCategory
@@ -139,10 +148,22 @@ export interface TravelPackageJson {
   _id: OidWrapper
   name: string
   duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
+  concept: {
+    concept_en: string
+    concept_ko: string
+  }
+  cities: {
+    cities_en: string[]
+    cities_ko: string[]
+  }
+  highlights: {
+    highlights_en: string[]
+    highlights_ko: string[]
+  }
+  includedServices: {
+    includedServices_en: string[]
+    includedServices_ko: string[]
+  }
   itinerary: ItineraryDay[]
   category: PackageCategory
   imageUrl: string
@@ -155,10 +176,22 @@ export interface TravelPackage {
   _id: ObjectId | string
   name: string
   duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
+  concept: {
+    concept_en: string
+    concept_ko: string
+  }
+  cities: {
+    cities_en: string[]
+    cities_ko: string[]
+  }
+  highlights: {
+    highlights_en: string[]
+    highlights_ko: string[]
+  }
+  includedServices: {
+    includedServices_en: string[]
+    includedServices_ko: string[]
+  }
   itinerary: ItineraryDay[]
   category: PackageCategory
   imageUrl: string

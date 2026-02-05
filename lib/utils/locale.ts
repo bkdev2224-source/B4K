@@ -76,3 +76,63 @@ export function getKContentSubName(
   return language === 'ko' ? content.subName.subName_ko : content.subName.subName_en
 }
 
+/**
+ * KContent의 spotName 가져오기
+ */
+export function getKContentSpotName(
+  content: { spotName: { spotName_en: string; spotName_ko: string } }, 
+  language: Language
+): string {
+  return language === 'ko' ? content.spotName.spotName_ko : content.spotName.spotName_en
+}
+
+/**
+ * KContent의 description 가져오기
+ */
+export function getKContentDescription(
+  content: { description: { description_en: string; description_ko: string } }, 
+  language: Language
+): string {
+  return language === 'ko' ? content.description.description_ko : content.description.description_en
+}
+
+/**
+ * TravelPackage의 concept 가져오기
+ */
+export function getPackageConcept(
+  pkg: { concept: { concept_en: string; concept_ko: string } }, 
+  language: Language
+): string {
+  return language === 'ko' ? pkg.concept.concept_ko : pkg.concept.concept_en
+}
+
+/**
+ * TravelPackage의 cities 가져오기
+ */
+export function getPackageCities(
+  pkg: { cities: { cities_en: string[]; cities_ko: string[] } }, 
+  language: Language
+): string[] {
+  return language === 'ko' ? pkg.cities.cities_ko : pkg.cities.cities_en
+}
+
+/**
+ * TravelPackage의 highlights 가져오기
+ */
+export function getPackageHighlights(
+  pkg: { highlights: { highlights_en: string[]; highlights_ko: string[] } }, 
+  language: Language
+): string[] {
+  return language === 'ko' ? pkg.highlights.highlights_ko : pkg.highlights.highlights_en
+}
+
+/**
+ * TravelPackage의 includedServices 가져오기
+ */
+export function getPackageIncludedServices(
+  pkg: { includedServices: { includedServices_en: string[]; includedServices_ko: string[] } }, 
+  language: Language
+): string[] {
+  return language === 'ko' ? pkg.includedServices.includedServices_ko : pkg.includedServices.includedServices_en
+}
+

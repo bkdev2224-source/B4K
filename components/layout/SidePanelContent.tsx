@@ -6,7 +6,7 @@ import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
 import { useLanguage } from '@/components/providers/LanguageContext'
-import { getPOIName, getPOIAddress } from '@/lib/utils/locale'
+import { getPOIName, getPOIAddress, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { usePOIs } from '@/lib/hooks/usePOIs'
 import type { POIJson } from '@/types'
@@ -595,9 +595,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Related Spots ({contents.length})</h3>
                     <div className="space-y-2">
                       {contents.slice(0, 5).map((content, idx) => (
-                        <div key={`${content.poiId.$oid}-${content.spotName}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{content.description}</p>
+                        <div key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{getKContentDescription(content, language)}</p>
                           {content.tags && content.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {content.tags.slice(0, 3).map((tag, tagIdx) => (
@@ -636,12 +636,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   return (
                     <button
                       type="button"
-                      key={`${content.poiId.$oid}-${content.spotName}-${idx}`}
+                      key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`}
                       onClick={() => {
                         if (contentPoi) {
                           // POI 검색 결과로 변경하여 상세 정보 표시
                           setSearchResult({
-                            name: contentPoi.name,
+                            name: getPOIName(contentPoi, language),
                             type: 'poi',
                             poiId: contentPoi._id.$oid
                           })
@@ -649,10 +649,10 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                       }}
                       className="focus-ring w-full text-left p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{content.description}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{getKContentDescription(content, language)}</p>
                       {contentPoi && (
-                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {contentPoi.name}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {getPOIName(contentPoi, language)}</p>
                       )}
                       {content.tags && content.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">

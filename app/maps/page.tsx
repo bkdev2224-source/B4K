@@ -31,7 +31,7 @@ const NaverMap = dynamic(() => import('./_components/naverMap'), {
 export default function MapsPage() {
   const allRoutes = getAllRoutes()
   const { selectedRoute, setSelectedRoute } = useRoute()
-  const { searchResult } = useSearchResult()
+  const { searchResult, setSearchResult } = useSearchResult()
   const { language } = useLanguage()
   const { cartItems, removeFromCart } = useCart()
   const { sidebarOpen } = useSidebar()
@@ -264,7 +264,7 @@ export default function MapsPage() {
         {/* Cart should only appear in map area, centered horizontally, never overlap with side panel */}
         {orderedCartPOIs.length > 0 && (
           <div 
-            className="fixed bottom-20 lg:bottom-6 z-10 flex justify-center items-center pointer-events-none"
+            className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] lg:bottom-6 z-10 flex justify-center items-center pointer-events-none"
             style={{ 
               left: bottomCartPosition.left,
               right: bottomCartPosition.right,
@@ -320,7 +320,18 @@ export default function MapsPage() {
                 {orderedCartPOIs.map(({ poi, order, cartItemId }, index) => (
                   <div key={poi._id.$oid} className="flex items-stretch gap-3 flex-shrink-0 snap-start">
                     {/* Simple card (fixed height to prevent "crooked" rows) */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/70 px-3 py-3 w-[280px] h-[84px] shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchResult({
+                          name: getPOIName(poi, language),
+                          type: 'poi',
+                          poiId: poi._id.$oid,
+                        })
+                      }}
+                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/70 px-3 py-3 w-[280px] h-[84px] shadow-sm text-left"
+                      aria-label={`View details for ${getPOIName(poi, language)}`}
+                    >
                       <div className="flex items-start gap-3 h-full">
                         {/* Order badge */}
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-bold text-xs">
@@ -334,7 +345,10 @@ export default function MapsPage() {
                             </h3>
                             <button
                               type="button"
-                              onClick={() => removeFromCart(cartItemId)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeFromCart(cartItemId)
+                              }}
                               className="focus-ring -mt-1 -mr-1 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                               aria-label="Remove from cart"
                               title="Remove"
@@ -350,7 +364,7 @@ export default function MapsPage() {
                           </p>
                         </div>
                       </div>
-                    </div>
+                    </button>
                     
                     {/* Arrow connector - show between items, not after last item */}
                     {index < orderedCartPOIs.length - 1 && (

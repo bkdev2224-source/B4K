@@ -99,7 +99,7 @@ export function getSidePanelLeft(sidebarOpen: boolean): string {
  * Get SidePanel width class based on type
  */
 export function getSidePanelWidthClass(
-  type: 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | null
+  type: 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | 'settings' | 'package' | null
 ): string {
   // Routes panel and search: original size, Default panel (home/contents/info): 10% reduction
   return type === 'route' || type === 'search' || type === 'maps' ? 'w-96' : 'w-[14.4rem]'

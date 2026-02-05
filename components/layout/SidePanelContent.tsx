@@ -7,6 +7,7 @@ import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
 import { useLanguage } from '@/components/providers/LanguageContext'
+import { usePathname, useRouter } from 'next/navigation'
 import { getPOIName, getPOIAddress, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { usePOIs } from '@/lib/hooks/usePOIs'
@@ -20,7 +21,7 @@ interface SidePanelItem {
 }
 
 interface SidePanelContentProps {
-  type: 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | null
+  type: 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | 'settings' | 'package' | null
   route?: Route | null
   routeId?: string | null
 }
@@ -30,8 +31,21 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const { searchResult, setSearchResult } = useSearchResult()
   const { cartItems, addToCart, removeFromCart, isInCart } = useCart()
   const { language } = useLanguage()
+  const pathname = usePathname() || '/'
+  const router = useRouter()
   const { pois, loading: poisLoading, error: poisError } = usePOIs({ enabled: type === 'maps' || type === 'search' })
   const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
+  const recommendedPois = useMemo(() => {
+    if (type !== 'maps') return [] as POIJson[]
+    // Deterministic "shuffle": sort by a stable hash of the id so we get variety
+    // but don't flicker on every render.
+    const hash = (s: string) => {
+      let h = 0
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
+      return h >>> 0
+    }
+    return [...pois].sort((a, b) => hash(a._id.$oid) - hash(b._id.$oid)).slice(0, 20)
+  }, [type, pois])
 
   // Hooks must be called unconditionally (rules-of-hooks)
   const searchSubName =
@@ -78,19 +92,19 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   // Info page sections
   const infoSections: SidePanelItem[] = [
-    { id: 'about', name: 'About Us', href: '/info' },
-    { id: 'privacy', name: 'Privacy Policy', href: '/privacy' },
-    { id: 'terms', name: 'Terms & Conditions', href: '/terms' },
+    { id: 'about', name: language === 'ko' ? '소개' : 'About Us', href: '/info' },
+    { id: 'privacy', name: language === 'ko' ? '개인정보처리방침' : 'Privacy Policy', href: '/privacy' },
+    { id: 'terms', name: language === 'ko' ? '이용약관' : 'Terms & Conditions', href: '/terms' },
   ]
 
   // Generic navigation (used as a fallback on pages like POI/Package/Profile)
   const navLinks: SidePanelItem[] = [
-    { id: 'home', name: 'Home', href: '/' },
-    { id: 'packages', name: 'Packages', href: '/package' },
-    { id: 'maps', name: 'Map', href: '/maps' },
-    { id: 'contents', name: 'Contents', href: '/contents' },
-    { id: 'info', name: 'Info', href: '/info' },
-    { id: 'mypage', name: 'Profile', href: '/mypage' },
+    { id: 'home', name: language === 'ko' ? '홈' : 'Home', href: '/' },
+    { id: 'packages', name: language === 'ko' ? '패키지' : 'Packages', href: '/package' },
+    { id: 'maps', name: language === 'ko' ? '지도' : 'Map', href: '/maps' },
+    { id: 'contents', name: language === 'ko' ? '콘텐츠' : 'Contents', href: '/contents' },
+    { id: 'info', name: language === 'ko' ? '정보' : 'Info', href: '/info' },
+    { id: 'mypage', name: language === 'ko' ? '프로필' : 'Profile', href: '/mypage' },
   ]
 
   const formatEntryFee = (fee: string) => {
@@ -133,17 +147,95 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     }
   }
 
-  const recommendedPois = useMemo(() => {
-    if (type !== 'maps') return [] as POIJson[]
-    // Deterministic "shuffle": sort by a stable hash of the id so we get variety
-    // but don't flicker on every render.
-    const hash = (s: string) => {
-      let h = 0
-      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
-      return h >>> 0
-    }
-    return [...pois].sort((a, b) => hash(a._id.$oid) - hash(b._id.$oid)).slice(0, 20)
-  }, [type, pois])
+  // Render package side panel (simple back control)
+  if (type === 'package') {
+    const title = language === 'ko' ? '패키지' : 'Packages'
+    const backLabel = language === 'ko' ? '뒤로가기' : 'Go back'
+    const allLabel = language === 'ko' ? '전체 패키지' : 'All packages'
+
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {title}
+        </h3>
+
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              // History back with a safe fallback.
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                router.back()
+              } else {
+                router.push('/')
+              }
+            }}
+            className="focus-ring w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            aria-label={backLabel}
+          >
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm font-medium">{backLabel}</span>
+          </button>
+
+          {pathname !== '/package' && (
+            <Link
+              href="/package"
+              className="focus-ring w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-sm font-medium">{allLabel}</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Render settings side panel
+  if (type === 'settings') {
+    const settingsLinks: Array<{ id: string; name: string; href: string }> = [
+      { id: 'appearance', name: language === 'ko' ? '화면' : 'Appearance', href: '/mypage/settings/appearance' },
+      { id: 'privacy', name: language === 'ko' ? '데이터 및 개인정보' : 'Data & Privacy', href: '/mypage/settings/privacy' },
+      { id: 'cookies', name: language === 'ko' ? '쿠키 설정' : 'Cookie Settings', href: '/cookie-settings' },
+    ]
+
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {language === 'ko' ? '설정' : 'Settings'}
+        </h3>
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
+          {settingsLinks.map((item) => {
+            const active = pathname === item.href
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={[
+                  'focus-ring flex items-start gap-3 px-4 py-2 rounded-lg transition-colors group',
+                  active
+                    ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
+                ].join(' ')}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+                <span className="text-sm font-medium flex-1">{item.name}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
 
   // Render route details
   if (type === 'route' && route) {
@@ -473,7 +565,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     return (
       <div className="px-6 pb-6 pt-4 h-full flex flex-col">
         <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
-          Info
+          {language === 'ko' ? '정보' : 'Info'}
         </h3>
         <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
           {infoSections.map((item) => (
@@ -739,22 +831,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 pt-4 pb-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-wide text-gray-500 dark:text-gray-400">
-                Smart Around
-              </p>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
-                Recommended nearby
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Recommended</span>
-              <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+            {language === 'ko' ? '추천 장소' : 'Recommended places'}
+          </h2>
         </div>
 
         {/* List */}

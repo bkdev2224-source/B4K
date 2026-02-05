@@ -63,7 +63,8 @@ export default function RootLayout({
         {/* Prevent theme flash: set dark class before first paint */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t==='dark'||(t!=='light'&&d);document.documentElement.classList.toggle('dark',dark);})();`,
+            // Default is light. Only go dark if explicitly selected or if set to "system" + device prefers dark.
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t==='dark'||(t==='system'&&d);document.documentElement.classList.toggle('dark',!!dark);}catch(e){}})();`,
           }}
         />
         {/* Fonts: Pretendard (Korean) + Inter (Latin via next/font) */}

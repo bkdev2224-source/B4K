@@ -4,7 +4,6 @@ import { ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import SidePanel from './SidePanel'
 import TopNav from './TopNav'
-import MobileBottomNav from '@/components/MobileBottomNav'
 import { useSearch } from '@/lib/hooks/useSearch'
 import { useLayout } from '@/lib/hooks/useLayout'
 
@@ -52,12 +51,10 @@ export default function PageLayout({
 
       <main
         id="main-content"
-        className={`pt-16 pb-16 lg:pb-0 transition-[margin,padding] duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}
+        className={`pt-16 pb-[env(safe-area-inset-bottom)] lg:pb-0 transition-[margin,padding] duration-300 overflow-x-hidden ${layout.mainClasses} ${className}`}
       >
         {children}
       </main>
-
-      <MobileBottomNav />
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { UnderConstruction } from "@/components/ui/UnderConstruction"
 
 export default function SignInClient() {
@@ -10,8 +10,11 @@ export default function SignInClient() {
   const error = searchParams.get("error")
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   
-  // Check if Google auth is enabled via environment variable
-  const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== "false"
+  // Avoid hydration mismatch by resolving env-gated UI after mount.
+  const [googleAuthEnabled, setGoogleAuthEnabled] = useState<boolean | null>(null)
+  useEffect(() => {
+    setGoogleAuthEnabled(process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED !== "false")
+  }, [])
 
   useEffect(() => {
     if (error) {
@@ -46,7 +49,12 @@ export default function SignInClient() {
             </p>
           </div>
         )}
-        {!googleAuthEnabled ? (
+        {googleAuthEnabled === null ? (
+          <div
+            className="w-full h-12 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse"
+            aria-label="Loading sign-in options"
+          />
+        ) : !googleAuthEnabled ? (
           <UnderConstruction
             variant="testing"
             title="Sign In Temporarily Unavailable"

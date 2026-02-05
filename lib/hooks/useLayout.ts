@@ -64,7 +64,7 @@ export function useLayout(options: UseLayoutOptions = {}) {
   }, [showSidePanel, sidePanelWidth, isRoutesPage, searchResult])
 
   // Determine side panel type
-  const sidePanelType = useMemo((): 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | null => {
+  const sidePanelType = useMemo((): 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | 'settings' | 'package' | null => {
     // Search results:
     // - On /maps we keep the panel as "maps" so we can show list <-> detail in one UI.
     // - On /maps/route/* we use "search" bottom-sheet behavior.
@@ -86,6 +86,9 @@ export function useLayout(options: UseLayoutOptions = {}) {
     if (sidePanelWidth === 'default') {
       // Keep Maps free unless it's route/search (handled above).
       if (isRoutesPage) return null
+      if (pathname === '/package' || pathname?.startsWith('/package/')) return 'package'
+      if (pathname === '/mypage/settings' || pathname?.startsWith('/mypage/settings/')) return 'settings'
+      if (pathname === '/cookie-settings') return 'settings'
       if (pathname === '/') return 'home'
       if (pathname === '/contents' || pathname?.startsWith('/contents')) return 'contents'
       if (pathname === '/info' || pathname?.startsWith('/info')) return 'info'

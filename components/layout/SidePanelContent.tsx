@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { CalendarPlus } from 'lucide-react'
 import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
@@ -584,13 +585,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                       aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
                       title={inCart ? "Remove from Cart" : "Add to Cart"}
                     >
-                      <svg className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
-                        {inCart ? (
-                          <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        )}
-                      </svg>
+                      <CalendarPlus
+                        className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                      />
                     </button>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{getPOIAddress(poi, language)}</p>
@@ -815,23 +812,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                           aria-label={inCart ? 'Remove from cart' : 'Add to cart'}
                           title={inCart ? 'Remove from cart' : 'Add to cart'}
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill={inCart ? 'currentColor' : 'none'}
-                            stroke={inCart ? 'none' : 'currentColor'}
-                            viewBox="0 0 24 24"
-                          >
-                            {inCart ? (
-                              <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                            ) : (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                              />
-                            )}
-                          </svg>
+                          <CalendarPlus
+                            className={`w-4 h-4 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                          />
                         </button>
                       </div>
                     </div>

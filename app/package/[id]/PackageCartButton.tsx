@@ -20,15 +20,26 @@ export default function PackageCartButton({
     <button
       type="button"
       onClick={() => {
+        console.log('🔘 [PackageCartButton] 버튼 클릭:', {
+          packageId,
+          name,
+          cartItemId,
+          inCart,
+          timestamp: new Date().toISOString(),
+        })
+        
         if (inCart) {
+          console.log('➖ [PackageCartButton] 장바구니에서 제거:', cartItemId)
           removeFromCart(cartItemId)
         } else {
-          addToCart({
+          const cartItem = {
             id: cartItemId,
             name,
-            type: 'package',
+            type: 'package' as const,
             packageId,
-          })
+          }
+          console.log('➕ [PackageCartButton] 장바구니에 추가 시도:', cartItem)
+          addToCart(cartItem)
         }
       }}
       className={`p-4 rounded-full shadow-lg hover:shadow-xl transition-[transform,box-shadow] hover:scale-105 ${

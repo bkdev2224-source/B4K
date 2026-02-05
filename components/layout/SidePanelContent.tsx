@@ -103,15 +103,33 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   const togglePoiCart = (poi: POIJson) => {
     const cartItemId = `poi-${poi._id.$oid}`
+    const poiName = getPOIName(poi, language)
+    
+    console.log('🔘 [SidePanelContent] togglePoiCart 호출:', {
+      poiId: poi._id.$oid,
+      poiName,
+      cartItemId,
+      inCart: isInCart(cartItemId),
+      poiData: {
+        _id: poi._id,
+        name: poi.name,
+        address: poi.address,
+      },
+      timestamp: new Date().toISOString(),
+    })
+    
     if (isInCart(cartItemId)) {
+      console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
       removeFromCart(cartItemId)
     } else {
-      addToCart({
+      const cartItem = {
         id: cartItemId,
-        name: getPOIName(poi, language),
-        type: 'poi',
+        name: poiName,
+        type: 'poi' as const,
         poiId: poi._id.$oid,
-      })
+      }
+      console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+      addToCart(cartItem)
     }
   }
 
@@ -566,15 +584,32 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <button
                       type="button"
                       onClick={() => {
+                        const poiName = getPOIName(poi, language)
+                        console.log('🔘 [SidePanelContent] POI 상세 페이지 Cart 버튼 클릭:', {
+                          poiId: poi._id.$oid,
+                          poiName,
+                          cartItemId,
+                          inCart,
+                          poiData: {
+                            _id: poi._id,
+                            name: poi.name,
+                            address: poi.address,
+                          },
+                          timestamp: new Date().toISOString(),
+                        })
+                        
                         if (inCart) {
+                          console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
                           removeFromCart(cartItemId)
                         } else {
-                          addToCart({
+                          const cartItem = {
                             id: cartItemId,
-                            name: getPOIName(poi, language),
-                            type: 'poi',
+                            name: poiName,
+                            type: 'poi' as const,
                             poiId: poi._id.$oid
-                          })
+                          }
+                          console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+                          addToCart(cartItem)
                         }
                       }}
                       className={`focus-ring p-2 rounded-full transition-colors ${

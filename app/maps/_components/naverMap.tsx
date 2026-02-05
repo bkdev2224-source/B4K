@@ -72,6 +72,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
   const [isReady, setIsReady] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const createdMarkerPoiIdsRef = useRef<Set<string>>(new Set()) // 마커가 생성된 POI ID 추적
   const log = useCallback((...args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') console.log(...args)
   }, [])
@@ -311,7 +312,90 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
     }
   }, [])
 
-  // Draw map route line connecting cart items in order
+  // 라인 그리기 함수 (마커 생성 완료 후 호출)
+  const drawPolylineAfterMarkers = useCallback(() => {
+    if (!isReady || !mapInstanceRef.current || !window.naver?.maps || !showMapRoute) {
+      return
+    }
+
+    if (!cartOrderMap || cartOrderMap.size === 0 || !pois || pois.length === 0) {
+      return
+    }
+
+    try {
+      const orderedPoisWithCoords: Array<{ poi: POI; lat: number; lng: number; order: number }> = []
+      
+      // cartOrderMap에 있는 모든 POI에 대해
+      for (const poi of pois) {
+        const order = cartOrderMap.get(poi._id.$oid)
+        if (order === undefined) continue
+        
+        // 마커가 실제로 생성되었는지 확인
+        if (!createdMarkerPoiIdsRef.current.has(poi._id.$oid)) {
+          continue // 마커가 생성되지 않은 POI는 건너뛰기
+        }
+        
+        // 이미 Geocoding된 좌표가 있는지 확인
+        const coords = geocodedPoisRef.current.get(poi._id.$oid)
+        if (!coords) {
+          continue // 좌표가 없으면 건너뛰기
+        }
+        
+        orderedPoisWithCoords.push({
+          poi,
+          lat: coords.lat,
+          lng: coords.lng,
+          order
+        })
+      }
+      
+      // order 순서대로 정렬
+      orderedPoisWithCoords.sort((a, b) => a.order - b.order)
+
+      // 마커가 2개 이상일 때만 라인 그리기
+      if (orderedPoisWithCoords.length < 2) {
+        if (polylineRef.current) {
+          try {
+            polylineRef.current.setMap(null)
+          } catch (error) {
+            // Ignore errors
+          }
+          polylineRef.current = null
+        }
+        return
+      }
+
+      // Create path array for polyline using Geocoded coordinates
+      const path = orderedPoisWithCoords.map(({ lat, lng }) => {
+        return new window.naver.maps.LatLng(lat, lng)
+      })
+
+      // Remove existing polyline
+      if (polylineRef.current) {
+        try {
+          polylineRef.current.setMap(null)
+        } catch (error) {
+          // Ignore errors
+        }
+      }
+
+      // Create new polyline
+      if (window.naver.maps.Polyline) {
+        polylineRef.current = new window.naver.maps.Polyline({
+          path: path,
+          map: mapInstanceRef.current,
+          strokeColor: '#62256e',
+          strokeWeight: 4,
+          strokeOpacity: 0.7
+        })
+        log(`[Polyline Created] Connected ${orderedPoisWithCoords.length} markers`)
+      }
+    } catch (error) {
+      console.error('Error drawing map route:', error)
+    }
+  }, [isReady, showMapRoute, pois, cartOrderMap, log])
+
+  // cartItems 변경 시 라인 업데이트 (마커가 이미 생성된 경우)
   useEffect(() => {
     if (!isReady || !mapInstanceRef.current || !window.naver?.maps || !showMapRoute) {
       if (polylineRef.current) {
@@ -325,107 +409,11 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       return
     }
 
-    if (!cartOrderMap || cartOrderMap.size === 0 || !pois || pois.length === 0) {
-      if (polylineRef.current) {
-        try {
-          polylineRef.current.setMap(null)
-        } catch (error) {
-          // Ignore errors
-        }
-        polylineRef.current = null
-      }
-      return
-    }
-
-    // async 함수로 Geocoding 수행
-    const drawPolyline = async () => {
-      try {
-        // Get POIs in cart order - Geocoding된 좌표 사용 (무조건 address_ko로 Geocoding)
-        const orderedPoisWithCoords: Array<{ poi: POI; lat: number; lng: number; order: number }> = []
-        
-        // 모든 POI에 대해 Geocoding 수행하여 좌표 얻기
-        const geocodingPromises = pois.map(async (poi: POI) => {
-          const order = cartOrderMap.get(poi._id.$oid)
-          if (order === undefined) return null
-
-          // address.address_ko로만 Geocoding 수행
-          const addressForGeocoding = poi.address.address_ko
-          if (!addressForGeocoding) return null
-
-          const geocoded = await geocodeAddress(addressForGeocoding, poi._id.$oid, poi)
-          if (!geocoded) return null
-
-          return {
-            poi,
-            lat: geocoded.lat,
-            lng: geocoded.lng,
-            order
-          }
-        })
-
-        const geocodedResults = await Promise.all(geocodingPromises)
-        const validResults = geocodedResults.filter((result): result is { poi: POI; lat: number; lng: number; order: number } => result !== null)
-        
-        // order 순서대로 정렬
-        validResults.sort((a, b) => a.order - b.order)
-        orderedPoisWithCoords.push(...validResults)
-
-        if (orderedPoisWithCoords.length < 2) {
-          if (polylineRef.current) {
-            try {
-              polylineRef.current.setMap(null)
-            } catch (error) {
-              // Ignore errors
-            }
-            polylineRef.current = null
-          }
-          return
-        }
-
-        // Create path array for polyline using Geocoded coordinates
-        const path = orderedPoisWithCoords.map(({ lat, lng }) => {
-          return new window.naver.maps.LatLng(lat, lng)
-        })
-
-        if (path.length < 2) {
-          if (polylineRef.current) {
-            try {
-              polylineRef.current.setMap(null)
-            } catch (error) {
-              // Ignore errors
-            }
-            polylineRef.current = null
-          }
-          return
-        }
-
-        // Remove existing polyline
-        if (polylineRef.current) {
-          try {
-            polylineRef.current.setMap(null)
-          } catch (error) {
-            // Ignore errors
-          }
-        }
-
-        // Create new polyline
-        if (window.naver.maps.Polyline) {
-          polylineRef.current = new window.naver.maps.Polyline({
-            path: path,
-            map: mapInstanceRef.current,
-            strokeColor: '#62256e',
-            strokeWeight: 4,
-            strokeOpacity: 0.7
-          })
-        }
-      } catch (error) {
-        console.error('Error drawing map route:', error)
-      }
-    }
-
-    drawPolyline()
-
-    return () => {
+    // 마커가 2개 이상 생성되었을 때만 라인 그리기
+    if (createdMarkerPoiIdsRef.current.size >= 2) {
+      drawPolylineAfterMarkers()
+    } else {
+      // 마커가 2개 미만이면 라인 제거
       if (polylineRef.current) {
         try {
           polylineRef.current.setMap(null)
@@ -435,7 +423,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
         polylineRef.current = null
       }
     }
-  }, [isReady, showMapRoute, pois, cartOrderMap, geocodeAddress])
+  }, [isReady, showMapRoute, cartOrderMap, drawPolylineAfterMarkers])
 
   // 마커 생성 함수
   const createMarker = useCallback((lat: number, lng: number, poi: POI, cartOrder?: number) => {
@@ -479,9 +467,11 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
 
   // Add POI markers to map with Geocoding support
   useEffect(() => {
-    if (!isReady || !mapInstanceRef.current || !window.naver?.maps || pois.length === 0) return
+    if (!isReady || !mapInstanceRef.current || !window.naver?.maps || pois.length === 0) {
+      return
+    }
 
-    // Clear existing markers
+    // Clear existing markers and reset tracking
     markersRef.current.forEach(marker => {
       try {
         marker.setMap(null)
@@ -493,6 +483,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       }
     })
     markersRef.current = []
+    createdMarkerPoiIdsRef.current.clear() // 마커 추적 리셋
 
     try {
       if (!window.naver.maps.Marker) {
@@ -531,6 +522,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
               const marker = createMarker(lat, lng, poi, cartOrder)
               if (marker) {
                 markersRef.current.push(marker)
+                createdMarkerPoiIdsRef.current.add(poi._id.$oid) // 마커 생성된 POI ID 추적
                 log(`[Marker Created] POI: ${poi.name} marker added successfully`)
                 return marker
               }
@@ -545,6 +537,11 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
 
         await Promise.all(markerPromises)
         log(`[Markers Complete] Total markers created: ${markersRef.current.length}`)
+        
+        // 마커 생성 완료 후 라인 그리기 (마커가 2개 이상일 때만)
+        if (showMapRoute && createdMarkerPoiIdsRef.current.size >= 2) {
+          drawPolylineAfterMarkers()
+        }
       }
 
       processPois()
@@ -564,8 +561,9 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
         }
       })
       markersRef.current = []
+      createdMarkerPoiIdsRef.current.clear()
     }
-  }, [isReady, pois, cartOrderMap, hasSearchResult, createMarker, geocodeAddress, log])
+  }, [isReady, pois, cartOrderMap, hasSearchResult, createMarker, geocodeAddress, log, language])
 
   // 검색 결과에 따라 지도 중심 이동
   useEffect(() => {

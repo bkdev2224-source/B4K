@@ -26,15 +26,26 @@ export default function PoiActionButtons({
       <button
         type="button"
         onClick={() => {
+          console.log('🔘 [PoiActionButtons] Cart 버튼 클릭:', {
+            poiId,
+            poiName,
+            cartItemId,
+            inCart,
+            timestamp: new Date().toISOString(),
+          })
+          
           if (inCart) {
+            console.log('➖ [PoiActionButtons] 장바구니에서 제거:', cartItemId)
             removeFromCart(cartItemId)
           } else {
-            addToCart({
+            const cartItem = {
               id: cartItemId,
               name: poiName,
-              type: 'poi',
+              type: 'poi' as const,
               poiId,
-            })
+            }
+            console.log('➕ [PoiActionButtons] 장바구니에 추가 시도:', cartItem)
+            addToCart(cartItem)
           }
         }}
         className={`p-4 rounded-full shadow-lg hover:shadow-xl transition-[transform,box-shadow] hover:scale-105 ${

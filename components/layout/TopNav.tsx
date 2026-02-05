@@ -277,6 +277,7 @@ export default function TopNav({
               id={searchInputId}
               ref={inputRef}
               type="text"
+              autoComplete="off"
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {

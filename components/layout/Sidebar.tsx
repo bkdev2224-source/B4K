@@ -23,6 +23,14 @@ export default function Sidebar() {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [sidebarOpen, toggleSidebar])
+
+  // Handle closing sidebar on mobile when link is clicked
+  const handleLinkClick = () => {
+    // Check if we're on mobile (lg breakpoint is 1024px)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      toggleSidebar()
+    }
+  }
   
   const navItems = [
     {
@@ -125,6 +133,7 @@ export default function Sidebar() {
             {/* B4K Home button - always positioned at same spot */}
             <Link
               href="/"
+              onClick={handleLinkClick}
               className={`text-xl font-bold transition-[opacity] duration-300 cursor-pointer text-gray-900 dark:text-gray-100 absolute left-4 ${
                 sidebarOpen ? 'opacity-100' : 'opacity-0 lg:opacity-100'
               }`}
@@ -150,6 +159,7 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={handleLinkClick}
                 className={`focus-ring group relative flex items-center gap-3 px-5 py-1.5 rounded-full transition-colors ${
                   isActive
                     ? 'text-gray-900 dark:text-gray-100'

@@ -320,8 +320,9 @@ export default function MapsPage() {
                 {orderedCartPOIs.map(({ poi, order, cartItemId }, index) => (
                   <div key={poi._id.$oid} className="flex items-stretch gap-3 flex-shrink-0 snap-start">
                     {/* Simple card (fixed height to prevent "crooked" rows) */}
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => {
                         setSearchResult({
                           name: getPOIName(poi, language),
@@ -329,7 +330,17 @@ export default function MapsPage() {
                           poiId: poi._id.$oid,
                         })
                       }}
-                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/70 px-3 py-3 w-[280px] h-[84px] shadow-sm text-left"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSearchResult({
+                            name: getPOIName(poi, language),
+                            type: 'poi',
+                            poiId: poi._id.$oid,
+                          })
+                        }
+                      }}
+                      className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-700/70 px-3 py-3 w-[280px] h-[84px] shadow-sm text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors focus-ring"
                       aria-label={`View details for ${getPOIName(poi, language)}`}
                     >
                       <div className="flex items-start gap-3 h-full">
@@ -364,7 +375,7 @@ export default function MapsPage() {
                           </p>
                         </div>
                       </div>
-                    </button>
+                    </div>
                     
                     {/* Arrow connector - show between items, not after last item */}
                     {index < orderedCartPOIs.length - 1 && (

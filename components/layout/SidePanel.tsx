@@ -256,7 +256,7 @@ export default function SidePanel({
             </div>
 
             {/* Content */}
-            <div style={{ height: `${sheetFullHeight - SHEET_HANDLE_HEIGHT}px` }} className="overflow-hidden">
+            <div style={{ height: `${Math.max(0, snapVisibleHeight - SHEET_HANDLE_HEIGHT)}px` }} className="flex flex-col overflow-hidden">
               <SidePanelContent type={type} route={route} routeId={routeId} />
             </div>
           </div>

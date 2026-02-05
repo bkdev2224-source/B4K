@@ -735,9 +735,13 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                 {contents.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Related Spots ({contents.length})</h3>
-                    <div className="space-y-2">
+                    {/* 모바일: 가로 스크롤 캐러셀, 데스크톱: 세로 리스트 */}
+                    <div className="lg:space-y-2 lg:block flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 snap-x snap-mandatory">
                       {contents.slice(0, 5).map((content, idx) => (
-                        <div key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div 
+                          key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`} 
+                          className="lg:w-full w-[280px] flex-shrink-0 snap-start p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        >
                           <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
                           <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{getKContentDescription(content, language)}</p>
                           {content.tags && content.tags.length > 0 && (

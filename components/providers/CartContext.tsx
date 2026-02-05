@@ -44,19 +44,12 @@ function loadCartFromStorage(): CartItem[] {
       
       // package가 제거되었다면 localStorage 업데이트
       if (filteredItems.length !== items.length) {
-        console.log('🗑️ [CartContext] package 타입 아이템 제거:', {
-          removedCount: items.length - filteredItems.length,
-          remainingItems: filteredItems,
-        })
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(filteredItems))
       }
       
       return filteredItems
     }
     
-    // localStorage에 저장된 값이 없으면 기본 POI 4개 반환
-    // saveCartToStorage에서 항상 기본 POI를 포함시키므로, 여기서도 반환
-    console.log('🎯 [CartContext] localStorage가 비어있어 기본 POI 4개 반환')
     return DEFAULT_POI_ITEMS
   } catch (error) {
     console.error('Failed to load cart from localStorage:', error)
@@ -83,13 +76,6 @@ function saveCartToStorage(items: CartItem[]) {
       ...userItems.filter(item => item.type !== 'package') // package 타입 제외
     ]
     
-    console.log('💾 [CartContext] localStorage에 장바구니 저장:', {
-      defaultPois: DEFAULT_POI_ITEMS.length,
-      userItems: userItems.length,
-      totalItems: itemsToSave.length,
-      itemsToSave,
-      timestamp: new Date().toISOString(),
-    })
     
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(itemsToSave))
   } catch (error) {
@@ -105,11 +91,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Load cart from localStorage on mount
   useEffect(() => {
     const loadedItems = loadCartFromStorage()
-    console.log('📦 [CartContext] localStorage에서 장바구니 로드:', {
-      loadedItems,
-      count: loadedItems.length,
-      timestamp: new Date().toISOString(),
-    })
     setCartItems(loadedItems)
     setIsInitialized(true)
   }, [])
@@ -117,32 +98,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isInitialized) {
-      console.log('💾 [CartContext] localStorage에 장바구니 저장:', {
-        cartItems,
-        count: cartItems.length,
-        timestamp: new Date().toISOString(),
-      })
       saveCartToStorage(cartItems)
     }
   }, [cartItems, isInitialized])
 
   const addToCart = useCallback((item: CartItem) => {
-    console.log('🛒 [CartContext] addToCart 호출됨:', {
-      item,
-      itemDetails: {
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        poiId: item.poiId,
-        subName: item.subName,
-        packageId: item.packageId,
-      },
-      timestamp: new Date().toISOString(),
-    })
-    
+        
     // package 타입은 추가하지 않음
     if (item.type === 'package') {
-      console.log('🚫 [CartContext] package 타입은 cart에 추가할 수 없습니다:', item)
       return
     }
     
@@ -150,37 +113,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // 이미 장바구니에 있는지 확인
       const exists = prev.some((cartItem) => cartItem.id === item.id)
       if (exists) {
-        console.log('⚠️ [CartContext] 이미 장바구니에 있는 아이템:', item.id)
         return prev
       }
       
       const newCartItems = [...prev, item]
-      console.log('✅ [CartContext] 장바구니에 추가됨:', {
-        addedItem: item,
-        previousCount: prev.length,
-        newCount: newCartItems.length,
-        allItems: newCartItems,
-      })
       return newCartItems
     })
   }, [])
 
   const removeFromCart = useCallback((id: string) => {
-    console.log('➖ [CartContext] removeFromCart 호출됨:', {
-      id,
-      timestamp: new Date().toISOString(),
-    })
-    
     setCartItems((prev) => {
       const removedItem = prev.find((item) => item.id === id)
       const newCartItems = prev.filter((item) => item.id !== id)
-      
-      console.log('✅ [CartContext] 장바구니에서 제거됨:', {
-        removedItem,
-        previousCount: prev.length,
-        newCount: newCartItems.length,
-        remainingItems: newCartItems,
-      })
       
       return newCartItems
     })

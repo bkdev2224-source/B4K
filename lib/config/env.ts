@@ -69,6 +69,15 @@ export function getNaverMapClientId(): string | undefined {
   return env("NEXT_PUBLIC_NAVER_MAP_CLIENT_ID") ?? env("NEXT_NAVER_MAP_CLIENT_ID") ?? env("NAVER_MAP_CLIENT_ID")
 }
 
+/** Base URL for sitemap, Open Graph, canonical. Vercel: https://${VERCEL_URL}; else NEXT_PUBLIC_SITE_URL. */
+export function getSiteUrl(): string {
+  const explicit = env("NEXT_PUBLIC_SITE_URL")
+  if (explicit) return explicit.replace(/\/$/, "")
+  const vercel = env("VERCEL_URL")
+  if (vercel) return `https://${vercel}`
+  return "https://b4korea.com"
+}
+
 
 /**
  * NextAuth on Vercel: if NEXTAUTH_URL isn't explicitly set, infer it from VERCEL_URL.

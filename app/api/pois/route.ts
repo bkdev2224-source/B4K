@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllPOIs, getPOIById } from '@/lib/db/pois'
 import type { POIJson } from '@/types'
+import { checkApiLimit } from '@/lib/ratelimit'
+import { isValidId } from '@/lib/utils/validate-id'
 
 // Query-string based route handlers can't be statically prerendered.
 // Use CDN caching headers instead.
@@ -23,9 +25,16 @@ function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
  * - /api/pois?poiId=...         -> POIJson | null
  */
 export async function GET(request: NextRequest) {
+  const limitRes = await checkApiLimit(request)
+  if (limitRes) return limitRes
+
   try {
     const searchParams = request.nextUrl.searchParams
     const poiId = searchParams.get('poiId')
+
+    if (poiId && !isValidId(poiId)) {
+      return NextResponse.json({ error: 'Invalid poiId format' }, { status: 400 })
+    }
 
     if (poiId) {
       const poi = await getPOIById(poiId)

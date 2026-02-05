@@ -45,14 +45,14 @@ This setup exists to validate:
 
 ## 3. Environment Variables
 
-Located in `.env.local`:
+Add to `.env.local` (see `.env.example` for a template):
 
 ```env
-NEXT_PUBLIC_GA_ID=G-MR3QTF6924
-NEXT_PUBLIC_CLARITY_ID=v6bt097ypg
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_CLARITY_ID=your_clarity_project_id
 ```
 
-These are **public** tracking IDs (not sensitive).
+These are **public** tracking IDs (not sensitive). Get your IDs from [Google Analytics](https://analytics.google.com/) and [Microsoft Clarity](https://clarity.microsoft.com/).
 
 ---
 

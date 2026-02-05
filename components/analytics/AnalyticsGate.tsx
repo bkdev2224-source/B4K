@@ -1,6 +1,7 @@
 "use client"
 
 import Script from 'next/script'
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
 type ConsentState = 'unknown' | 'granted' | 'denied'
@@ -52,11 +53,10 @@ export default function AnalyticsGate() {
             <div className="text-sm text-gray-700 dark:text-gray-200">
               <div className="font-semibold">Analytics preferences</div>
               <div className="text-gray-600 dark:text-gray-400">
-                We use analytics (GA4 / Clarity) to understand usage and improve the service. You
-                can accept or decline.
+                We use analytics (Google Analytics) and session recording (Microsoft Clarity) to understand usage and improve the service. You can accept, decline, or customize your preferences.
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => {
@@ -67,6 +67,12 @@ export default function AnalyticsGate() {
               >
                 Decline
               </button>
+              <Link
+                href="/cookie-settings"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Manage Preferences
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -75,7 +81,7 @@ export default function AnalyticsGate() {
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-colors"
               >
-                Accept
+                Accept All
               </button>
             </div>
           </div>

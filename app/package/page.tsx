@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import PageLayout from '@/components/layout/PageLayout'
 import PackageCarousel from '@/components/features/package/PackageCarousel'
 import { getAllPackages } from '@/lib/db/packages'
 import type { TravelPackageJson } from '@/types'
+
+export const metadata: Metadata = {
+  title: 'Travel Packages',
+  description: 'Curated Korea travel packages — explore K-Pop, K-Beauty, K-Food, and more with guided itineraries.',
+}
 
 export const revalidate = 60
 

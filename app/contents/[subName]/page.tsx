@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import type { Metadata } from 'next'
 import PageLayout from '@/components/layout/PageLayout'
 import type { KContentJson, POIJson } from '@/types'
 import Link from 'next/link'
@@ -8,11 +9,59 @@ import ContentMapButton from './ContentMapButton'
 import { getKContentsBySubName } from '@/lib/db/kcontents'
 import { getPOIById } from '@/lib/db/pois'
 import { getKpopArtistByName } from '@/lib/db/kpop-artists'
+import { getKBeautyPlaceByName } from '@/lib/db/kbeauty-places'
+import { getKFoodBrandByName } from '@/lib/db/kfood-brands'
+import { getKFestivalPlaceByName } from '@/lib/db/kfestival-places'
+import { getSiteUrl } from '@/lib/config/env'
+import { getKFestivalPlaceName, getKFoodBrandName, getPOIName, getKContentSubName, getKContentSpotName, getKContentDescription, getKpopArtistName } from '@/lib/utils/locale'
+import { cookies } from 'next/headers'
 
 export const revalidate = 60
 
+const categoryLabels: Record<string, string> = {
+  kpop: 'K-Pop',
+  kbeauty: 'K-Beauty',
+  kfood: 'K-Food',
+  kfestival: 'K-Festival',
+  kdrama: 'K-Drama',
+}
+
 function toPOIJson(poi: { _id: string } & Omit<POIJson, '_id'>): POIJson {
   return { ...poi, _id: { $oid: poi._id } }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { subName: string }
+}): Promise<Metadata> {
+  const subName = decodeURIComponent(params?.subName || '')
+  try {
+    const contents = await getKContentsBySubName(subName)
+    if (contents.length === 0) return { title: 'Content Not Found' }
+    const first = contents[0]
+    const category = first.category as string | undefined
+    const label = category && categoryLabels[category] ? categoryLabels[category] : subName
+    const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
+    const title = artist ? (typeof artist.name === 'string' ? artist.name : artist.name.name_en) : subName
+    const spotName = typeof first.spotName === 'string' ? first.spotName : first.spotName.spotName_en
+    const description = `${label} — ${spotName} and related spots in Korea. Explore on B4K.`
+    const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(subName)}/1200/630`
+    const baseUrl = getSiteUrl()
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: [imageUrl],
+        url: `${baseUrl}/contents/${encodeURIComponent(subName)}`,
+      },
+      twitter: { card: 'summary_large_image', title, description },
+    }
+  } catch {
+    return { title: 'Content' }
+  }
 }
 
 export default async function ContentDetailPage({
@@ -22,6 +71,10 @@ export default async function ContentDetailPage({
 }) {
   const rawSubName = params?.subName || ''
   const subName = decodeURIComponent(rawSubName)
+
+  // 서버에서 언어 가져오기 (쿠키에서)
+  const cookieStore = await cookies()
+  const language = (cookieStore.get('language')?.value || 'en') as 'ko' | 'en'
 
   try {
     const dbContents = await getKContentsBySubName(subName)
@@ -69,11 +122,59 @@ export default async function ContentDetailPage({
       })
     )
     const poiById = new Map(poiEntries.filter(([, poi]) => poi).map(([id, poi]) => [id, poi!]))
+    const poi = poiId ? (poiById.get(poiId) ?? null) : null
 
-    const dbPoiForBanner = poiId ? await getPOIById(poiId) : null
-    const poi = dbPoiForBanner ? toPOIJson(dbPoiForBanner as any) : null
-
-    const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
+    // 카테고리별로 적절한 데이터 가져오기 (contents 페이지와 동일한 로직)
+    let logoUrl: string | null = null
+    let displayName = subName
+    let socialLinks: { instagram?: string; youtube?: string; twitter?: string; wikipedia?: string } | null = null
+    let agency: string | undefined = undefined
+    let backgroundUrl: string | null = null
+    
+    if (category === 'kpop') {
+      const artist = await getKpopArtistByName(subName)
+      if (artist) {
+        logoUrl = artist.logoUrl ?? null
+        backgroundUrl = artist.backgroundUrl && artist.backgroundUrl !== '' ? artist.backgroundUrl : null
+        displayName = getKpopArtistName(artist, language) ?? subName
+        agency = artist.agency
+        socialLinks = {
+          instagram: artist.instagram,
+          youtube: artist.youtube,
+          twitter: artist.twitter,
+          wikipedia: artist.wikipedia,
+        }
+      }
+    } else if (category === 'kbeauty') {
+      const place = await getKBeautyPlaceByName(subName)
+      if (place) {
+        logoUrl = place.logoUrl ?? null
+        backgroundUrl = place.backgroundUrl && place.backgroundUrl !== '' ? place.backgroundUrl : null
+        displayName = place.name ?? subName
+        socialLinks = {
+          instagram: place.instagram,
+          youtube: place.youtube,
+          twitter: place.twitter,
+          wikipedia: place.wikipedia,
+        }
+      }
+    } else if (category === 'kfood') {
+      const brand = await getKFoodBrandByName(subName)
+      if (brand) {
+        logoUrl = brand.logoUrl ?? null
+        backgroundUrl = brand.backgroundUrl && brand.backgroundUrl !== '' ? brand.backgroundUrl : null
+        // 언어에 따라 적절한 이름 선택
+        displayName = getKFoodBrandName(brand, language) || subName
+      }
+    } else if (category === 'kfestival') {
+      const place = await getKFestivalPlaceByName(subName)
+      if (place) {
+        logoUrl = place.logoUrl ?? null
+        backgroundUrl = place.backgroundUrl && place.backgroundUrl !== '' ? place.backgroundUrl : null
+        // 언어에 따라 적절한 이름 선택
+        displayName = getKFestivalPlaceName(place, language) || subName
+      }
+    }
 
   // 카테고리별 아이콘
   const categoryIcons = {
@@ -104,20 +205,12 @@ export default async function ContentDetailPage({
     ),
   }
 
-  const categoryLabels = {
-    kpop: 'K-Pop',
-    kbeauty: 'K-Beauty',
-    kfood: 'K-Food',
-    kfestival: 'K-Festival',
-    kdrama: 'K-Drama',
-  }
-
   return (
     <PageLayout>
       {/* Banner image */}
       <div className="relative h-96">
         <Image
-          src={`https://picsum.photos/seed/${subName}/1920/600`}
+          src={backgroundUrl || `https://picsum.photos/seed/${subName}/1920/600`}
           alt={subName}
           fill
           sizes="100vw"
@@ -130,8 +223,8 @@ export default async function ContentDetailPage({
               <div className="flex-1 flex flex-col sm:flex-row items-start gap-6">
                 {/* 로고 — 목록 페이지와 동일한 로직(흰 원 + 로고/이니셜) */}
                 <ArtistLogo
-                  subName={category === 'kpop' && artist ? artist.name : subName}
-                  logoUrl={category === 'kpop' ? artist?.logoUrl ?? null : null}
+                  subName={displayName}
+                  logoUrl={logoUrl}
                   size="lg"
                 />
                 {/* 정보: 1행 = 이름 + agency(노란 영역), 2행 = SNS 아이콘(파란 영역) */}
@@ -147,18 +240,18 @@ export default async function ContentDetailPage({
                   {/* 노란 영역: 아티스트 이름 + 소속사(같은 줄 오른쪽) */}
                   <div className="flex flex-wrap items-baseline gap-3 mb-3">
                     <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl">
-                      {category === 'kpop' && artist ? artist.name : subName}
+                      {displayName}
                     </h1>
-                    {category === 'kpop' && artist?.agency && (
-                      <span className="text-white/80 text-sm md:text-base font-medium">{artist.agency}</span>
+                    {category === 'kpop' && agency && (
+                      <span className="text-white/80 text-sm md:text-base font-medium">{agency}</span>
                     )}
                   </div>
                   {/* 파란 영역: 유튜브, 인스타, X, 위키피디아 링크 아이콘 */}
-                  {category === 'kpop' && artist && (artist.youtube || artist.instagram || artist.twitter || artist.wikipedia) && (
+                  {socialLinks && (socialLinks.youtube || socialLinks.instagram || socialLinks.twitter || socialLinks.wikipedia) && (
                     <div className="flex items-center gap-3 mb-3">
-                      {artist.youtube && (
+                      {socialLinks.youtube && (
                         <a
-                          href={artist.youtube}
+                          href={socialLinks.youtube}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -168,9 +261,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.youtube} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.instagram && (
+                      {socialLinks.instagram && (
                         <a
-                          href={artist.instagram}
+                          href={socialLinks.instagram}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -180,9 +273,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.instagram} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.twitter && (
+                      {socialLinks.twitter && (
                         <a
-                          href={artist.twitter}
+                          href={socialLinks.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -192,9 +285,9 @@ export default async function ContentDetailPage({
                           <img src={SOCIAL_ICON_URLS.x} alt="" className="w-5 h-5 object-contain" />
                         </a>
                       )}
-                      {artist.wikipedia && (
+                      {socialLinks.wikipedia && (
                         <a
-                          href={artist.wikipedia}
+                          href={socialLinks.wikipedia}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="focus-ring p-2.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white hover:bg-black/50 transition-colors inline-flex items-center justify-center"
@@ -215,7 +308,7 @@ export default async function ContentDetailPage({
                           href={`/poi/${poi._id.$oid}`}
                           className="hover:text-white underline transition-colors"
                         >
-                          {poi.name}
+                          {getPOIName(poi, language)}
                         </Link>
                       </>
                     )}
@@ -252,24 +345,24 @@ export default async function ContentDetailPage({
                   const contentPoi = poiById.get(content.poiId.$oid) ?? null
                   return (
                     <Link
-                      key={`${content.poiId?.$oid ?? 'no-poi'}-${content.spotName}-${index}`}
+                      key={`${content.poiId?.$oid ?? 'no-poi'}-${getKContentSpotName(content, language)}-${index}`}
                       href={`/poi/${content.poiId.$oid}`}
                       className="group"
                     >
                       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg h-full">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{content.spotName}</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{getKContentSpotName(content, language)}</h3>
                             {content.subName && (
                               <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">
-                                #{content.subName}
+                                #{getKContentSubName(content, language)}
                               </span>
                             )}
                           </div>
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                             <Image
-                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/100/100`}
-                              alt={content.spotName}
+                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${getKContentSpotName(content, language)}/100/100`}
+                              alt={getKContentSpotName(content, language)}
                               fill
                               sizes="48px"
                               className="object-cover"
@@ -277,11 +370,11 @@ export default async function ContentDetailPage({
                           </div>
                         </div>
                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                          {content.description}
+                          {getKContentDescription(content, language)}
                         </p>
                         {contentPoi && (
                           <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
-                            📍 {contentPoi.name}
+                            📍 {getPOIName(contentPoi, language)}
                           </p>
                         )}
                         {content.tags && content.tags.length > 0 && (

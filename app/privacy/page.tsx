@@ -132,7 +132,11 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   If an analytics consent prompt is enabled on your deployment, you can accept or
-                  decline analytics tracking and change your choice later by clearing site data.
+                  decline analytics tracking. You can manage your cookie preferences at any time by visiting our{' '}
+                  <Link className="underline" href="/cookie-settings">
+                    Cookie Settings
+                  </Link>{' '}
+                  page.
                 </li>
               </ul>
             </section>

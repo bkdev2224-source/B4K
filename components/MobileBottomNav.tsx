@@ -60,8 +60,8 @@ export default function MobileBottomNav() {
       isActive: (p) => p === "/contents" || p.startsWith("/contents"),
     },
     {
-      href: "/mypage",
-      label: "My",
+      href: "/mypage/settings",
+      label: "Settings",
       icon: (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -72,7 +72,7 @@ export default function MobileBottomNav() {
           />
         </svg>
       ),
-      isActive: (p) => p === "/mypage" || p.startsWith("/mypage"),
+      isActive: (p) => p === "/mypage/settings" || p.startsWith("/mypage/settings"),
     },
   ]
 

@@ -8,6 +8,8 @@ import AuthButton from '@/components/auth/AuthButton'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useRoute } from '@/components/providers/RouteContext'
 import { useSearchResult } from '@/components/providers/SearchContext'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { getPOIName, getKContentSubName } from '@/lib/utils/locale'
 import { useKContents } from '@/lib/hooks/useKContents'
 import { usePOIs } from '@/lib/hooks/usePOIs'
 
@@ -50,10 +52,15 @@ export default function TopNav({
   const pathname = usePathname()
   const { selectedRoute } = useRoute()
   const { setSearchResult } = useSearchResult()
+  const { language, setLanguage } = useLanguage()
+  
+  const searchPlaceholder = language === 'ko' ? '당신의 한국을 찾아보세요…' : 'FIND YOUR KOREA…'
   const [isFocused, setIsFocused] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const languageMenuRef = useRef<HTMLDivElement>(null)
   const searchInputId = 'topnav-search-input'
   const listboxId = 'topnav-search-results'
   const optionId = (idx: number) => `topnav-search-option-${idx}`
@@ -98,21 +105,30 @@ export default function TopNav({
     
     // POI 이름, 주소, 태그에서 검색
     allPOIs.forEach(poi => {
-      const nameMatch = poi.name.toLowerCase().includes(query)
-      const addressMatch = poi.address.toLowerCase().includes(query)
+      const poiName = getPOIName(poi, language)
+      const nameMatch = poiName.toLowerCase().includes(query) || 
+                        poi.name.name_en.toLowerCase().includes(query) ||
+                        poi.name.name_ko.toLowerCase().includes(query)
+      const addressEn = poi.address.address_en.toLowerCase()
+      const addressKo = poi.address.address_ko.toLowerCase()
+      const addressMatch = addressEn.includes(query) || addressKo.includes(query)
       const tagMatch = poi.categoryTags.some(tag => tag.toLowerCase().includes(query))
       
-      if ((nameMatch || addressMatch || tagMatch) && !addedNames.has(poi.name)) {
-        results.push({ name: poi.name, type: 'poi', poiId: poi._id.$oid })
-        addedNames.add(poi.name)
+      if ((nameMatch || addressMatch || tagMatch) && !addedNames.has(poiName)) {
+        results.push({ name: poiName, type: 'poi', poiId: poi._id.$oid })
+        addedNames.add(poiName)
       }
     })
     
     // subName에서 검색 (Contents Detail로 이동)
     allKContents.forEach(content => {
-      if (content.subName && content.subName.toLowerCase().includes(query) && !addedNames.has(content.subName)) {
-        results.push({ name: content.subName, type: 'content', subName: content.subName })
-        addedNames.add(content.subName)
+      const subNameEn = typeof content.subName === 'string' ? content.subName : content.subName.subName_en
+      const subNameKo = typeof content.subName === 'string' ? '' : content.subName.subName_ko
+      const subNameDisplay = getKContentSubName(content, language)
+      
+      if (subNameEn && (subNameEn.toLowerCase().includes(query) || subNameKo.toLowerCase().includes(query)) && !addedNames.has(subNameEn)) {
+        results.push({ name: subNameDisplay, type: 'content', subName: subNameEn })
+        addedNames.add(subNameEn)
       }
     })
     
@@ -124,15 +140,19 @@ export default function TopNav({
     const results: SearchResult[] = []
     
     RECOMMENDED_SEARCHES.forEach(recommended => {
-      // POI 이름으로 먼저 찾기
-      const poi = allPOIs.find(p => p.name === recommended)
+      // POI 이름으로 먼저 찾기 (name_en 또는 name_ko에서 검색)
+      const poi = allPOIs.find(p => p.name.name_en === recommended || p.name.name_ko === recommended)
       if (poi) {
-        results.push({ name: recommended, type: 'poi', poiId: poi._id.$oid })
+        results.push({ name: getPOIName(poi, language), type: 'poi', poiId: poi._id.$oid })
       } else {
         // POI 이름이 아니면 subName으로 찾기
-        const content = allKContents.find(c => c.subName === recommended)
+        const content = allKContents.find(c => {
+          const subNameEn = typeof c.subName === 'string' ? c.subName : c.subName.subName_en
+          return subNameEn === recommended
+        })
         if (content) {
-          results.push({ name: recommended, type: 'content', subName: recommended })
+          const subNameEn = typeof content.subName === 'string' ? content.subName : content.subName.subName_en
+          results.push({ name: getKContentSubName(content, language), type: 'content', subName: subNameEn })
         }
       }
     })
@@ -155,15 +175,19 @@ export default function TopNav({
           setSelectedIndex(-1)
         }
       }
+      // 언어 메뉴 외부 클릭 감지
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setIsLanguageMenuOpen(false)
+      }
     }
 
-    if (isFocused) {
+    if (isFocused || isLanguageMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isFocused, searchQuery])
+  }, [isFocused, searchQuery, isLanguageMenuOpen])
 
   const handleSearchSelect = useCallback((result: SearchResult) => {
     if (isMapsPage) {
@@ -253,7 +277,7 @@ export default function TopNav({
               id={searchInputId}
               ref={inputRef}
               type="text"
-              placeholder="FIND YOUR KOREA…"
+              placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {
                 const newValue = e.target.value
@@ -384,27 +408,66 @@ export default function TopNav({
           </div>
         </div>
 
-        {/* Right: (desktop) favorites + account, (mobile) hamburger */}
+        {/* Right: language selector + account button */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              // TODO: Navigate to favorites page or open modal
-              console.log('Favorites clicked')
-            }}
-            className="focus-ring hidden lg:inline-flex p-2 rounded-full bg-gray-100 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-            aria-label="Favorites"
-            title="Favorites"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-              />
-            </svg>
-          </button>
+          {/* Language Selector */}
+          <div className="relative" ref={languageMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+              className="focus-ring flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-[transform,background-color] hover:scale-105"
+              aria-label="Select language"
+              aria-haspopup="menu"
+              aria-expanded={isLanguageMenuOpen}
+            >
+              <span className="text-xs font-semibold">{language === 'ko' ? 'KO' : 'EN'}</span>
+            </button>
+
+            {isLanguageMenuOpen && (
+              <div
+                role="menu"
+                aria-label="Language options"
+                className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+              >
+                <div className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLanguage('ko')
+                      setIsLanguageMenuOpen(false)
+                      // 서버 컴포넌트를 다시 렌더링하여 언어 변경 반영
+                      router.refresh()
+                    }}
+                    className={`focus-ring w-full text-left px-4 py-2 text-sm transition-colors ${
+                      language === 'ko'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    role="menuitem"
+                  >
+                    한국어
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLanguage('en')
+                      setIsLanguageMenuOpen(false)
+                      // 서버 컴포넌트를 다시 렌더링하여 언어 변경 반영
+                      router.refresh()
+                    }}
+                    className={`focus-ring w-full text-left px-4 py-2 text-sm transition-colors ${
+                      language === 'en'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    role="menuitem"
+                  >
+                    English
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <AuthButton />
         </div>

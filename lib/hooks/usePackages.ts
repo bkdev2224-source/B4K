@@ -12,12 +12,17 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await res.json()) as T
 }
 
-export function usePackages() {
+export function usePackages(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
   const [packages, setPackages] = useState<TravelPackageJson[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
     let cancelled = false
     setLoading(true)
     setError(null)
@@ -38,17 +43,23 @@ export function usePackages() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [enabled])
 
   return { packages, loading, error }
 }
 
-export function usePackageById(packageId: string) {
+export function usePackageById(packageId: string, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
   const [pkg, setPkg] = useState<TravelPackageJson | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+
     if (!packageId) {
       setPkg(null)
       setLoading(false)
@@ -76,7 +87,7 @@ export function usePackageById(packageId: string) {
     return () => {
       cancelled = true
     }
-  }, [packageId])
+  }, [packageId, enabled])
 
   return { pkg, loading, error }
 }

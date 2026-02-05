@@ -1,13 +1,17 @@
 "use client"
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { CalendarPlus } from 'lucide-react'
 import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { usePathname, useRouter } from 'next/navigation'
+import { getPOIName, getPOIAddress, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { usePOIs } from '@/lib/hooks/usePOIs'
-import { useMemo } from 'react'
+import type { POIJson } from '@/types'
 
 interface SidePanelItem {
   id: string
@@ -17,17 +21,31 @@ interface SidePanelItem {
 }
 
 interface SidePanelContentProps {
-  type: 'home' | 'contents' | 'info' | 'route' | 'search' | null
+  type: 'home' | 'contents' | 'info' | 'nav' | 'maps' | 'route' | 'search' | 'settings' | 'package' | null
   route?: Route | null
   routeId?: string | null
 }
 
 export function SidePanelContent({ type, route, routeId }: SidePanelContentProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'reviews' | 'photos' | 'info'>('home')
-  const { searchResult, setSearchResult, showMapRoute, setShowMapRoute } = useSearchResult()
+  const { searchResult, setSearchResult } = useSearchResult()
   const { cartItems, addToCart, removeFromCart, isInCart } = useCart()
-  const { pois } = usePOIs()
+  const { language } = useLanguage()
+  const pathname = usePathname() || '/'
+  const router = useRouter()
+  const { pois, loading: poisLoading, error: poisError } = usePOIs({ enabled: type === 'maps' || type === 'search' })
   const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
+  const recommendedPois = useMemo(() => {
+    if (type !== 'maps') return [] as POIJson[]
+    // Deterministic "shuffle": sort by a stable hash of the id so we get variety
+    // but don't flicker on every render.
+    const hash = (s: string) => {
+      let h = 0
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
+      return h >>> 0
+    }
+    return [...pois].sort((a, b) => hash(a._id.$oid) - hash(b._id.$oid)).slice(0, 20)
+  }, [type, pois])
 
   // Hooks must be called unconditionally (rules-of-hooks)
   const searchSubName =
@@ -38,12 +56,30 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const { contents: contentsBySubName } = useKContentsBySubName(searchSubName)
   const { contents: contentsByPOIId } = useKContentsByPOIId(searchPoiId)
 
+  // Home page section list translations
+  const homeSectionsTranslations = {
+    en: {
+      bestPackages: 'B4K Best Packages',
+      editorRecommendations: 'Editor Recommendations',
+      exploreSeoul: 'Explore Seoul',
+      seasonalTravel: 'Seasonal Travel',
+    },
+    ko: {
+      bestPackages: 'B4K 베스트 패키지',
+      editorRecommendations: '에디터 추천',
+      exploreSeoul: '서울 탐험',
+      seasonalTravel: '계절별 여행',
+    },
+  }
+
+  const t = homeSectionsTranslations[language]
+
   // Home page section list
   const homeSections: SidePanelItem[] = [
-    { id: 'best-packages', name: 'B4K Best Packages', href: '#best-packages' },
-    { id: 'editor-recommendations', name: 'Editor Recommendations', href: '#editor-recommendations' },
-    { id: 'seoul-exploration', name: 'Explore Seoul', href: '#seoul-exploration' },
-    { id: 'seasonal-recommendations', name: 'Seasonal Travel', href: '#seasonal-recommendations' },
+    { id: 'best-packages', name: t.bestPackages, href: '#best-packages' },
+    { id: 'editor-recommendations', name: t.editorRecommendations, href: '#editor-recommendations' },
+    { id: 'seoul-exploration', name: t.exploreSeoul, href: '#seoul-exploration' },
+    { id: 'seasonal-recommendations', name: t.seasonalTravel, href: '#seasonal-recommendations' },
   ]
 
   // Contents categories
@@ -56,10 +92,150 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   // Info page sections
   const infoSections: SidePanelItem[] = [
-    { id: 'about', name: 'About Us', href: '/info?section=about' },
-    { id: 'privacy', name: 'Privacy Policy', href: '/info?section=privacy' },
-    { id: 'terms', name: 'Terms & Conditions', href: '/info?section=terms' },
+    { id: 'about', name: language === 'ko' ? '소개' : 'About Us', href: '/info' },
+    { id: 'privacy', name: language === 'ko' ? '개인정보처리방침' : 'Privacy Policy', href: '/privacy' },
+    { id: 'terms', name: language === 'ko' ? '이용약관' : 'Terms & Conditions', href: '/terms' },
   ]
+
+  // Generic navigation (used as a fallback on pages like POI/Package/Profile)
+  const navLinks: SidePanelItem[] = [
+    { id: 'home', name: language === 'ko' ? '홈' : 'Home', href: '/' },
+    { id: 'packages', name: language === 'ko' ? '패키지' : 'Packages', href: '/package' },
+    { id: 'maps', name: language === 'ko' ? '지도' : 'Map', href: '/maps' },
+    { id: 'contents', name: language === 'ko' ? '콘텐츠' : 'Contents', href: '/contents' },
+    { id: 'info', name: language === 'ko' ? '정보' : 'Info', href: '/info' },
+    { id: 'mypage', name: language === 'ko' ? '프로필' : 'Profile', href: '/mypage' },
+  ]
+
+  const formatEntryFee = (fee: string) => {
+    const trimmed = (fee || '').trim()
+    if (!trimmed) return '—'
+    return trimmed
+  }
+
+  const isInPoiCart = (poiId: string) => isInCart(`poi-${poiId}`)
+
+  const togglePoiCart = (poi: POIJson) => {
+    const cartItemId = `poi-${poi._id.$oid}`
+    const poiName = getPOIName(poi, language)
+    
+    console.log('🔘 [SidePanelContent] togglePoiCart 호출:', {
+      poiId: poi._id.$oid,
+      poiName,
+      cartItemId,
+      inCart: isInCart(cartItemId),
+      poiData: {
+        _id: poi._id,
+        name: poi.name,
+        address: poi.address,
+      },
+      timestamp: new Date().toISOString(),
+    })
+    
+    if (isInCart(cartItemId)) {
+      console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
+      removeFromCart(cartItemId)
+    } else {
+      const cartItem = {
+        id: cartItemId,
+        name: poiName,
+        type: 'poi' as const,
+        poiId: poi._id.$oid,
+      }
+      console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+      addToCart(cartItem)
+    }
+  }
+
+  // Render package side panel (simple back control)
+  if (type === 'package') {
+    const title = language === 'ko' ? '패키지' : 'Packages'
+    const backLabel = language === 'ko' ? '뒤로가기' : 'Go back'
+    const allLabel = language === 'ko' ? '전체 패키지' : 'All packages'
+
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {title}
+        </h3>
+
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              // History back with a safe fallback.
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                router.back()
+              } else {
+                router.push('/')
+              }
+            }}
+            className="focus-ring w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            aria-label={backLabel}
+          >
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm font-medium">{backLabel}</span>
+          </button>
+
+          {pathname !== '/package' && (
+            <Link
+              href="/package"
+              className="focus-ring w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-sm font-medium">{allLabel}</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Render settings side panel
+  if (type === 'settings') {
+    const settingsLinks: Array<{ id: string; name: string; href: string }> = [
+      { id: 'appearance', name: language === 'ko' ? '화면' : 'Appearance', href: '/mypage/settings/appearance' },
+      { id: 'privacy', name: language === 'ko' ? '데이터 및 개인정보' : 'Data & Privacy', href: '/mypage/settings/privacy' },
+      { id: 'cookies', name: language === 'ko' ? '쿠키 설정' : 'Cookie Settings', href: '/cookie-settings' },
+    ]
+
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {language === 'ko' ? '설정' : 'Settings'}
+        </h3>
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
+          {settingsLinks.map((item) => {
+            const active = pathname === item.href
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={[
+                  'focus-ring flex items-start gap-3 px-4 py-2 rounded-lg transition-colors group',
+                  active
+                    ? 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
+                ].join(' ')}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+                <span className="text-sm font-medium flex-1">{item.name}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
 
   // Render route details
   if (type === 'route' && route) {
@@ -70,7 +246,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
           {routeId ? (
             <Link
               href="/maps"
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              className="focus-ring p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
               aria-label="Go back"
             >
               <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +262,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
           {routeId ? (
             <Link
               href="/maps"
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              className="focus-ring p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
               aria-label="Close"
             >
               <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,30 +300,30 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
         {/* Action Buttons */}
         <div className="px-4 pb-4 flex gap-3 flex-shrink-0">
-          <button className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <button type="button" className="focus-ring flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             Depart
           </button>
-          <button className="flex-1 py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+          <button type="button" className="focus-ring flex-1 py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
             Arrive
           </button>
         </div>
 
         {/* Functional Icons */}
         <div className="px-4 pb-4 flex gap-6 flex-shrink-0">
-          <button className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
             </svg>
             <span className="text-xs">Save</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-xs">Street View</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+          <button type="button" className="focus-ring flex flex-col items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg px-2 py-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
@@ -161,8 +337,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
             {(['home', 'reviews', 'photos', 'info'] as const).map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`focus-ring py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
                     ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -175,7 +352,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         </div>
 
         {/* Tab Content */}
-        <div className="px-4 py-6 flex-1 overflow-y-auto">
+        <div className="themed-scrollbar px-4 py-6 flex-1 overflow-y-auto">
           {activeTab === 'home' && (
             <div className="space-y-4">
               {/* Address */}
@@ -186,7 +363,11 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                 </svg>
                 <div className="flex-1">
                   <p className="text-gray-900 dark:text-gray-100 text-sm">{route.startLocation.address}</p>
-                  <button className="text-gray-500 dark:text-gray-400 text-xs mt-1 flex items-center gap-1">
+                  <button
+                    type="button"
+                    className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                    aria-label="Show more address details"
+                  >
                     <span>More</span>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -204,10 +385,14 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   <p className="text-gray-900 dark:text-gray-100 text-sm">
                     From {route.startLocation.name}, take {route.transportation.join(', ')}
                   </p>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                  <p className="text-gray-600 dark:text-gray-300 text-xs mt-1">
                     Distance: {route.distance} • Duration: {route.duration}
                   </p>
-                  <button className="text-gray-500 dark:text-gray-400 text-xs mt-1 flex items-center gap-1">
+                  <button
+                    type="button"
+                    className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                    aria-label="Show more directions details"
+                  >
                     <span>More</span>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -224,7 +409,11 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   </svg>
                   <div className="flex-1">
                     <p className="text-gray-900 dark:text-gray-100 text-sm">{route.operatingHours}</p>
-                    <button className="text-gray-500 dark:text-gray-400 text-xs mt-1 flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="focus-ring text-gray-600 dark:text-gray-300 text-xs mt-1 flex items-center gap-1 rounded"
+                      aria-label="Show more operating hours details"
+                    >
                       <span>More</span>
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -243,14 +432,23 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-gray-900 dark:text-gray-100 text-sm">{route.phoneNumber}</p>
-                      <button className="text-gray-600 dark:text-gray-400 text-xs font-medium">Copy</button>
+                      <button
+                        type="button"
+                        className="focus-ring text-gray-700 dark:text-gray-300 text-xs font-medium rounded px-1"
+                        aria-label="Copy phone number"
+                      >
+                        Copy
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* More Information Button */}
-              <button className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mt-4">
+              <button
+                type="button"
+                className="focus-ring w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mt-4"
+              >
                 More Information &gt;
               </button>
             </div>
@@ -286,7 +484,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Waypoints</h3>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     {route.waypoints.map((waypoint, idx) => (
-                      <li key={idx}>{idx + 1}. {waypoint.name}</li>
+                      <li key={`${waypoint.name}-${idx}`}>{idx + 1}. {waypoint.name}</li>
                     ))}
                   </ul>
                 </div>
@@ -295,7 +493,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Categories</h3>
                 <div className="flex flex-wrap gap-2">
                   {route.category.map((cat, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs">
+                    <span key={`${cat}-${idx}`} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs">
                       {cat}
                     </span>
                   ))}
@@ -315,12 +513,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
           Sections
         </h3>
-        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
           {homeSections.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="focus-ring flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
               <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,12 +540,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
           Categories
         </h3>
-        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
           {contentCategories.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="focus-ring flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
               <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,14 +565,14 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     return (
       <div className="px-6 pb-6 pt-4 h-full flex flex-col">
         <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
-          Info
+          {language === 'ko' ? '정보' : 'Info'}
         </h3>
-        <nav className="mt-4 flex-1 overflow-y-auto space-y-1">
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
           {infoSections.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className="flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+              className="focus-ring flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
               <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,8 +592,35 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
     )
   }
 
+  // Render generic navigation fallback
+  if (type === 'nav') {
+    return (
+      <div className="px-6 pb-6 pt-4 h-full flex flex-col">
+        <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100">
+          Navigation
+        </h3>
+        <nav className="themed-scrollbar mt-4 flex-1 overflow-y-auto space-y-1">
+          {navLinks.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="focus-ring flex items-start gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+            >
+              <span className="mt-0.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium flex-1">{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    )
+  }
+
   // Render search result
-  if (type === 'search' && searchResult) {
+  if ((type === 'search' || type === 'maps') && searchResult) {
     const poi =
       searchResult.type === 'poi' && searchResult.poiId
         ? poiById.get(searchResult.poiId) ?? null
@@ -416,13 +641,14 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         {/* Top Bar */}
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <button
+            type="button"
             onClick={() => {
               setSearchResult(null)
             }}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            aria-label={hasCartItems ? "Go Back" : "Close"}
+            className="focus-ring p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            aria-label={type === 'maps' ? "Back to list" : hasCartItems ? "Go Back" : "Close"}
           >
-            {hasCartItems ? (
+            {type === 'maps' || hasCartItems ? (
               <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -436,7 +662,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="themed-scrollbar flex-1 overflow-y-auto px-4 py-6">
           {poi && (() => {
             const cartItemId = `poi-${poi._id.$oid}`
             const inCart = isInCart(cartItemId)
@@ -445,22 +671,40 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
               <div className="space-y-4">
                 <div>
                   <div className="flex items-start justify-between mb-2">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1">{poi.name}</h2>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1">{getPOIName(poi, language)}</h2>
                     {/* 장바구니 버튼 */}
                     <button
+                      type="button"
                       onClick={() => {
+                        const poiName = getPOIName(poi, language)
+                        console.log('🔘 [SidePanelContent] POI 상세 페이지 Cart 버튼 클릭:', {
+                          poiId: poi._id.$oid,
+                          poiName,
+                          cartItemId,
+                          inCart,
+                          poiData: {
+                            _id: poi._id,
+                            name: poi.name,
+                            address: poi.address,
+                          },
+                          timestamp: new Date().toISOString(),
+                        })
+                        
                         if (inCart) {
+                          console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
                           removeFromCart(cartItemId)
                         } else {
-                          addToCart({
+                          const cartItem = {
                             id: cartItemId,
-                            name: poi.name,
-                            type: 'poi',
+                            name: poiName,
+                            type: 'poi' as const,
                             poiId: poi._id.$oid
-                          })
+                          }
+                          console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+                          addToCart(cartItem)
                         }
                       }}
-                      className={`p-2 rounded-full transition-all ${
+                      className={`focus-ring p-2 rounded-full transition-colors ${
                         inCart 
                           ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200' 
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -468,19 +712,15 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                       aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
                       title={inCart ? "Remove from Cart" : "Add to Cart"}
                     >
-                      <svg className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
-                        {inCart ? (
-                          <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        )}
-                      </svg>
+                      <CalendarPlus
+                        className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                      />
                     </button>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{poi.address}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{getPOIAddress(poi, language)}</p>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {poi.categoryTags.map((tag, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs">
+                      <span key={`${tag}-${idx}`} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs">
                         {tag}
                       </span>
                     ))}
@@ -497,9 +737,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Related Spots ({contents.length})</h3>
                     <div className="space-y-2">
                       {contents.slice(0, 5).map((content, idx) => (
-                        <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{content.description}</p>
+                        <div key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{getKContentDescription(content, language)}</p>
                           {content.tags && content.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {content.tags.slice(0, 3).map((tag, tagIdx) => (
@@ -517,7 +757,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
                 <Link
                   href={`/poi/${poi._id.$oid}`}
-                  className="block w-full py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-center"
+                  className="focus-ring block w-full py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-center"
                 >
                   View Full Details &gt;
                 </Link>
@@ -537,23 +777,24 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   const contentPoi = poiById.get(content.poiId.$oid)
                   return (
                     <button
-                      key={idx}
+                      type="button"
+                      key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`}
                       onClick={() => {
                         if (contentPoi) {
                           // POI 검색 결과로 변경하여 상세 정보 표시
                           setSearchResult({
-                            name: contentPoi.name,
+                            name: getPOIName(contentPoi, language),
                             type: 'poi',
                             poiId: contentPoi._id.$oid
                           })
                         }
                       }}
-                      className="w-full text-left p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="focus-ring w-full text-left p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{content.description}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{getKContentDescription(content, language)}</p>
                       {contentPoi && (
-                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {contentPoi.name}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {getPOIName(contentPoi, language)}</p>
                       )}
                       {content.tags && content.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
@@ -571,12 +812,131 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
               <Link
                 href={`/contents/${searchResult.subName || ''}`}
-                className="block w-full py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-center"
+                className="focus-ring block w-full py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-center"
               >
                 View All Spots &gt;
               </Link>
             </div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // Render maps panel (Naver-style: recommended list)
+  if (type === 'maps') {
+    const total = Math.min(pois.length, 20)
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 pt-4 pb-3">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+            {language === 'ko' ? '추천 장소' : 'Recommended places'}
+          </h2>
+        </div>
+
+        {/* List */}
+        <div className="themed-scrollbar flex-1 overflow-y-auto">
+          {poisError && (
+            <div className="px-4 py-4 text-sm text-red-600 dark:text-red-400">
+              Failed to load places: {poisError}
+            </div>
+          )}
+
+          {poisLoading && recommendedPois.length === 0 && (
+            <div className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+              Loading recommendations…
+            </div>
+          )}
+
+          {!poisLoading && !poisError && recommendedPois.length === 0 && (
+            <div className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+              No places to show yet.
+            </div>
+          )}
+
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {recommendedPois.map((poi, idx) => {
+              const inCart = isInPoiCart(poi._id.$oid)
+              return (
+                <div
+                  key={poi._id.$oid}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setSearchResult({ name: getPOIName(poi, language), type: 'poi', poiId: poi._id.$oid })
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSearchResult({ name: getPOIName(poi, language), type: 'poi', poiId: poi._id.$oid })
+                    }
+                  }}
+                  className="focus-ring w-full text-left px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <div className="flex gap-3">
+                    <div className="relative w-28 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://picsum.photos/seed/${poi._id.$oid}/280/200`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-semibold">
+                        {idx + 1}/{total}
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-2">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              {getPOIName(poi, language)}
+                            </p>
+                            {poi.categoryTags?.[0] && (
+                              <span className="text-[11px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                {poi.categoryTags[0]}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {getPOIAddress(poi, language)}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                            <span>Fee: {formatEntryFee(poi.entryFee)}</span>
+                            {poi.openingHours && <span>· {poi.openingHours}</span>}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            togglePoiCart(poi)
+                          }}
+                          className={`focus-ring p-2 rounded-full transition-colors ${
+                            inCart
+                              ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                          aria-label={inCart ? 'Remove from cart' : 'Add to cart'}
+                          title={inCart ? 'Remove from cart' : 'Add to cart'}
+                        >
+                          <CalendarPlus
+                            className={`w-4 h-4 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     )

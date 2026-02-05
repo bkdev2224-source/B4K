@@ -4,12 +4,33 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { TravelPackageJson as TravelPackage } from '@/types'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { getPackageConcept, getPackageCities, getPackageHighlights } from '@/lib/utils/locale'
 
 interface PackageCarouselProps {
   packages: TravelPackage[]
 }
 
+const translations = {
+  en: {
+    recommendedPackages: 'Recommended Packages',
+    noPackages: 'No packages to show yet.',
+    cities: 'cities',
+    dayItinerary: 'day itinerary',
+    days: 'days',
+  },
+  ko: {
+    recommendedPackages: '추천 패키지',
+    noPackages: '표시할 패키지가 없습니다.',
+    cities: '개 도시',
+    dayItinerary: '일 여행',
+    days: '일',
+  },
+}
+
 export default function PackageCarousel({ packages }: PackageCarouselProps) {
+  const { language } = useLanguage()
+  const t = translations[language]
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
@@ -32,28 +53,49 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return
     const scrollAmount = 400
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
     })
     setTimeout(checkScroll, 300)
   }
 
-  if (packages.length === 0) return null
+  if (packages.length === 0) {
+    return (
+      <div className="mb-12 px-6" role="status" aria-live="polite">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          {t.recommendedPackages}
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          {t.noPackages}
+        </p>
+      </div>
+    )
+  }
 
   return (
-    <div className="mb-12">
+    <div className="mb-12" role="region" aria-roledescription="carousel" aria-label="Recommended packages">
       <div className="flex items-center justify-between mb-4 px-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors">
-          Recommended Packages
-        </h2>
+        <Link
+          href="/package"
+          className="focus-ring rounded-md text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          aria-label="View all packages"
+        >
+          {t.recommendedPackages}
+        </Link>
       </div>
 
       <div className="relative">
         {showLeftArrow && (
           <button
+            type="button"
             onClick={() => scroll('left')}
-            className="absolute left-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-r from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-all"
+            className="focus-ring absolute left-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-r from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-colors"
             aria-label="Previous"
           >
             <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,6 +107,8 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
+          role="list"
+          aria-label="Package cards"
           className="flex gap-6 overflow-x-auto overflow-y-hidden px-6 scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
@@ -76,11 +120,12 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
             <Link
               key={pkg._id.$oid}
               href={`/package/${pkg._id.$oid}`}
-              className="flex-shrink-0 w-[360px] group cursor-pointer no-underline"
+              role="listitem"
+              className="focus-ring flex-shrink-0 w-[360px] group cursor-pointer no-underline rounded-xl"
             >
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200 h-full">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-[border-color,box-shadow] duration-200 h-full">
                 {/* Image */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-64 overflow-hidden">
                   <Image
                     src={pkg.imageUrl}
                     alt={pkg.name}
@@ -88,14 +133,13 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                     sizes="360px"
                     className="object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                   <div className="absolute top-4 left-4 right-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-semibold rounded-full">
-                        {pkg.duration} days
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-semibold rounded-full shadow-md">
+                        {pkg.duration} {t.days}
                       </span>
-                      <span className="px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">
-                        {pkg.cities.join(', ')}
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-medium rounded-full shadow-md">
+                        {getPackageCities(pkg, language).join(', ')}
                       </span>
                     </div>
                   </div>
@@ -107,15 +151,15 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                     {pkg.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                    {pkg.concept}
+                    {getPackageConcept(pkg, language)}
                   </p>
                   
                   {/* Highlights */}
-                  {pkg.highlights && pkg.highlights.length > 0 && (
+                  {getPackageHighlights(pkg, language).length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {pkg.highlights.slice(0, 4).map((highlight, idx) => (
+                      {getPackageHighlights(pkg, language).slice(0, 4).map((highlight, idx) => (
                         <span
-                          key={idx}
+                          key={`${highlight}-${idx}`}
                           className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-300 text-xs"
                         >
                           {highlight}
@@ -126,9 +170,9 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
                   {/* Category */}
                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
-                    <span>{pkg.cities.length} cities</span>
+                    <span>{getPackageCities(pkg, language).length} {t.cities}</span>
                     <span>·</span>
-                    <span>{pkg.itinerary.length} day itinerary</span>
+                    <span>{pkg.itinerary.length} {t.dayItinerary}</span>
                   </div>
                 </div>
               </div>
@@ -138,8 +182,9 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
         {showRightArrow && (
           <button
+            type="button"
             onClick={() => scroll('right')}
-            className="absolute right-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-l from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-all"
+            className="focus-ring absolute right-0 top-0 bottom-0 z-10 w-14 flex items-center justify-center bg-gradient-to-l from-gray-50/90 dark:from-gray-900/90 to-transparent hover:from-gray-50 dark:hover:from-gray-900 transition-colors"
             aria-label="Next"
           >
             <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

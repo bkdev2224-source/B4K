@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -13,7 +13,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('system')
+  // Default to light unless user explicitly chooses otherwise.
+  const [theme, setTheme] = useState<Theme>('light')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
 
   // Initialize theme from localStorage
@@ -42,10 +43,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeEventListener('change', updateResolvedTheme)
   }, [theme])
 
-  // Apply theme to document
+  // Apply theme to document (skip first run — inline script in head already set it)
+  const isFirstApply = useRef(true)
   useEffect(() => {
+    if (isFirstApply.current) {
+      isFirstApply.current = false
+      return
+    }
     const root = document.documentElement
-    
     if (resolvedTheme === 'dark') {
       root.classList.add('dark')
     } else {
@@ -54,13 +59,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [resolvedTheme])
 
   // Save theme preference
-  const handleSetTheme = (newTheme: Theme) => {
+  const handleSetTheme = useCallback((newTheme: Theme) => {
     setTheme(newTheme)
     localStorage.setItem('theme', newTheme)
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({ theme, setTheme: handleSetTheme, resolvedTheme }),
+    [theme, handleSetTheme, resolvedTheme]
+  )
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: handleSetTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )

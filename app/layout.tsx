@@ -1,22 +1,50 @@
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
+import { Inter } from 'next/font/google'
+import { getSiteUrl } from '@/lib/config/env'
 import './globals.css'
 import SessionProvider from '@/components/providers/SessionProvider'
 import { SidebarProvider } from '@/components/providers/SidebarContext'
 import { RouteProvider } from '@/components/providers/RouteContext'
 import { SearchProvider } from '@/components/providers/SearchContext'
 import { CartProvider } from '@/components/providers/CartContext'
-import { AnalyticsTracker } from '@/lib/hooks'
+import { AnalyticsTracker } from '@/lib/hooks/useAnalytics'
 import { ThemeProvider } from '@/components/ThemeContext'
-import { getNaverMapClientId } from '@/lib/config/env'
+import { LanguageProvider } from '@/components/providers/LanguageContext'
+import AnalyticsGate from '@/components/analytics/AnalyticsGate'
 
-// Analytics IDs from environment variables
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
+
+const SITE_NAME = 'B4K'
+const DEFAULT_DESCRIPTION =
+  'Explore Korea with B4K — discover K-Pop spots, K-Beauty, K-Food, festivals, and K-Drama locations. Plan your trip with curated travel packages and maps.'
 
 export const metadata: Metadata = {
-  title: 'B4K',
-  description: 'B4K Project',
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${SITE_NAME} | Korea Travel & Culture`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | Korea Travel & Culture`,
+    description: DEFAULT_DESCRIPTION,
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} | Korea Travel & Culture`,
+    description: DEFAULT_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export const viewport: Viewport = {
@@ -29,88 +57,46 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const naverMapClientId = getNaverMapClientId()
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Naver Maps API - 공식 문서 예제에 따라 ncpKeyId와 language=en 사용 */}
-        {naverMapClientId && (
-          <>
-            <Script
-              src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverMapClientId}&language=en&submodules=geocoder`}
-              strategy="beforeInteractive"
-            />
-            {/* 인증 실패 시 처리 */}
-            <Script
-              id="naver-map-auth-failure"
-              strategy="beforeInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.navermap_authFailure = function() {
-                    console.error('Naver Maps API 인증 실패: 클라이언트 ID를 확인하세요.');
-                  };
-                `,
-              }}
-            />
-          </>
-        )}
-        
-        {/* Microsoft Clarity Analytics */}
-        {CLARITY_ID && (
-          <Script
-            id="clarity-script"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function(c,l,a,r,i,t,y){
-                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", "${CLARITY_ID}");
-              `,
-            }}
-          />
-        )}
-
-        {/* Google Analytics 4 */}
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script
-              id="gtag-init"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${GA_ID}', {
-                    send_page_view: false
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
+        {/* Prevent theme flash: set dark class before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            // Default is light. Only go dark if explicitly selected or if set to "system" + device prefers dark.
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var dark=t==='dark'||(t==='system'&&d);document.documentElement.classList.toggle('dark',!!dark);}catch(e){}})();`,
+          }}
+        />
+        {/* Fonts: Pretendard (Korean) + Inter (Latin via next/font) */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+        />
       </head>
-      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors">
+      <body className={`${inter.variable} font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-gray-900 focus:shadow-lg dark:focus:bg-gray-900 dark:focus:text-gray-100 focus-ring"
+        >
+          Skip to content
+        </a>
         <ThemeProvider>
-          <SessionProvider>
-            <SidebarProvider>
-              <RouteProvider>
-                <SearchProvider>
-                  <CartProvider>
-                    <AnalyticsTracker />
-                    {children}
-                  </CartProvider>
-                </SearchProvider>
-              </RouteProvider>
-            </SidebarProvider>
-          </SessionProvider>
+          <LanguageProvider>
+            <SessionProvider>
+              <SidebarProvider>
+                <RouteProvider>
+                  <SearchProvider>
+                    <CartProvider>
+                      <AnalyticsGate />
+                      <AnalyticsTracker />
+                      {children}
+                    </CartProvider>
+                  </SearchProvider>
+                </RouteProvider>
+              </SidebarProvider>
+            </SessionProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

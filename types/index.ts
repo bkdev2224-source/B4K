@@ -2,7 +2,7 @@
  * Shared TypeScript types and interfaces for the B4K application
  */
 
-import { ObjectId } from 'mongodb'
+import type { ObjectId } from 'mongodb'
 
 // ============================================================================
 // Common Types
@@ -18,7 +18,7 @@ export interface OidWrapper {
 /**
  * K-Content categories
  */
-export type KContentCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+export type KContentCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 
 /**
  * Package categories
@@ -42,9 +42,14 @@ export interface GeoLocation {
  */
 export interface POIJson {
   _id: OidWrapper
-  name: string
-  address: string // English address for UI display
-  address_ko?: string // Korean address for Geocoding
+  name: {
+    name_en: string
+    name_ko: string
+  }
+  address: {
+    address_en: string
+    address_ko: string
+  }
   location: GeoLocation
   categoryTags: string[]
   openingHours: string
@@ -57,9 +62,14 @@ export interface POIJson {
  */
 export interface POI {
   _id: ObjectId | string
-  name: string
-  address: string // English address for UI display
-  address_ko?: string // Korean address for Geocoding
+  name: {
+    name_en: string
+    name_ko: string
+  }
+  address: {
+    address_en: string
+    address_ko: string
+  }
   location: GeoLocation
   categoryTags: string[]
   openingHours: string
@@ -77,10 +87,19 @@ export interface POI {
  * KContent - JSON format (from mockupdata)
  */
 export interface KContentJson {
-  subName: string
+  subName: {
+    subName_en: string
+    subName_ko: string
+  }
   poiId: OidWrapper
-  spotName: string
-  description: string
+  spotName: {
+    spotName_en: string
+    spotName_ko: string
+  }
+  description: {
+    description_en: string
+    description_ko: string
+  }
   tags: string[]
   popularity?: number
   [key: string]: unknown
@@ -91,10 +110,19 @@ export interface KContentJson {
  */
 export interface KContent {
   _id: ObjectId | string
-  subName: string
+  subName: {
+    subName_en: string
+    subName_ko: string
+  }
   poiId: ObjectId | string
-  spotName: string
-  description: string
+  spotName: {
+    spotName_en: string
+    spotName_ko: string
+  }
+  description: {
+    description_en: string
+    description_ko: string
+  }
   tags: string[]
   popularity?: number
   category: KContentCategory
@@ -123,10 +151,22 @@ export interface TravelPackageJson {
   _id: OidWrapper
   name: string
   duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
+  concept: {
+    concept_en: string
+    concept_ko: string
+  }
+  cities: {
+    cities_en: string[]
+    cities_ko: string[]
+  }
+  highlights: {
+    highlights_en: string[]
+    highlights_ko: string[]
+  }
+  includedServices: {
+    includedServices_en: string[]
+    includedServices_ko: string[]
+  }
   itinerary: ItineraryDay[]
   category: PackageCategory
   imageUrl: string
@@ -139,10 +179,22 @@ export interface TravelPackage {
   _id: ObjectId | string
   name: string
   duration: number
-  concept: string
-  cities: string[]
-  highlights: string[]
-  includedServices: string[]
+  concept: {
+    concept_en: string
+    concept_ko: string
+  }
+  cities: {
+    cities_en: string[]
+    cities_ko: string[]
+  }
+  highlights: {
+    highlights_en: string[]
+    highlights_ko: string[]
+  }
+  includedServices: {
+    includedServices_en: string[]
+    includedServices_ko: string[]
+  }
   itinerary: ItineraryDay[]
   category: PackageCategory
   imageUrl: string

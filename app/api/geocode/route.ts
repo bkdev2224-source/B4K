@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getNaverMapClientId } from '@/lib/config/env'
+import { checkGeocodeLimit } from '@/lib/ratelimit'
 
 export async function GET(request: NextRequest) {
+  const limitRes = await checkGeocodeLimit(request)
+  if (limitRes) return limitRes
+
   const searchParams = request.nextUrl.searchParams
   const address = searchParams.get('address')
 
@@ -35,8 +39,12 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Naver Geocoding API error:', response.status, errorText)
+      const isProd = process.env.NODE_ENV === 'production'
       return NextResponse.json(
-        { error: 'Geocoding API request failed', details: errorText },
+        {
+          error: 'Geocoding API request failed',
+          ...(isProd ? {} : { details: errorText }),
+        },
         { status: response.status }
       )
     }
@@ -65,8 +73,12 @@ export async function GET(request: NextRequest) {
     )
   } catch (error) {
     console.error('Geocoding error:', error)
+    const isProd = process.env.NODE_ENV === 'production'
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      {
+        error: 'Internal server error',
+        ...(isProd ? {} : { details: error instanceof Error ? error.message : String(error) }),
+      },
       { status: 500 }
     )
   }

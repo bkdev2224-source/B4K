@@ -92,7 +92,7 @@ export async function getKContentsByCategory(
 }
 
 /**
- * Get KContents by subName
+ * Get KContents by subName (searches both subName_en and subName_ko)
  */
 export async function getKContentsBySubName(
   subName: string
@@ -100,8 +100,14 @@ export async function getKContentsBySubName(
   try {
     const client = await clientPromise
     const db = client.db(getMongoDbName())
+    
+    // Support both old string format and new nested format
+    const regex = new RegExp(subName, 'i')
     const contents = await db.collection<KContent>(COLLECTION_NAME).find({
-      subName,
+      $or: [
+        { 'subName.subName_en': { $regex: regex } },
+        { 'subName.subName_ko': { $regex: regex } },
+      ],
     }).toArray()
     
     return convertKContents(contents)

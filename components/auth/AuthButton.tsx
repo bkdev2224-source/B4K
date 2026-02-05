@@ -8,6 +8,7 @@ export default function AuthButton() {
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const menuId = "auth-menu"
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -29,7 +30,7 @@ export default function AuthButton() {
     return (
       <Link
         href="/auth/signin"
-        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-[transform,background-color] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
         aria-label="Account"
         title="Account"
       >
@@ -47,10 +48,21 @@ export default function AuthButton() {
 
   if (session) {
     return (
-      <div className="relative" ref={dropdownRef}>
+      <div
+        className="relative"
+        ref={dropdownRef}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setIsDropdownOpen(false)
+        }}
+      >
         <button
+          type="button"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="relative flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 transition-all hover:scale-105 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+          className="focus-ring relative flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 transition-[transform,background-color] hover:scale-105 hover:bg-gray-200 dark:hover:bg-gray-700"
+          aria-label="Account menu"
+          aria-haspopup="menu"
+          aria-expanded={isDropdownOpen}
+          aria-controls={menuId}
         >
           {session.user?.image ? (
             // Use a plain <img> so this does NOT go through Next.js Image Optimizer.
@@ -72,7 +84,12 @@ export default function AuthButton() {
         </button>
 
         {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+          <div
+            id={menuId}
+            role="menu"
+            aria-label="Account options"
+            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 backdrop-blur-md rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+          >
             <div className="py-2">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -86,17 +103,20 @@ export default function AuthButton() {
               <Link
                 href="/mypage"
                 onClick={() => setIsDropdownOpen(false)}
-                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="focus-ring block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                role="menuitem"
               >
-                MyPage
+                Profile
               </Link>
               
               <button
+                type="button"
                 onClick={() => {
                   setIsDropdownOpen(false)
                   signOut({ callbackUrl: "/" })
                 }}
-                className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="focus-ring w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                role="menuitem"
               >
                 Sign Out
               </button>
@@ -110,7 +130,7 @@ export default function AuthButton() {
   return (
     <Link
       href="/auth/signin"
-      className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+      className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-[transform,background-color] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
       aria-label="Sign in"
       title="Sign in"
     >

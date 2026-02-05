@@ -149,7 +149,8 @@ export const spacing = {
 
 export const typography = {
   fontFamily: {
-    sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+    // Inter handles Latin; Pretendard handles Korean glyphs via font fallback.
+    sans: ['var(--font-inter)', 'Pretendard', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   

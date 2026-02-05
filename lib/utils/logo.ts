@@ -1,4 +1,4 @@
-export type LogoCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival'
+export type LogoCategory = 'kpop' | 'kbeauty' | 'kfood' | 'kfestival' | 'kdrama'
 
 function normalizeKey(input: string) {
   return input
@@ -45,6 +45,15 @@ export function getLogoSrcBySubName(subName: string) {
   return filename ? `/api/logo/${encodeURIComponent(filename)}` : null
 }
 
+/** 아티스트/브랜드 이름에서 로고 플레이스홀더용 이니셜 추출 (최대 2글자) */
+export function getInitials(subName: string) {
+  const s = subName.trim()
+  if (!s) return '?'
+  const words = s.split(/\s+/).slice(0, 2)
+  const letters = words.map((w) => w[0]).join('')
+  return (letters || s[0]).toUpperCase()
+}
+
 export function getContentTypeLabel(category: LogoCategory) {
   switch (category) {
     case 'kpop':
@@ -55,6 +64,8 @@ export function getContentTypeLabel(category: LogoCategory) {
       return 'food'
     case 'kfestival':
       return 'festival'
+    case 'kdrama':
+      return 'drama'
   }
 }
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import { useSidebar } from '@/components/providers/SidebarContext'
 import { useCart } from '@/components/providers/CartContext'
 
@@ -12,13 +13,23 @@ export default function Sidebar() {
   
   // POI 타입만 필터링하여 개수 계산
   const poiCartCount = cartItems.filter(item => item.type === 'poi').length
+
+  // Allow closing the sidebar with Escape (helps keyboard users, especially on mobile).
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') toggleSidebar()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [sidebarOpen, toggleSidebar])
   
   const navItems = [
     {
       name: 'Home',
       href: '/',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -32,7 +43,7 @@ export default function Sidebar() {
       name: 'Map',
       href: '/maps',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -47,7 +58,7 @@ export default function Sidebar() {
       name: 'Contents',
       href: '/contents',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -61,7 +72,7 @@ export default function Sidebar() {
       name: 'Info',
       href: '/info',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -71,16 +82,37 @@ export default function Sidebar() {
         </svg>
       ),
     },
+    {
+      name: 'Settings',
+      href: '/mypage/settings',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c.94-1.543-.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+      ),
+    },
   ]
 
   return (
     <>
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile - use button for keyboard accessibility */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+        <button
+          type="button"
           onClick={toggleSidebar}
-          aria-hidden="true"
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden border-0 p-0 cursor-pointer"
+          aria-label="Close sidebar overlay"
         />
       )}
       
@@ -118,27 +150,23 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`group relative flex items-center gap-3 px-5 py-1.5 rounded-full transition-colors ${
+                className={`focus-ring group relative flex items-center gap-3 px-5 py-1.5 rounded-full transition-colors ${
                   isActive
                     ? 'text-gray-900 dark:text-gray-100'
-                    : 'text-gray-700 dark:text-gray-300'
-                } ${sidebarOpen && !isActive ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
+                    : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
                 title={!sidebarOpen ? item.name : undefined}
               >
-                {/* Active highlight: circle (collapsed) -> pill (expanded) */}
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className={`absolute left-5 top-1/2 -translate-y-1/2 h-11 rounded-full bg-gray-100 dark:bg-gray-800 transition-[width] duration-300 ease-out ${
-                      sidebarOpen ? 'w-[calc(100%-2.5rem)]' : 'w-11'
-                    }`}
-                  />
-                )}
+                {/* Highlight: active + hover share the same style (circle -> pill). */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-5 top-1/2 -translate-y-1/2 h-11 rounded-full bg-gray-100 dark:bg-gray-800 transition-[width,opacity] duration-300 ease-out ${
+                    sidebarOpen ? 'w-[calc(100%-2.5rem)]' : 'w-11'
+                  } ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                />
 
                 <span
-                  className={`relative z-10 w-11 h-11 flex items-center justify-center rounded-full flex-shrink-0 transition-colors ${
-                    !sidebarOpen && !isActive ? 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800' : ''
-                  }`}
+                  className="relative z-10 w-11 h-11 flex items-center justify-center rounded-full flex-shrink-0"
                 >
                   <span className={`${isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'} [&>svg]:stroke-current`}>
                     {item.icon}
@@ -164,21 +192,22 @@ export default function Sidebar() {
         {/* Bottom button - always visible */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2 relative">
           <button
+            type="button"
             onClick={toggleSidebar}
-            className="w-full py-3 rounded-lg flex items-center justify-center transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 relative"
+            className="focus-ring w-full py-3 rounded-lg flex items-center justify-center transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 relative"
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             {/* Expand icon - always centered */}
             <span className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
               sidebarOpen ? 'opacity-0' : 'opacity-100'
             }`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
-              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
-              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </span>
@@ -186,13 +215,13 @@ export default function Sidebar() {
             <span className={`absolute inset-0 flex items-center transition-[opacity,transform] duration-300 ${
               sidebarOpen ? 'opacity-100 justify-end pr-4' : 'opacity-0 justify-center'
             }`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
-              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
-              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 -ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
             </span>

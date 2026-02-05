@@ -60,8 +60,8 @@ export default function MobileBottomNav() {
       isActive: (p) => p === "/contents" || p.startsWith("/contents"),
     },
     {
-      href: "/mypage",
-      label: "My",
+      href: "/mypage/settings",
+      label: "Settings",
       icon: (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -72,7 +72,7 @@ export default function MobileBottomNav() {
           />
         </svg>
       ),
-      isActive: (p) => p === "/mypage" || p.startsWith("/mypage"),
+      isActive: (p) => p === "/mypage/settings" || p.startsWith("/mypage/settings"),
     },
   ]
 
@@ -89,10 +89,10 @@ export default function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={[
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-0",
+                "focus-ring flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-0",
                 active
                   ? "text-gray-900 dark:text-gray-100"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100",
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100",
               ].join(" ")}
               aria-current={active ? "page" : undefined}
             >

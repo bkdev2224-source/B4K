@@ -8,6 +8,8 @@ import { useRoute } from '@/components/providers/RouteContext'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
 import { useSidebar } from '@/components/providers/SidebarContext'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { getPOIName, getPOIAddress } from '@/lib/utils/locale'
 import { useLayout } from '@/lib/hooks/useLayout'
 import { LAYOUT_CONSTANTS } from '@/lib/utils/layout'
 import { useKContentsBySubName } from '@/lib/hooks/useKContents'
@@ -30,6 +32,7 @@ export default function MapsPage() {
   const allRoutes = getAllRoutes()
   const { selectedRoute, setSelectedRoute } = useRoute()
   const { searchResult } = useSearchResult()
+  const { language } = useLanguage()
   const { cartItems, removeFromCart } = useCart()
   const { sidebarOpen } = useSidebar()
   const layout = useLayout({ showSidePanel: true, sidePanelWidth: 'routes' })
@@ -327,7 +330,7 @@ export default function MapsPage() {
                         <div className="min-w-0 flex-1 flex flex-col justify-between h-full">
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-snug truncate">
-                              {poi.name}
+                              {getPOIName(poi, language)}
                             </h3>
                             <button
                               type="button"
@@ -343,7 +346,7 @@ export default function MapsPage() {
                           </div>
 
                           <p className="text-gray-600 dark:text-gray-400 text-xs leading-snug line-clamp-2">
-                            {poi.address}
+                            {getPOIAddress(poi, language)}
                           </p>
                         </div>
                       </div>

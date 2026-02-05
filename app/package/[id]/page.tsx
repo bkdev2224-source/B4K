@@ -5,6 +5,8 @@ import PackageCartButton from './PackageCartButton'
 import { getPackageById } from '@/lib/db/packages'
 import type { TravelPackageJson } from '@/types'
 import { getSiteUrl } from '@/lib/config/env'
+import { getPackageConcept, getPackageCities, getPackageHighlights, getPackageIncludedServices } from '@/lib/utils/locale'
+import { cookies } from 'next/headers'
 
 export const revalidate = 60
 
@@ -22,7 +24,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     if (!dbPkg) return { title: 'Package Not Found' }
     const pkg = toPackageJson(dbPkg as any)
     const title = pkg.name
-    const description = `${pkg.name} — ${pkg.duration} days, ${pkg.cities.join(' → ')}. ${pkg.concept?.slice(0, 120)}...`
+    // 기본값으로 영어 사용 (metadata는 언어에 따라 다를 수 없으므로)
+    const cities = Array.isArray(pkg.cities) ? pkg.cities : (pkg.cities?.cities_en || [])
+    const concept = typeof pkg.concept === 'string' ? pkg.concept : (pkg.concept?.concept_en || '')
+    const description = `${pkg.name} — ${pkg.duration} days, ${cities.join(' → ')}. ${concept.slice(0, 120)}...`
     const imageUrl = pkg.imageUrl || `https://picsum.photos/seed/${id}/1200/630`
     const baseUrl = getSiteUrl()
     return {
@@ -47,6 +52,10 @@ export default async function PackageDetailPage({
   params: { id: string }
 }) {
   const id = params?.id || ''
+
+  // 서버에서 언어 가져오기
+  const cookieStore = await cookies()
+  const language = (cookieStore.get('language')?.value || 'en') as 'ko' | 'en'
 
   try {
     const dbPkg = await getPackageById(id)
@@ -97,11 +106,11 @@ export default async function PackageDetailPage({
                     <span className="text-white/70">·</span>
                     <span>{pkg.duration} Days</span>
                     <span className="text-white/70">·</span>
-                    <span>{pkg.cities.join(' → ')}</span>
+                    <span>{getPackageCities(pkg, language).join(' → ')}</span>
                   </div>
 
                   {/* Concept */}
-                  <p className="text-white/90 text-lg max-w-3xl leading-relaxed">{pkg.concept}</p>
+                  <p className="text-white/90 text-lg max-w-3xl leading-relaxed">{getPackageConcept(pkg, language)}</p>
                 </div>
                 {/* Action buttons */}
                 <div className="ml-4 flex gap-3">
@@ -130,7 +139,7 @@ export default async function PackageDetailPage({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pkg.highlights.map((highlight, index) => (
+              {getPackageHighlights(pkg, language).map((highlight, index) => (
                 <div
                   key={`${highlight}-${index}`}
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg flex items-center gap-3"
@@ -161,7 +170,7 @@ export default async function PackageDetailPage({
 
           <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {pkg.includedServices.map((service, index) => (
+              {getPackageIncludedServices(pkg, language).map((service, index) => (
                 <div key={`${service}-${index}`} className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

@@ -2,9 +2,12 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { CalendarPlus } from 'lucide-react'
 import { Route } from '@/lib/services/routes'
 import { useSearchResult } from '@/components/providers/SearchContext'
 import { useCart } from '@/components/providers/CartContext'
+import { useLanguage } from '@/components/providers/LanguageContext'
+import { getPOIName, getPOIAddress, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
 import { useKContentsBySubName, useKContentsByPOIId } from '@/lib/hooks/useKContents'
 import { usePOIs } from '@/lib/hooks/usePOIs'
 import type { POIJson } from '@/types'
@@ -26,6 +29,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const [activeTab, setActiveTab] = useState<'home' | 'reviews' | 'photos' | 'info'>('home')
   const { searchResult, setSearchResult } = useSearchResult()
   const { cartItems, addToCart, removeFromCart, isInCart } = useCart()
+  const { language } = useLanguage()
   const { pois, loading: poisLoading, error: poisError } = usePOIs({ enabled: type === 'maps' || type === 'search' })
   const poiById = useMemo(() => new Map(pois.map((p) => [p._id.$oid, p])), [pois])
 
@@ -38,12 +42,30 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const { contents: contentsBySubName } = useKContentsBySubName(searchSubName)
   const { contents: contentsByPOIId } = useKContentsByPOIId(searchPoiId)
 
+  // Home page section list translations
+  const homeSectionsTranslations = {
+    en: {
+      bestPackages: 'B4K Best Packages',
+      editorRecommendations: 'Editor Recommendations',
+      exploreSeoul: 'Explore Seoul',
+      seasonalTravel: 'Seasonal Travel',
+    },
+    ko: {
+      bestPackages: 'B4K 베스트 패키지',
+      editorRecommendations: '에디터 추천',
+      exploreSeoul: '서울 탐험',
+      seasonalTravel: '계절별 여행',
+    },
+  }
+
+  const t = homeSectionsTranslations[language]
+
   // Home page section list
   const homeSections: SidePanelItem[] = [
-    { id: 'best-packages', name: 'B4K Best Packages', href: '#best-packages' },
-    { id: 'editor-recommendations', name: 'Editor Recommendations', href: '#editor-recommendations' },
-    { id: 'seoul-exploration', name: 'Explore Seoul', href: '#seoul-exploration' },
-    { id: 'seasonal-recommendations', name: 'Seasonal Travel', href: '#seasonal-recommendations' },
+    { id: 'best-packages', name: t.bestPackages, href: '#best-packages' },
+    { id: 'editor-recommendations', name: t.editorRecommendations, href: '#editor-recommendations' },
+    { id: 'seoul-exploration', name: t.exploreSeoul, href: '#seoul-exploration' },
+    { id: 'seasonal-recommendations', name: t.seasonalTravel, href: '#seasonal-recommendations' },
   ]
 
   // Contents categories
@@ -81,15 +103,33 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
 
   const togglePoiCart = (poi: POIJson) => {
     const cartItemId = `poi-${poi._id.$oid}`
+    const poiName = getPOIName(poi, language)
+    
+    console.log('🔘 [SidePanelContent] togglePoiCart 호출:', {
+      poiId: poi._id.$oid,
+      poiName,
+      cartItemId,
+      inCart: isInCart(cartItemId),
+      poiData: {
+        _id: poi._id,
+        name: poi.name,
+        address: poi.address,
+      },
+      timestamp: new Date().toISOString(),
+    })
+    
     if (isInCart(cartItemId)) {
+      console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
       removeFromCart(cartItemId)
     } else {
-      addToCart({
+      const cartItem = {
         id: cartItemId,
-        name: poi.name,
-        type: 'poi',
+        name: poiName,
+        type: 'poi' as const,
         poiId: poi._id.$oid,
-      })
+      }
+      console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+      addToCart(cartItem)
     }
   }
 
@@ -539,20 +579,37 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
               <div className="space-y-4">
                 <div>
                   <div className="flex items-start justify-between mb-2">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1">{poi.name}</h2>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1">{getPOIName(poi, language)}</h2>
                     {/* 장바구니 버튼 */}
                     <button
                       type="button"
                       onClick={() => {
+                        const poiName = getPOIName(poi, language)
+                        console.log('🔘 [SidePanelContent] POI 상세 페이지 Cart 버튼 클릭:', {
+                          poiId: poi._id.$oid,
+                          poiName,
+                          cartItemId,
+                          inCart,
+                          poiData: {
+                            _id: poi._id,
+                            name: poi.name,
+                            address: poi.address,
+                          },
+                          timestamp: new Date().toISOString(),
+                        })
+                        
                         if (inCart) {
+                          console.log('➖ [SidePanelContent] 장바구니에서 제거:', cartItemId)
                           removeFromCart(cartItemId)
                         } else {
-                          addToCart({
+                          const cartItem = {
                             id: cartItemId,
-                            name: poi.name,
-                            type: 'poi',
+                            name: poiName,
+                            type: 'poi' as const,
                             poiId: poi._id.$oid
-                          })
+                          }
+                          console.log('➕ [SidePanelContent] 장바구니에 추가 시도:', cartItem)
+                          addToCart(cartItem)
                         }
                       }}
                       className={`focus-ring p-2 rounded-full transition-colors ${
@@ -563,16 +620,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                       aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
                       title={inCart ? "Remove from Cart" : "Add to Cart"}
                     >
-                      <svg className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`} fill={inCart ? "currentColor" : "none"} stroke={inCart ? "none" : "currentColor"} viewBox="0 0 24 24">
-                        {inCart ? (
-                          <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        )}
-                      </svg>
+                      <CalendarPlus
+                        className={`w-5 h-5 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                      />
                     </button>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{poi.address}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{getPOIAddress(poi, language)}</p>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {poi.categoryTags.map((tag, idx) => (
                       <span key={`${tag}-${idx}`} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs">
@@ -592,9 +645,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Related Spots ({contents.length})</h3>
                     <div className="space-y-2">
                       {contents.slice(0, 5).map((content, idx) => (
-                        <div key={`${content.poiId.$oid}-${content.spotName}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{content.description}</p>
+                        <div key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{getKContentDescription(content, language)}</p>
                           {content.tags && content.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {content.tags.slice(0, 3).map((tag, tagIdx) => (
@@ -633,12 +686,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   return (
                     <button
                       type="button"
-                      key={`${content.poiId.$oid}-${content.spotName}-${idx}`}
+                      key={`${content.poiId.$oid}-${getKContentSpotName(content, language)}-${idx}`}
                       onClick={() => {
                         if (contentPoi) {
                           // POI 검색 결과로 변경하여 상세 정보 표시
                           setSearchResult({
-                            name: contentPoi.name,
+                            name: getPOIName(contentPoi, language),
                             type: 'poi',
                             poiId: contentPoi._id.$oid
                           })
@@ -646,10 +699,10 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                       }}
                       className="focus-ring w-full text-left p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{content.spotName}</h4>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{content.description}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1">{getKContentSpotName(content, language)}</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{getKContentDescription(content, language)}</p>
                       {contentPoi && (
-                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {contentPoi.name}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">📍 {getPOIName(contentPoi, language)}</p>
                       )}
                       {content.tags && content.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
@@ -733,12 +786,12 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    setSearchResult({ name: poi.name, type: 'poi', poiId: poi._id.$oid })
+                    setSearchResult({ name: getPOIName(poi, language), type: 'poi', poiId: poi._id.$oid })
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      setSearchResult({ name: poi.name, type: 'poi', poiId: poi._id.$oid })
+                      setSearchResult({ name: getPOIName(poi, language), type: 'poi', poiId: poi._id.$oid })
                     }
                   }}
                   className="focus-ring w-full text-left px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
@@ -763,7 +816,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                         <div className="min-w-0">
                           <div className="flex items-baseline gap-2">
                             <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                              {poi.name}
+                              {getPOIName(poi, language)}
                             </p>
                             {poi.categoryTags?.[0] && (
                               <span className="text-[11px] text-gray-500 dark:text-gray-400 flex-shrink-0">
@@ -772,7 +825,7 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                             )}
                           </div>
                           <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {poi.address}
+                            {getPOIAddress(poi, language)}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-gray-400">
                             <span>Fee: {formatEntryFee(poi.entryFee)}</span>
@@ -794,23 +847,9 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
                           aria-label={inCart ? 'Remove from cart' : 'Add to cart'}
                           title={inCart ? 'Remove from cart' : 'Add to cart'}
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill={inCart ? 'currentColor' : 'none'}
-                            stroke={inCart ? 'none' : 'currentColor'}
-                            viewBox="0 0 24 24"
-                          >
-                            {inCart ? (
-                              <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                            ) : (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                              />
-                            )}
-                          </svg>
+                          <CalendarPlus
+                            className={`w-4 h-4 transition-colors ${inCart ? 'text-white dark:text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                          />
                         </button>
                       </div>
                     </div>

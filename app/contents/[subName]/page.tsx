@@ -13,6 +13,8 @@ import { getKBeautyPlaceByName } from '@/lib/db/kbeauty-places'
 import { getKFoodBrandByName } from '@/lib/db/kfood-brands'
 import { getKFestivalPlaceByName } from '@/lib/db/kfestival-places'
 import { getSiteUrl } from '@/lib/config/env'
+import { getKFestivalPlaceName, getKFoodBrandName, getPOIName, getKContentSubName, getKContentSpotName, getKContentDescription, getKpopArtistName } from '@/lib/utils/locale'
+import { cookies } from 'next/headers'
 
 export const revalidate = 60
 
@@ -40,8 +42,10 @@ export async function generateMetadata({
     const first = contents[0]
     const category = first.category as string | undefined
     const label = category && categoryLabels[category] ? categoryLabels[category] : subName
-    const title = category === 'kpop' ? (await getKpopArtistByName(subName))?.name ?? subName : subName
-    const description = `${label} — ${first.spotName} and related spots in Korea. Explore on B4K.`
+    const artist = category === 'kpop' ? await getKpopArtistByName(subName) : null
+    const title = artist ? (typeof artist.name === 'string' ? artist.name : artist.name.name_en) : subName
+    const spotName = typeof first.spotName === 'string' ? first.spotName : first.spotName.spotName_en
+    const description = `${label} — ${spotName} and related spots in Korea. Explore on B4K.`
     const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(subName)}/1200/630`
     const baseUrl = getSiteUrl()
     return {
@@ -67,6 +71,10 @@ export default async function ContentDetailPage({
 }) {
   const rawSubName = params?.subName || ''
   const subName = decodeURIComponent(rawSubName)
+
+  // 서버에서 언어 가져오기 (쿠키에서)
+  const cookieStore = await cookies()
+  const language = (cookieStore.get('language')?.value || 'en') as 'ko' | 'en'
 
   try {
     const dbContents = await getKContentsBySubName(subName)
@@ -128,7 +136,7 @@ export default async function ContentDetailPage({
       if (artist) {
         logoUrl = artist.logoUrl ?? null
         backgroundUrl = artist.backgroundUrl && artist.backgroundUrl !== '' ? artist.backgroundUrl : null
-        displayName = artist.name ?? subName
+        displayName = getKpopArtistName(artist, language) ?? subName
         agency = artist.agency
         socialLinks = {
           instagram: artist.instagram,
@@ -155,14 +163,16 @@ export default async function ContentDetailPage({
       if (brand) {
         logoUrl = brand.logoUrl ?? null
         backgroundUrl = brand.backgroundUrl && brand.backgroundUrl !== '' ? brand.backgroundUrl : null
-        displayName = brand.name ?? subName
+        // 언어에 따라 적절한 이름 선택
+        displayName = getKFoodBrandName(brand, language) || subName
       }
     } else if (category === 'kfestival') {
       const place = await getKFestivalPlaceByName(subName)
       if (place) {
         logoUrl = place.logoUrl ?? null
         backgroundUrl = place.backgroundUrl && place.backgroundUrl !== '' ? place.backgroundUrl : null
-        displayName = place.name ?? subName
+        // 언어에 따라 적절한 이름 선택
+        displayName = getKFestivalPlaceName(place, language) || subName
       }
     }
 
@@ -298,7 +308,7 @@ export default async function ContentDetailPage({
                           href={`/poi/${poi._id.$oid}`}
                           className="hover:text-white underline transition-colors"
                         >
-                          {poi.name}
+                          {getPOIName(poi, language)}
                         </Link>
                       </>
                     )}
@@ -335,24 +345,24 @@ export default async function ContentDetailPage({
                   const contentPoi = poiById.get(content.poiId.$oid) ?? null
                   return (
                     <Link
-                      key={`${content.poiId?.$oid ?? 'no-poi'}-${content.spotName}-${index}`}
+                      key={`${content.poiId?.$oid ?? 'no-poi'}-${getKContentSpotName(content, language)}-${index}`}
                       href={`/poi/${content.poiId.$oid}`}
                       className="group"
                     >
                       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg h-full">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{content.spotName}</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">{getKContentSpotName(content, language)}</h3>
                             {content.subName && (
                               <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">
-                                #{content.subName}
+                                #{getKContentSubName(content, language)}
                               </span>
                             )}
                           </div>
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                             <Image
-                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${content.spotName}/100/100`}
-                              alt={content.spotName}
+                              src={`https://picsum.photos/seed/${content.poiId.$oid}-${getKContentSpotName(content, language)}/100/100`}
+                              alt={getKContentSpotName(content, language)}
                               fill
                               sizes="48px"
                               className="object-cover"
@@ -360,11 +370,11 @@ export default async function ContentDetailPage({
                           </div>
                         </div>
                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                          {content.description}
+                          {getKContentDescription(content, language)}
                         </p>
                         {contentPoi && (
                           <p className="text-gray-500 dark:text-gray-400 text-xs mb-2">
-                            📍 {contentPoi.name}
+                            📍 {getPOIName(contentPoi, language)}
                           </p>
                         )}
                         {content.tags && content.tags.length > 0 && (

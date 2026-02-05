@@ -6,6 +6,8 @@ import { getPOIById } from '@/lib/db/pois'
 import { getKContentsByPOIId } from '@/lib/db/kcontents'
 import type { KContentJson, POIJson } from '@/types'
 import { getSiteUrl } from '@/lib/config/env'
+import { getPOIName, getPOIAddress, getKContentSubName, getKContentSpotName, getKContentDescription } from '@/lib/utils/locale'
+import { cookies } from 'next/headers'
 
 export const revalidate = 60
 
@@ -19,8 +21,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     const dbPoi = await getPOIById(id)
     if (!dbPoi) return { title: 'Location Not Found' }
     const poi = toPOIJson(dbPoi as any)
-    const title = poi.name
-    const description = `${poi.name} — ${poi.address}. ${poi.categoryTags?.join(', ') || ''} spot in Korea. Explore on B4K.`
+    // 서버에서 언어 가져오기
+    const cookieStore = await cookies()
+    const language = (cookieStore.get('language')?.value || 'en') as 'ko' | 'en'
+    const title = getPOIName(poi, language)
+    const address = getPOIAddress(poi, language)
+    const description = `${title} — ${address}. ${poi.categoryTags?.join(', ') || ''} spot in Korea. Explore on B4K.`
     const imageUrl = `https://picsum.photos/seed/${id}/1200/630`
     const baseUrl = getSiteUrl()
     return {
@@ -45,6 +51,10 @@ export default async function POIDetailPage({
   params: { id: string }
 }) {
   const id = params?.id || ''
+
+  // 서버에서 언어 가져오기
+  const cookieStore = await cookies()
+  const language = (cookieStore.get('language')?.value || 'en') as 'ko' | 'en'
 
   try {
     const dbPoi = await getPOIById(id)
@@ -88,7 +98,7 @@ export default async function POIDetailPage({
         <div className="relative h-96">
           <Image
             src={`https://picsum.photos/seed/${poi._id.$oid}/1920/600`}
-            alt={poi.name}
+            alt={getPOIName(poi, language)}
             fill
             sizes="100vw"
             className="object-cover"
@@ -99,7 +109,7 @@ export default async function POIDetailPage({
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   {/* 1. 이름 */}
-                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-2xl">{poi.name}</h1>
+                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-2xl">{getPOIName(poi, language)}</h1>
                   
                   {/* 2. 카테고리, 장소 개수 */}
                   <div className="mb-4 flex flex-wrap items-center gap-3 text-white/90 text-sm md:text-base">
@@ -119,7 +129,7 @@ export default async function POIDetailPage({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white">
                       <div className="space-y-1">
                         <p className="text-white/80 text-xs font-medium mb-1">📍 Address</p>
-                        <p className="text-white text-sm">{poi.address}</p>
+                        <p className="text-white text-sm">{getPOIAddress(poi, language)}</p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-white/80 text-xs font-medium mb-1">💰 Entry Fee</p>
@@ -136,7 +146,7 @@ export default async function POIDetailPage({
                     </div>
                   </div>
                 </div>
-                <PoiActionButtons poiId={poi._id.$oid} poiName={poi.name} />
+                <PoiActionButtons poiId={poi._id.$oid} poiName={getPOIName(poi, language)} />
               </div>
             </div>
           </div>
@@ -164,24 +174,24 @@ export default async function POIDetailPage({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {kContents.map((content, index) => (
                   <div
-                    key={`${content.poiId?.$oid ?? poi._id.$oid}-${content.spotName}-${index}`}
+                    key={`${content.poiId?.$oid ?? poi._id.$oid}-${getKContentSpotName(content, language)}-${index}`}
                     className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-400 dark:hover:border-gray-600 transition-[border-color,box-shadow] duration-200 shadow-sm hover:shadow-lg"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         {/* Use spotName as title */}
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{content.spotName}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{getKContentSpotName(content, language)}</h3>
                         {/* Use subName as hashtag */}
                         {content.subName && (
                           <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm font-medium mb-3">
-                            #{content.subName}
+                            #{getKContentSubName(content, language)}
                           </span>
                         )}
                       </div>
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                         <Image
-                          src={`https://picsum.photos/seed/${poi._id.$oid}-${content.spotName}/100/100`}
-                          alt={content.spotName}
+                          src={`https://picsum.photos/seed/${poi._id.$oid}-${getKContentSpotName(content, language)}/100/100`}
+                          alt={getKContentSpotName(content, language)}
                           fill
                           sizes="48px"
                           className="object-cover"
@@ -189,7 +199,7 @@ export default async function POIDetailPage({
                       </div>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                      {content.description}
+                      {getKContentDescription(content, language)}
                     </p>
                     {content.tags && content.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">

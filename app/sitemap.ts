@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       Promise.resolve(getAllRoutes()),
     ])
 
-    const contentSubNames = [...new Set(contents.map((c) => c.subName))]
+    const contentSubNames = [...new Set(contents.map((c) => typeof c.subName === 'string' ? c.subName : c.subName.subName_en))]
 
     dynamicPages = [
       ...pois.map((p) => ({

@@ -9,6 +9,7 @@ import { SearchProvider } from '@/components/providers/SearchContext'
 import { CartProvider } from '@/components/providers/CartContext'
 import { AnalyticsTracker } from '@/lib/hooks/useAnalytics'
 import { ThemeProvider } from '@/components/ThemeContext'
+import { LanguageProvider } from '@/components/providers/LanguageContext'
 import AnalyticsGate from '@/components/analytics/AnalyticsGate'
 
 const inter = Inter({
@@ -80,19 +81,21 @@ export default function RootLayout({
           Skip to content
         </a>
         <ThemeProvider>
-          <SessionProvider>
-            <SidebarProvider>
-              <RouteProvider>
-                <SearchProvider>
-                  <CartProvider>
-                    <AnalyticsGate />
-                    <AnalyticsTracker />
-                    {children}
-                  </CartProvider>
-                </SearchProvider>
-              </RouteProvider>
-            </SidebarProvider>
-          </SessionProvider>
+          <LanguageProvider>
+            <SessionProvider>
+              <SidebarProvider>
+                <RouteProvider>
+                  <SearchProvider>
+                    <CartProvider>
+                      <AnalyticsGate />
+                      <AnalyticsTracker />
+                      {children}
+                    </CartProvider>
+                  </SearchProvider>
+                </RouteProvider>
+              </SidebarProvider>
+            </SessionProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -53,6 +53,8 @@ export default function TopNav({
   const { selectedRoute } = useRoute()
   const { setSearchResult } = useSearchResult()
   const { language, setLanguage } = useLanguage()
+  
+  const searchPlaceholder = language === 'ko' ? '당신의 한국을 찾아보세요…' : 'FIND YOUR KOREA…'
   const [isFocused, setIsFocused] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false)
@@ -275,7 +277,7 @@ export default function TopNav({
               id={searchInputId}
               ref={inputRef}
               type="text"
-              placeholder="FIND YOUR KOREA…"
+              placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => {
                 const newValue = e.target.value

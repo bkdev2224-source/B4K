@@ -112,12 +112,12 @@ const editorRecommendations: RecommendationItem[] = [
 
 const translations = {
   en: {
-    title: 'B4K Recommended Experiences',
+    title: 'Editor Recommendations',
     showAll: 'Show All',
     comingSoon: 'Coming Soon',
   },
   ko: {
-    title: 'B4K 추천 경험',
+    title: '에디터 추천',
     showAll: '전체 보기',
     comingSoon: '곧 출시',
   },

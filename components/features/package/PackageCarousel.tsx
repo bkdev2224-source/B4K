@@ -11,8 +11,26 @@ interface PackageCarouselProps {
   packages: TravelPackage[]
 }
 
+const translations = {
+  en: {
+    recommendedPackages: 'Recommended Packages',
+    noPackages: 'No packages to show yet.',
+    cities: 'cities',
+    dayItinerary: 'day itinerary',
+    days: 'days',
+  },
+  ko: {
+    recommendedPackages: '추천 패키지',
+    noPackages: '표시할 패키지가 없습니다.',
+    cities: '개 도시',
+    dayItinerary: '일 여행',
+    days: '일',
+  },
+}
+
 export default function PackageCarousel({ packages }: PackageCarouselProps) {
   const { language } = useLanguage()
+  const t = translations[language]
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
@@ -51,10 +69,10 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
     return (
       <div className="mb-12 px-6" role="status" aria-live="polite">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Recommended Packages
+          {t.recommendedPackages}
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          No packages to show yet.
+          {t.noPackages}
         </p>
       </div>
     )
@@ -68,7 +86,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
           className="focus-ring rounded-md text-2xl font-bold text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           aria-label="View all packages"
         >
-          Recommended Packages
+          {t.recommendedPackages}
         </Link>
       </div>
 
@@ -118,7 +136,7 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
                   <div className="absolute top-4 left-4 right-4">
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-semibold rounded-full shadow-md">
-                        {pkg.duration} days
+                        {pkg.duration} {t.days}
                       </span>
                       <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-gray-100 text-xs font-medium rounded-full shadow-md">
                         {getPackageCities(pkg, language).join(', ')}
@@ -152,9 +170,9 @@ export default function PackageCarousel({ packages }: PackageCarouselProps) {
 
                   {/* Category */}
                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
-                    <span>{getPackageCities(pkg, language).length} cities</span>
+                    <span>{getPackageCities(pkg, language).length} {t.cities}</span>
                     <span>·</span>
-                    <span>{pkg.itinerary.length} day itinerary</span>
+                    <span>{pkg.itinerary.length} {t.dayItinerary}</span>
                   </div>
                 </div>
               </div>

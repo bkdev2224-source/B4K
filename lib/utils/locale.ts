@@ -100,9 +100,12 @@ export function getKContentSpotName(
  * KContent의 description 가져오기
  */
 export function getKContentDescription(
-  content: { description: { description_en: string; description_ko: string } }, 
+  content: { description: { description_en: string; description_ko: string } | string }, 
   language: Language
 ): string {
+  if (typeof content.description === 'string') {
+    return content.description
+  }
   return language === 'ko' ? content.description.description_ko : content.description.description_en
 }
 

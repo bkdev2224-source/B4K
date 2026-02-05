@@ -67,7 +67,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<any[]>([])
   const polylineRef = useRef<any>(null)
-  const { setSearchResult } = useSearchResult()
+  const { searchResult, setSearchResult } = useSearchResult()
   const { language } = useLanguage()
   const [isReady, setIsReady] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -348,8 +348,8 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
           const order = cartOrderMap.get(poi._id.$oid)
           if (order === undefined) return null
 
-          // address.address_ko로 Geocoding 수행 (없으면 address.address_en 사용)
-          const addressForGeocoding = poi.address.address_ko || poi.address.address_en
+          // address.address_ko로만 Geocoding 수행
+          const addressForGeocoding = poi.address.address_ko
           if (!addressForGeocoding) return null
 
           const geocoded = await geocodeAddress(addressForGeocoding, poi._id.$oid, poi)
@@ -506,8 +506,8 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
           let lat: number | null = null
           let lng: number | null = null
 
-          // 무조건 address.address_ko로 Geocoding 수행 (없으면 address.address_en 사용)
-          const addressForGeocoding = poi.address.address_ko || poi.address.address_en
+          // address.address_ko로만 Geocoding 수행
+          const addressForGeocoding = poi.address.address_ko
           log(`[Geocoding] POI: ${getPOIName(poi, language)}, Address: ${addressForGeocoding}`)
           
           if (addressForGeocoding) {
@@ -520,7 +520,7 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
               console.warn(`[Geocoding Failed] POI: ${getPOIName(poi, language)}, Address: ${addressForGeocoding}`)
             }
           } else {
-            console.warn(`[No Address] POI: ${getPOIName(poi, language)} has no address.address_ko or address.address_en`)
+            console.warn(`[No Address] POI: ${getPOIName(poi, language)} has no address.address_ko`)
           }
 
           // Geocoding으로 좌표를 얻었으면 마커 생성
@@ -566,6 +566,58 @@ export default function NaverMap({ center, zoom = 16, pois = [], cartOrderMap = 
       markersRef.current = []
     }
   }, [isReady, pois, cartOrderMap, hasSearchResult, createMarker, geocodeAddress, log])
+
+  // 검색 결과에 따라 지도 중심 이동
+  useEffect(() => {
+    if (!isReady || !mapInstanceRef.current || !window.naver?.maps) return
+    if (!searchResult || searchResult.type !== 'poi' || !searchResult.poiId) return
+
+    // 검색된 POI 찾기
+    const searchedPoi = pois.find(poi => poi._id.$oid === searchResult.poiId)
+    if (!searchedPoi) return
+
+    // POI의 좌표 가져오기 (geocoding 또는 캐시에서)
+    const focusToPoi = async () => {
+      const addressForGeocoding = searchedPoi.address.address_ko
+      if (!addressForGeocoding) {
+        console.warn(`[Focus] POI: ${getPOIName(searchedPoi, language)} has no address.address_ko`)
+        return
+      }
+
+      // 캐시에서 먼저 확인
+      let coords = geocodedPoisRef.current.get(searchedPoi._id.$oid)
+      
+      // 캐시에 없으면 geocoding 수행
+      if (!coords) {
+        const geocoded = await geocodeAddress(addressForGeocoding, searchedPoi._id.$oid, searchedPoi)
+        if (geocoded) {
+          coords = geocoded
+        }
+      }
+
+      if (coords) {
+        try {
+          const newLatLng = new window.naver.maps.LatLng(coords.lat, coords.lng)
+          
+          // morph 메서드를 사용하여 부드러운 애니메이션으로 이동
+          mapInstanceRef.current.morph(newLatLng, 17, {
+            duration: 500, // 애니메이션 속도 (ms)
+            easing: 'linear' // 애니메이션 효과
+          })
+
+          lastCenterRef.current = [coords.lng, coords.lat]
+          lastZoomRef.current = 17
+          log(`[Focus] Moved map to POI: ${getPOIName(searchedPoi, language)}, lat: ${coords.lat}, lng: ${coords.lng}`)
+        } catch (error) {
+          console.error('Error focusing map to search result:', error)
+        }
+      } else {
+        console.warn(`[Focus] Failed to geocode POI: ${getPOIName(searchedPoi, language)}`)
+      }
+    }
+
+    focusToPoi()
+  }, [searchResult, isReady, pois, geocodeAddress, language, log])
 
   // Update map center and zoom with smooth animation using morph (사용자가 직접 조작 중이 아닐 때만)
   useEffect(() => {

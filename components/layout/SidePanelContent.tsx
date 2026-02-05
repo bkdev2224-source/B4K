@@ -41,12 +41,30 @@ export function SidePanelContent({ type, route, routeId }: SidePanelContentProps
   const { contents: contentsBySubName } = useKContentsBySubName(searchSubName)
   const { contents: contentsByPOIId } = useKContentsByPOIId(searchPoiId)
 
+  // Home page section list translations
+  const homeSectionsTranslations = {
+    en: {
+      bestPackages: 'B4K Best Packages',
+      editorRecommendations: 'Editor Recommendations',
+      exploreSeoul: 'Explore Seoul',
+      seasonalTravel: 'Seasonal Travel',
+    },
+    ko: {
+      bestPackages: 'B4K 베스트 패키지',
+      editorRecommendations: '에디터 추천',
+      exploreSeoul: '서울 탐험',
+      seasonalTravel: '계절별 여행',
+    },
+  }
+
+  const t = homeSectionsTranslations[language]
+
   // Home page section list
   const homeSections: SidePanelItem[] = [
-    { id: 'best-packages', name: 'B4K Best Packages', href: '#best-packages' },
-    { id: 'editor-recommendations', name: 'Editor Recommendations', href: '#editor-recommendations' },
-    { id: 'seoul-exploration', name: 'Explore Seoul', href: '#seoul-exploration' },
-    { id: 'seasonal-recommendations', name: 'Seasonal Travel', href: '#seasonal-recommendations' },
+    { id: 'best-packages', name: t.bestPackages, href: '#best-packages' },
+    { id: 'editor-recommendations', name: t.editorRecommendations, href: '#editor-recommendations' },
+    { id: 'seoul-exploration', name: t.exploreSeoul, href: '#seoul-exploration' },
+    { id: 'seasonal-recommendations', name: t.seasonalTravel, href: '#seasonal-recommendations' },
   ]
 
   // Contents categories

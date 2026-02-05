@@ -96,7 +96,10 @@ export interface KContentJson {
     spotName_en: string
     spotName_ko: string
   }
-  description: string
+  description: {
+    description_en: string
+    description_ko: string
+  }
   tags: string[]
   popularity?: number
   [key: string]: unknown

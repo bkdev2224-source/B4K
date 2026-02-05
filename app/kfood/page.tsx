@@ -26,7 +26,7 @@ export default async function KFoodPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {brands.map((brand) => (
-              <FoodBrandCard key={brand.name} brand={brand} />
+              <FoodBrandCard key={brand._id?.$oid || brand.name.name_en} brand={brand} />
             ))}
           </div>
         )}

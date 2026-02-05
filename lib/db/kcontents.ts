@@ -107,7 +107,6 @@ export async function getKContentsBySubName(
       $or: [
         { 'subName.subName_en': { $regex: regex } },
         { 'subName.subName_ko': { $regex: regex } },
-        { subName }, // Fallback for old format
       ],
     }).toArray()
     

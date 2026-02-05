@@ -8,6 +8,7 @@ import { getMongoDbName } from '@/lib/config/env'
 const COLLECTION_NAME = 'kfestival_places'
 
 export type KFestivalPlace = {
+  _id?: { $oid: string }
   name: {
     name_en: string
     name_ko: string
@@ -38,6 +39,7 @@ export async function getKFestivalPlaceByName(name: string): Promise<KFestivalPl
   
   const nameObj = (doc as any).name
   return {
+    _id: doc._id ? { $oid: doc._id.toString() } : undefined,
     name: {
       name_en: nameObj?.name_en || '',
       name_ko: nameObj?.name_ko || '',
@@ -57,6 +59,7 @@ export async function getAllKFestivalPlaces(): Promise<KFestivalPlace[]> {
   return docs.map((doc) => {
     const nameObj = (doc as any).name
     return {
+      _id: doc._id ? { $oid: doc._id.toString() } : undefined,
       name: {
         name_en: nameObj?.name_en || '',
         name_ko: nameObj?.name_ko || '',

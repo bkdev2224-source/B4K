@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
 import { Inter } from 'next/font/google'
 import { getSiteUrl } from '@/lib/config/env'
 import './globals.css'
@@ -88,7 +89,9 @@ export default function RootLayout({
                 <RouteProvider>
                   <SearchProvider>
                     <CartProvider>
-                      <AnalyticsGate />
+                      <Suspense fallback={null}>
+                        <AnalyticsGate />
+                      </Suspense>
                       <AnalyticsTracker />
                       {children}
                     </CartProvider>

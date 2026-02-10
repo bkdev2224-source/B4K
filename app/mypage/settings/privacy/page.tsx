@@ -4,19 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import PageLayout from '@/components/layout/PageLayout'
 import { useLanguage } from '@/components/providers/LanguageContext'
-
-type ConsentState = 'unknown' | 'granted' | 'denied'
-const CONSENT_STORAGE_KEY = 'b4k_analytics_consent'
-
-function getStoredConsent(): ConsentState {
-  try {
-    const v = window.localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (v === 'granted' || v === 'denied') return v
-    return 'unknown'
-  } catch {
-    return 'unknown'
-  }
-}
+import { getStoredConsent, type ConsentState } from '@/lib/consent'
 
 export default function PrivacySettingsPage() {
   const [consent, setConsent] = useState<ConsentState>('unknown')

@@ -1,9 +1,11 @@
 /**
  * Analytics utility layer for GA4
- * 
+ *
  * This module provides type-safe analytics functions for tracking
  * page views and custom events in Google Analytics 4.
  */
+
+import { getStoredConsent } from '@/lib/consent'
 
 // Extend Window interface for gtag
 declare global {
@@ -16,16 +18,9 @@ declare global {
 const REQUIRE_ANALYTICS_CONSENT =
   process.env.NEXT_PUBLIC_REQUIRE_ANALYTICS_CONSENT === 'true'
 
-const ANALYTICS_CONSENT_STORAGE_KEY = 'b4k_analytics_consent'
-
 function hasAnalyticsConsent(): boolean {
   if (!REQUIRE_ANALYTICS_CONSENT) return true
-  if (typeof window === 'undefined') return false
-  try {
-    return window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY) === 'granted'
-  } catch {
-    return false
-  }
+  return getStoredConsent() === 'granted'
 }
 
 /**

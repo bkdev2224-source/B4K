@@ -12,6 +12,8 @@ import { AnalyticsTracker } from '@/lib/hooks/useAnalytics'
 import { ThemeProvider } from '@/components/ThemeContext'
 import { LanguageProvider } from '@/components/providers/LanguageContext'
 import AnalyticsGate from '@/components/analytics/AnalyticsGate'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -94,6 +96,8 @@ export default function RootLayout({
                       </Suspense>
                       <AnalyticsTracker />
                       {children}
+                      <Analytics />
+                      <SpeedInsights />
                     </CartProvider>
                   </SearchProvider>
                 </RouteProvider>
